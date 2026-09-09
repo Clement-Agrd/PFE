@@ -13,11 +13,14 @@
             },
             {
                 "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+<<<<<<< HEAD
                 "key": "ShapeComponent.ResetSettings",
                 "value": "{\"m_Value\":false}"
             },
             {
                 "type": "System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089",
+=======
+>>>>>>> d334ffd (Début de Stats System)
                 "key": "lightmapping.autoUnwrapLightmapUV",
                 "value": "{\"m_Value\":true}"
             },
