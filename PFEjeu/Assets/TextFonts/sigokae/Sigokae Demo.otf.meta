@@ -1,0 +1,23 @@
+fileFormatVersion: 2
+guid: a1b104694d48ef048bb56a230b13d7df
+TrueTypeFontImporter:
+  externalObjects: {}
+  serializedVersion: 4
+  fontSize: 16
+  forceTextureCase: -2
+  characterSpacing: 0
+  characterPadding: 1
+  includeFontData: 1
+  fontNames:
+  - Sigokae Demo
+  fallbackFontReferences:
+  - {fileID: 12800000, guid: dd8406d45ff74f849a3d08fb65357225, type: 3}
+  customCharacters: 
+  fontRenderingMode: 0
+  ascentCalculationMode: 1
+  useLegacyBoundsCalculation: 0
+  shouldRoundAdvanceValue: 1
+  subsetRecipes: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
