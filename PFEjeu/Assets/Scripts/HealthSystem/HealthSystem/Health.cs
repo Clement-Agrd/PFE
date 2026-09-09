@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace Core.HealthSystem
 {
-    /// <summary>
-    /// Points de vie d'une entité : dégâts (avec type & résistances), soin,
-    /// invulnérabilité temporaire (i-frames), mort/réanimation, et events.
-    /// Implémente IDamageable / IHealable → cible universelle des systèmes offensifs.
-    /// </summary>
     public sealed class Health : MonoBehaviour, IDamageable, IHealable
     {
         [Header("Vie")]
@@ -16,27 +11,29 @@ namespace Core.HealthSystem
         [SerializeField, Min(0)] private int startHealth = 100;
 
         [Header("Invulnérabilité")]
-        [Tooltip("Durée d'invulnérabilité après un coup (i-frames). 0 = aucune.")]
         [SerializeField, Min(0f)] private float invulnAfterHitDuration = 0f;
 
         [Header("Résistances (par type de dégâts)")]
         [SerializeField] private Resistance[] resistances;
 
+        [Header("Chiffres de dégâts")]
+        [SerializeField] private bool showDamageNumbers = true;
+        [SerializeField, Min(1)] private int critThreshold = 30;
+        [SerializeField] private Color normalColor = Color.white;
+        [SerializeField] private Color critColor = new Color(1f, 0.85f, 0.2f);
+        [SerializeField] private Color healColor = new Color(0.4f, 0.85f, 0.4f);
+
         public int MaxHealth => maxHealth;
         public int CurrentHealth { get; private set; }
         public bool IsDead { get; private set; }
-
-        /// <summary>Invulnérabilité manuelle (ex. pendant un dash). Cumulée aux i-frames.</summary>
         public bool IsInvulnerable { get; set; }
-
-        /// <summary>PV en 0 → 1, pour une barre de vie.</summary>
         public float Normalized => maxHealth > 0 ? (float)CurrentHealth / maxHealth : 0f;
 
         private float _invulnUntil;
 
         public event Action<DamageInfo> OnDamaged;
         public event Action<int> OnHealed;
-        public event Action<int, int> OnHealthChanged; // (current, max)
+        public event Action<int, int> OnHealthChanged;
         public event Action OnDeath;
 
         private void Awake()
@@ -45,19 +42,20 @@ namespace Core.HealthSystem
             IsDead = CurrentHealth <= 0;
         }
 
-        #region Dégâts / soin
-
         public void TakeDamage(in DamageInfo info)
         {
             if (IsDead || info.Amount <= 0) return;
             if (IsInvulnerable || Time.time < _invulnUntil) return;
 
             int finalDamage = Mathf.RoundToInt(info.Amount * GetMultiplier(info.Type));
-            if (finalDamage <= 0) return; // immunisé ou absorbé
+            if (finalDamage <= 0) return;
 
             CurrentHealth = Mathf.Max(0, CurrentHealth - finalDamage);
             OnDamaged?.Invoke(info);
             OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+
+            bool isCrit = finalDamage >= critThreshold;
+            ShowNumber(finalDamage, isCrit ? critColor : normalColor, "", isCrit);
 
             if (invulnAfterHitDuration > 0f)
                 _invulnUntil = Time.time + invulnAfterHitDuration;
@@ -65,21 +63,16 @@ namespace Core.HealthSystem
             if (CurrentHealth == 0) Die();
         }
 
-        /// <summary>Surcharge pratique pour des dégâts bruts (sans type ni source).</summary>
         public void TakeDamage(int amount) => TakeDamage(new DamageInfo(amount));
 
         public void Heal(int amount)
         {
             if (IsDead || amount <= 0) return;
-
             CurrentHealth = Mathf.Min(maxHealth, CurrentHealth + amount);
             OnHealed?.Invoke(amount);
             OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
+            ShowNumber(amount, healColor, "+", false);
         }
-
-        #endregion
-
-        #region Vie / mort
 
         public void SetMaxHealth(int value, bool healToFull = false)
         {
@@ -105,15 +98,9 @@ namespace Core.HealthSystem
 
         private void Die()
         {
-            Debug.Log("jui mort mdr");
-            Destroy(gameObject);
             IsDead = true;
             OnDeath?.Invoke();
         }
-
-        #endregion
-
-        #region Sauvegarde
 
         public void Capture(out int current, out int max)
         {
@@ -129,16 +116,20 @@ namespace Core.HealthSystem
             OnHealthChanged?.Invoke(CurrentHealth, maxHealth);
         }
 
-        #endregion
+        private void ShowNumber(int amount, Color color, string prefix = "", bool isCrit = false)
+        {
+            if (!showDamageNumbers) return;
+            if (SimpleDamageSpawner.Instance != null)
+                SimpleDamageSpawner.Instance.Show(transform.position, amount, prefix + amount, color, isCrit);
+        }
+        
 
         private float GetMultiplier(DamageType type)
         {
             if (type == null || resistances == null) return 1f;
-
             for (int i = 0; i < resistances.Length; i++)
                 if (resistances[i].type == type)
                     return Mathf.Max(0f, resistances[i].multiplier);
-
             return 1f;
         }
     }
