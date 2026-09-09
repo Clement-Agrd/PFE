@@ -105,6 +105,7 @@ namespace Core.HealthSystem
 
         private void Die()
         {
+            Debug.Log("jui mort mdr");
             IsDead = true;
             OnDeath?.Invoke();
         }
