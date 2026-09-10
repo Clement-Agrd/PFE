@@ -1,148 +1,238 @@
 using System;
 using UnityEngine;
+using Core.StatsSystem;
 
 namespace ProfessionalTPS
 {
-    /// <summary>
-    /// Gestion générique de l'endurance du joueur.
-    ///
-    /// Utilisée actuellement pour :
-    /// - Sprint
-    /// - Roulade
-    ///
-    /// Peut ensuite être utilisée pour :
-    /// - Attaques lourdes
-    /// - Parade
-    /// - Compétences physiques
-    /// - Escalade
-    /// etc.
-    /// </summary>
-    [DisallowMultipleComponent]
-    public sealed class PlayerStamina : MonoBehaviour
-    {
-        [Header("Stamina")]
-        [SerializeField, Min(1f)]
-        private float maxStamina = 100f;
+    using StatType = EnumStats.StatTypes;
 
+    [DisallowMultipleComponent]
+    public sealed class PlayerStamina :
+        MonoBehaviour
+    {
+        [Header("Stats")]
+        [SerializeField]
+        private EntityStats stats;
+
+        [Header("Fallback")]
+        [Tooltip(
+            "Utilisé uniquement lorsqu'aucun EntityStats n'est présent."
+        )]
+        [SerializeField, Min(1f)]
+        private float fallbackMaxStamina = 100f;
+
+        [Header("Starting Stamina")]
         [SerializeField]
         private bool startFull = true;
 
         [SerializeField, Min(0f)]
         private float startStamina = 100f;
 
-        [Header("Régénération")]
-        [Tooltip("Stamina récupérée par seconde.")]
+        [Header("Regeneration")]
         [SerializeField, Min(0f)]
         private float regenerationPerSecond = 22f;
 
-        [Tooltip("Temps d'attente après une dépense avant la régénération.")]
         [SerializeField, Min(0f)]
         private float regenerationDelay = 1f;
 
-        [Header("Épuisement")]
-        [Tooltip(
-            "Quand la stamina atteint 0, le joueur doit récupérer " +
-            "au moins cette quantité avant de pouvoir sprinter à nouveau."
-        )]
+        [Header("Exhaustion")]
         [SerializeField, Min(0f)]
         private float exhaustionRecoveryThreshold = 20f;
 
-        [Tooltip(
-            "Quantité minimale nécessaire pour commencer un sprint " +
-            "quand le joueur n'est pas épuisé."
-        )]
         [SerializeField, Min(0f)]
         private float minimumToStartSprint = 5f;
 
+        public float MaxStamina
+        {
+            get
+            {
+                if (stats == null)
+                {
+                    return Mathf.Max(
+                        1f,
+                        fallbackMaxStamina
+                    );
+                }
 
-        public float MaxStamina => maxStamina;
+                return Mathf.Max(
+                    1f,
+                    stats.GetStat(
+                        StatType.Stamina
+                    )
+                );
+            }
+        }
 
-        public float CurrentStamina { get; private set; }
+        public float CurrentStamina
+        {
+            get;
+            private set;
+        }
 
         public float Normalized =>
-            maxStamina > 0f
-                ? CurrentStamina / maxStamina
+            MaxStamina > 0f
+                ? CurrentStamina /
+                  MaxStamina
                 : 0f;
 
-        public bool IsExhausted { get; private set; }
+        public bool IsExhausted
+        {
+            get;
+            private set;
+        }
 
         public bool IsFull =>
-            CurrentStamina >= maxStamina;
+            CurrentStamina >=
+            MaxStamina;
 
-        /// <summary>
-        /// Peut démarrer un nouveau sprint.
-        /// </summary>
         public bool CanStartSprint =>
             !IsExhausted &&
-            CurrentStamina >= minimumToStartSprint;
+            CurrentStamina >=
+            minimumToStartSprint;
 
-        /// <summary>
-        /// Peut continuer un sprint déjà commencé.
-        /// </summary>
         public bool CanContinueSprint =>
             !IsExhausted &&
             CurrentStamina > 0f;
 
-
         private float _lastSpendTime =
             float.NegativeInfinity;
 
-
-        /// <summary>
-        /// current, max
-        /// </summary>
-        public event Action<float, float> OnStaminaChanged;
+        public event Action<float, float>
+            OnStaminaChanged;
 
         public event Action OnExhausted;
-        public event Action OnRecovered;
 
+        public event Action OnRecovered;
 
         private void Awake()
         {
-            maxStamina =
-                Mathf.Max(1f, maxStamina);
-
-            exhaustionRecoveryThreshold =
-                Mathf.Clamp(
-                    exhaustionRecoveryThreshold,
-                    0f,
-                    maxStamina
-                );
-
-            minimumToStartSprint =
-                Mathf.Clamp(
-                    minimumToStartSprint,
-                    0f,
-                    maxStamina
-                );
+            ResolveStats();
 
             CurrentStamina =
                 startFull
-                    ? maxStamina
+                    ? MaxStamina
                     : Mathf.Clamp(
                         startStamina,
                         0f,
-                        maxStamina
+                        MaxStamina
                     );
 
             IsExhausted =
                 CurrentStamina <= 0f;
         }
 
+        private void OnEnable()
+        {
+            ResolveStats();
+
+            if (stats != null)
+            {
+                stats.OnStatChanged +=
+                    OnStatChanged;
+            }
+        }
+
+        private void OnDisable()
+        {
+            if (stats != null)
+            {
+                stats.OnStatChanged -=
+                    OnStatChanged;
+            }
+        }
 
         private void Update()
         {
+            if (CurrentStamina >
+                MaxStamina)
+            {
+                SetCurrentStamina(
+                    MaxStamina
+                );
+            }
+
             Regenerate();
         }
 
+        private void ResolveStats()
+        {
+            if (stats != null)
+                return;
+
+            stats =
+                GetComponent<EntityStats>();
+
+            if (stats == null)
+            {
+                stats =
+                    GetComponentInParent<EntityStats>();
+            }
+        }
+
+        private void OnStatChanged(
+            StatType type,
+            float oldValue,
+            float newValue)
+        {
+            if (type !=
+                StatType.Stamina)
+            {
+                return;
+            }
+
+            float oldMax =
+                Mathf.Max(
+                    1f,
+                    oldValue
+                );
+
+            float newMax =
+                Mathf.Max(
+                    1f,
+                    newValue
+                );
+
+            float normalized =
+                CurrentStamina /
+                oldMax;
+
+            CurrentStamina =
+                Mathf.Clamp(
+                    normalized *
+                    newMax,
+                    0f,
+                    newMax
+                );
+
+            if (IsExhausted &&
+                CurrentStamina >=
+                Mathf.Min(
+                    exhaustionRecoveryThreshold,
+                    newMax
+                ))
+            {
+                IsExhausted = false;
+
+                OnRecovered?.Invoke();
+            }
+
+            OnStaminaChanged?.Invoke(
+                CurrentStamina,
+                newMax
+            );
+        }
 
         private void Regenerate()
         {
-            if (CurrentStamina >= maxStamina)
+            if (CurrentStamina >=
+                MaxStamina)
+            {
                 return;
+            }
 
             if (Time.time <
-                _lastSpendTime + regenerationDelay)
+                _lastSpendTime +
+                regenerationDelay)
             {
                 return;
             }
@@ -150,20 +240,18 @@ namespace ProfessionalTPS
             if (regenerationPerSecond <= 0f)
                 return;
 
-
             SetCurrentStamina(
                 CurrentStamina +
                 regenerationPerSecond *
                 Time.deltaTime
             );
 
-
-            // Le joueur était complètement épuisé.
-            // Il doit récupérer une certaine quantité
-            // avant de pouvoir resprinter.
             if (IsExhausted &&
                 CurrentStamina >=
-                exhaustionRecoveryThreshold)
+                Mathf.Min(
+                    exhaustionRecoveryThreshold,
+                    MaxStamina
+                ))
             {
                 IsExhausted = false;
 
@@ -171,50 +259,33 @@ namespace ProfessionalTPS
             }
         }
 
-
-        /// <summary>
-        /// Dépense une quantité précise de stamina.
-        ///
-        /// Retourne false si le joueur
-        /// n'en possède pas assez.
-        ///
-        /// Idéal pour :
-        /// - roulade
-        /// - attaque lourde
-        /// - capacité
-        /// </summary>
-        public bool TrySpend(float amount)
+        public bool TrySpend(
+            float amount)
         {
             if (amount <= 0f)
                 return true;
 
-            if (CurrentStamina < amount)
+            if (CurrentStamina <
+                amount)
+            {
                 return false;
+            }
 
-
-            _lastSpendTime = Time.time;
+            _lastSpendTime =
+                Time.time;
 
             SetCurrentStamina(
-                CurrentStamina - amount
+                CurrentStamina -
+                amount
             );
-
 
             CheckExhaustion();
 
             return true;
         }
 
-
-        /// <summary>
-        /// Dépense continuellement la stamina.
-        ///
-        /// Contrairement à TrySpend,
-        /// la valeur est simplement ramenée à zéro
-        /// si la dépense dépasse la stamina restante.
-        ///
-        /// Idéal pour le sprint.
-        /// </summary>
-        public void SpendContinuous(float amount)
+        public void SpendContinuous(
+            float amount)
         {
             if (amount <= 0f)
                 return;
@@ -222,32 +293,34 @@ namespace ProfessionalTPS
             if (CurrentStamina <= 0f)
                 return;
 
-
-            _lastSpendTime = Time.time;
+            _lastSpendTime =
+                Time.time;
 
             SetCurrentStamina(
-                CurrentStamina - amount
+                CurrentStamina -
+                amount
             );
-
 
             CheckExhaustion();
         }
 
-
-        public void Restore(float amount)
+        public void Restore(
+            float amount)
         {
             if (amount <= 0f)
                 return;
 
-
             SetCurrentStamina(
-                CurrentStamina + amount
+                CurrentStamina +
+                amount
             );
-
 
             if (IsExhausted &&
                 CurrentStamina >=
-                exhaustionRecoveryThreshold)
+                Mathf.Min(
+                    exhaustionRecoveryThreshold,
+                    MaxStamina
+                ))
             {
                 IsExhausted = false;
 
@@ -255,10 +328,11 @@ namespace ProfessionalTPS
             }
         }
 
-
         public void RestoreFull()
         {
-            SetCurrentStamina(maxStamina);
+            SetCurrentStamina(
+                MaxStamina
+            );
 
             if (IsExhausted)
             {
@@ -268,52 +342,51 @@ namespace ProfessionalTPS
             }
         }
 
-
+        /// <summary>
+        /// Avec EntityStats :
+        /// modifie la valeur BASE de Stamina.
+        /// </summary>
         public void SetMaxStamina(
             float value,
             bool restoreToFull = false)
         {
-            maxStamina =
-                Mathf.Max(1f, value);
-
-
-            exhaustionRecoveryThreshold =
-                Mathf.Clamp(
-                    exhaustionRecoveryThreshold,
-                    0f,
-                    maxStamina
+            value =
+                Mathf.Max(
+                    1f,
+                    value
                 );
 
-
-            minimumToStartSprint =
-                Mathf.Clamp(
-                    minimumToStartSprint,
-                    0f,
-                    maxStamina
-                );
-
-
-            if (restoreToFull)
+            if (stats != null)
             {
-                CurrentStamina =
-                    maxStamina;
+                stats.SetBaseStat(
+                    StatType.Stamina,
+                    value
+                );
+
+                if (restoreToFull)
+                {
+                    RestoreFull();
+                }
+
+                return;
             }
-            else
-            {
-                CurrentStamina =
-                    Mathf.Min(
+
+            fallbackMaxStamina =
+                value;
+
+            CurrentStamina =
+                restoreToFull
+                    ? MaxStamina
+                    : Mathf.Min(
                         CurrentStamina,
-                        maxStamina
+                        MaxStamina
                     );
-            }
-
 
             OnStaminaChanged?.Invoke(
                 CurrentStamina,
-                maxStamina
+                MaxStamina
             );
         }
-
 
         private void CheckExhaustion()
         {
@@ -323,12 +396,10 @@ namespace ProfessionalTPS
             if (IsExhausted)
                 return;
 
-
             IsExhausted = true;
 
             OnExhausted?.Invoke();
         }
-
 
         private void SetCurrentStamina(
             float value)
@@ -336,26 +407,23 @@ namespace ProfessionalTPS
             float previous =
                 CurrentStamina;
 
-
             CurrentStamina =
                 Mathf.Clamp(
                     value,
                     0f,
-                    maxStamina
+                    MaxStamina
                 );
 
-
             if (Mathf.Approximately(
-                previous,
-                CurrentStamina))
+                    previous,
+                    CurrentStamina))
             {
                 return;
             }
 
-
             OnStaminaChanged?.Invoke(
                 CurrentStamina,
-                maxStamina
+                MaxStamina
             );
         }
     }

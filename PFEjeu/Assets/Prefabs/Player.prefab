@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 8697141717061842652}
   - component: {fileID: 9044873533130608792}
   - component: {fileID: 1688290526204805678}
+  - component: {fileID: 7413658236801783924}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -39,7 +40,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 314217718451763406}
   - {fileID: 958875300389590385}
   - {fileID: 1044498313947354830}
   - {fileID: 4123414431427939227}
@@ -67,10 +67,10 @@ CharacterController:
   serializedVersion: 3
   m_Height: 1.8
   m_Radius: 0.35
-  m_SlopeLimit: 50
+  m_SlopeLimit: 46
   m_StepOffset: 0.3
-  m_SkinWidth: 0.035
-  m_MinMoveDistance: 0.001
+  m_SkinWidth: 0.09
+  m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.9, z: 0}
 --- !u!114 &634414795037399987
 MonoBehaviour:
@@ -107,14 +107,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.ThirdPersonMotor
   input: {fileID: 634414795037399987}
-  cameraTransform: {fileID: 314217718451763406}
+  cameraTransform: {fileID: 0}
   combat: {fileID: 5696852118197156800}
   stamina: {fileID: 1688290526204805678}
-  moveSpeed: 5.5
+  stats: {fileID: 0}
+  fallbackMoveSpeed: 5.5
   acceleration: 28
   deceleration: 34
   rotationSharpness: 14
-  sprintSpeed: 8.5
+  airControl: 0.35
+  airDeceleration: 0.4
+  airRotationMultiplier: 0.65
+  sprintSpeedMultiplier: 1.55
   sprintStaminaPerSecond: 18
   minimumSprintInput: 0.35
   allowSprintWhileAiming: 0
@@ -125,6 +129,20 @@ MonoBehaviour:
   coyoteTime: 0.12
   jumpBufferTime: 0.12
   terminalVelocity: -45
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundProbeDistance: 0.2
+  groundProbeRadiusMultiplier: 0.8
+  groundProbeStartOffset: 0.08
+  slopeAngleTolerance: 0.5
+  steepSlopeSlideDelay: 0.2
+  steepSlopeSlideSpeed: 6.5
+  steepSlopeAcceleration: 22
+  steepSlopeDownForce: 7
+  steepSlopeControl: 0.15
+  steepContactMemory: 0.15
+  verticalWallAngleThreshold: 89.9
   rollDuration: 0.55
   rollSpeed: 8.5
   rollCooldown: 0.25
@@ -168,9 +186,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerCombatController
   input: {fileID: 634414795037399987}
   motor: {fileID: 6145931558672038888}
-  aimCamera: {fileID: 4622722797380142002}
+  aimCamera: {fileID: 0}
   animationBridge: {fileID: 8697141717061842652}
   audioBridge: {fileID: 9044873533130608792}
+  stats: {fileID: 0}
   melee: {fileID: 8915196170815359498}
   bow: {fileID: 8476859788016329439}
   magic: {fileID: 2996941395369023088}
@@ -178,6 +197,8 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   defaultAimRange: 200
+  minimumAttackSpeed: 0.1
+  maximumAttackSpeed: 5
 --- !u!114 &8915196170815359498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -198,19 +219,22 @@ MonoBehaviour:
     m_Bits: 8
   triggerInteraction: 1
   combo:
-  - damage: 20
+  - baseDamage: 10
+    physicDamageScaling: 0.9
     startup: 0.16
     recovery: 0.24
     queueOpensAt: 0.12
     hitRadius: 0.8
     forwardOffset: 0.95
-  - damage: 24
+  - baseDamage: 12
+    physicDamageScaling: 1
     startup: 0.18
     recovery: 0.26
     queueOpensAt: 0.13
     hitRadius: 0.9
     forwardOffset: 1
-  - damage: 34
+  - baseDamage: 18
+    physicDamageScaling: 1.25
     startup: 0.24
     recovery: 0.38
     queueOpensAt: 0.17
@@ -230,20 +254,48 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.BowCombatModule
   useAnimationEvents: 0
-  releaseDelay: 0.22
-  recovery: 0.35
-  damage: 28
+  fullChargeTime: 1.1
+  chargeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  baseDamage: 8
+  physicDamageScaling: 1
+  minimumDamageMultiplier: 0.35
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
+  minimumProjectileSpeed: 9
+  maximumProjectileSpeed: 38
   muzzle: {fileID: 939751343951286135}
   projectilePrefab: {fileID: 4025266684344492649, guid: afc5324e8615516408e5c04a5b5446b5, type: 3}
-  projectileSpeed: 38
   projectileGravity: -9
   projectileLifetime: 8
   aimRange: 180
   fallbackHitMask:
     serializedVersion: 2
     m_Bits: 8
-  attackMovementMultiplier: 0.5
+  minimumFallbackRange: 8
+  recovery: 0.35
+  drawingMovementMultiplier: 0.5
 --- !u!114 &2996941395369023088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -259,7 +311,8 @@ MonoBehaviour:
   useAnimationEvents: 0
   castDelay: 0.3
   recovery: 0.4
-  damage: 35
+  baseDamage: 12
+  magicDamageScaling: 1
   damageType: {fileID: 11400000, guid: 32ce24f6e882d4a46b70e7ae451132ad, type: 2}
   castOrigin: {fileID: 1145915676543690880}
   projectilePrefab: {fileID: 4025266684344492649, guid: afc5324e8615516408e5c04a5b5446b5, type: 3}
@@ -286,6 +339,7 @@ MonoBehaviour:
   animator: {fileID: 0}
   motor: {fileID: 0}
   input: {fileID: 0}
+  combat: {fileID: 0}
 --- !u!114 &9044873533130608792
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -324,13 +378,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1fdcbdeba514c27408da4d0ebadb6258, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerStamina
-  maxStamina: 100
+  stats: {fileID: 0}
+  fallbackMaxStamina: 100
   startFull: 1
   startStamina: 100
   regenerationPerSecond: 22
   regenerationDelay: 1
   exhaustionRecoveryThreshold: 20
   minimumToStartSprint: 5
+--- !u!114 &7413658236801783924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602151265126596277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b30f0a7f66f42558d0d76d81b074357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.StatsSystem.EntityStats
+  baseStats:
+  - type: 0
+    baseValue: 100
+  - type: 1
+    baseValue: 100
+  - type: 2
+    baseValue: 10
+  - type: 3
+    baseValue: 10
+  - type: 4
+    baseValue: 0
+  - type: 5
+    baseValue: 0
+  - type: 6
+    baseValue: 5.5
+  - type: 7
+    baseValue: 1
 --- !u!1 &2619260517339198250
 GameObject:
   m_ObjectHideFlags: 0
@@ -446,196 +530,12 @@ Transform:
   m_GameObject: {fileID: 2951270355617714034}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0.45}
+  m_LocalPosition: {x: 0, y: 1, z: 0.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6049880369452092882}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3966184231156015138
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 314217718451763406}
-  - component: {fileID: 4622722797380142002}
-  - component: {fileID: 4490604972020166498}
-  - component: {fileID: 9091908279098147340}
-  - component: {fileID: 1900035832993321683}
-  - component: {fileID: 282847957871864425}
-  m_Layer: 0
-  m_Name: Main Camera
-  m_TagString: MainCamera
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &314217718451763406
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3966184231156015138}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 6049880369452092882}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!20 &4622722797380142002
-Camera:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3966184231156015138}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
-  m_projectionMatrixMode: 1
-  m_GateFitMode: 2
-  m_FOVAxisMode: 0
-  m_Iso: 200
-  m_ShutterSpeed: 0.005
-  m_Aperture: 16
-  m_FocusDistance: 10
-  m_FocalLength: 50
-  m_BladeCount: 5
-  m_Curvature: {x: 2, y: 11}
-  m_BarrelClipping: 0.25
-  m_Anamorphism: 0
-  m_SensorSize: {x: 36, y: 24}
-  m_LensShift: {x: 0, y: 0}
-  m_NormalizedViewPortRect:
-    serializedVersion: 2
-    x: 0
-    y: 0
-    width: 1
-    height: 1
-  near clip plane: 0.3
-  far clip plane: 1000
-  field of view: 60
-  orthographic: 0
-  orthographic size: 5
-  m_Depth: -1
-  m_CullingMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  m_RenderingPath: -1
-  m_TargetTexture: {fileID: 0}
-  m_TargetDisplay: 0
-  m_TargetEye: 3
-  m_HDR: 1
-  m_AllowMSAA: 1
-  m_AllowDynamicResolution: 0
-  m_ForceIntoRT: 0
-  m_OcclusionCulling: 1
-  m_StereoConvergence: 10
-  m_StereoSeparation: 0.022
---- !u!81 &4490604972020166498
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3966184231156015138}
-  m_Enabled: 1
---- !u!114 &9091908279098147340
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3966184231156015138}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a79441f348de89743a2939f4d699eac1, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalCameraData
-  m_RenderShadows: 1
-  m_RequiresDepthTextureOption: 2
-  m_RequiresOpaqueTextureOption: 2
-  m_CameraType: 0
-  m_Cameras: []
-  m_RendererIndex: -1
-  m_VolumeLayerMask:
-    serializedVersion: 2
-    m_Bits: 1
-  m_VolumeTrigger: {fileID: 0}
-  m_VolumeFrameworkUpdateModeOption: 2
-  m_RenderPostProcessing: 0
-  m_Antialiasing: 0
-  m_AntialiasingQuality: 2
-  m_StopNaN: 0
-  m_Dithering: 0
-  m_ClearDepth: 1
-  m_AllowXRRendering: 1
-  m_AllowHDROutput: 1
-  m_UseScreenCoordOverride: 0
-  m_ScreenSizeOverride: {x: 0, y: 0, z: 0, w: 0}
-  m_ScreenCoordScaleBias: {x: 0, y: 0, z: 0, w: 0}
-  m_RequiresDepthTexture: 0
-  m_RequiresColorTexture: 0
-  m_TaaSettings:
-    m_Quality: 3
-    m_FrameInfluence: 0.1
-    m_JitterScale: 1
-    m_MipBias: 0
-    m_VarianceClampScale: 0.9
-    m_ContrastAdaptiveSharpening: 0
-  m_Version: 2
---- !u!114 &1900035832993321683
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3966184231156015138}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d74b53958d202c4f871434df3b2c446, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.ThirdPersonCamera
-  input: {fileID: 634414795037399987}
-  target: {fileID: 1044498313947354830}
-  playerRoot: {fileID: 6049880369452092882}
-  controlledCamera: {fileID: 4622722797380142002}
-  mouseSensitivity: 0.12
-  gamepadDegreesPerSecond: 180
-  minPitch: -35
-  maxPitch: 70
-  lockCursor: 1
-  distance: 4.2
-  shoulderOffset: {x: 0.55, y: 0.15, z: 0}
-  normalFov: 60
-  aimDistance: 3
-  aimShoulderOffset: {x: 0.75, y: 0.2, z: 0}
-  aimFov: 52
-  aimBlendSpeed: 10
-  collisionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  collisionRadius: 0.2
-  collisionPadding: 0.05
---- !u!114 &282847957871864425
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3966184231156015138}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 95591216e3d4424b94c14be96c5e6c66, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Billboard
 --- !u!1 &5276619653930750036
 GameObject:
   m_ObjectHideFlags: 0
@@ -661,7 +561,7 @@ Transform:
   m_GameObject: {fileID: 5276619653930750036}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0.45}
+  m_LocalPosition: {x: 0, y: 1, z: 0.75}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 2614872787294337447}
   - component: {fileID: 3189202531254176485}
   - component: {fileID: 8298888805954048549}
+  - component: {fileID: 7039374678804082267}
   m_Layer: 3
   m_Name: Enemy
   m_TagString: Untagged
@@ -133,11 +134,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d468c24b5543c8142bf8e37d3ec7cae1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.HealthSystem.Health
+  stats: {fileID: 0}
   maxHealth: 100
   startAtMax: 1
   startHealth: 100
+  defenseConstant: 100
+  minimumDamage: 1
   invulnAfterHitDuration: 0
-  resistances: []
   showDamageNumbers: 1
   critThreshold: 30
   normalColor: {r: 0.96981126, g: 0.96981126, b: 0.96981126, a: 1}
@@ -182,6 +185,35 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarLink
   healthBar: {fileID: 6090950463537413696}
+--- !u!114 &7039374678804082267
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366603870273616279}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b30f0a7f66f42558d0d76d81b074357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.StatsSystem.EntityStats
+  baseStats:
+  - type: 0
+    baseValue: 100
+  - type: 1
+    baseValue: 100
+  - type: 2
+    baseValue: 10
+  - type: 3
+    baseValue: 10
+  - type: 4
+    baseValue: 0
+  - type: 5
+    baseValue: 0
+  - type: 6
+    baseValue: 5.5
+  - type: 7
+    baseValue: 1
 --- !u!1001 &8088656004379184935
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -282,6 +314,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CanvasPV
       objectReference: {fileID: 0}
+    - target: {fileID: 9056896990022154996, guid: c2be2777e3dd1594099f494d2ef68bd5, type: 3}
+      propertyPath: m_Material
+      value: 
+      objectReference: {fileID: 2100000, guid: 0a072b87b129411468833871b0bffe0e, type: 2}
     - target: {fileID: 9063803455617171746, guid: c2be2777e3dd1594099f494d2ef68bd5, type: 3}
       propertyPath: m_fontAsset
       value: 

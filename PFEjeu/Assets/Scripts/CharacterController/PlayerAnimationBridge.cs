@@ -3,37 +3,16 @@ using UnityEngine;
 namespace ProfessionalTPS
 {
     /// <summary>
-    /// Couche entre le gameplay et l'Animator.
+    /// Pont entre le gameplay et les animations.
     ///
-    /// Le gameplay fonctionne même si aucun Animator
-    /// ou aucune animation n'est encore assigné.
-    ///
-    /// Paramètres Animator prévus :
-    ///
-    /// Float :
-    /// - Speed
-    /// - VerticalSpeed
-    ///
-    /// Bool :
-    /// - Grounded
-    /// - Aiming
-    /// - Sprinting
-    ///
-    /// Int :
-    /// - CombatMode
-    ///
-    /// Trigger :
-    /// - Jump
-    /// - Roll
-    /// - Melee1
-    /// - Melee2
-    /// - Melee3
-    /// - BowAttack
-    /// - MagicAttack
+    /// Le jeu continue de fonctionner
+    /// si aucun Animator n'est assigné.
     /// </summary>
     public sealed class PlayerAnimationBridge :
         MonoBehaviour
     {
+        [Header("References")]
+
         [SerializeField]
         private Animator animator;
 
@@ -43,6 +22,12 @@ namespace ProfessionalTPS
         [SerializeField]
         private PlayerInputReader input;
 
+        [SerializeField]
+        private PlayerCombatController combat;
+
+        // ============================================================
+        // LOCOMOTION
+        // ============================================================
 
         private static readonly int SpeedHash =
             Animator.StringToHash(
@@ -69,11 +54,33 @@ namespace ProfessionalTPS
                 "Sprinting"
             );
 
+        // ============================================================
+        // COMBAT
+        // ============================================================
+
         private static readonly int CombatModeHash =
             Animator.StringToHash(
                 "CombatMode"
             );
 
+        private static readonly int AttackSpeedHash =
+            Animator.StringToHash(
+                "AttackSpeed"
+            );
+
+        private static readonly int BowDrawingHash =
+            Animator.StringToHash(
+                "BowDrawing"
+            );
+
+        private static readonly int BowChargeHash =
+            Animator.StringToHash(
+                "BowCharge"
+            );
+
+        // ============================================================
+        // TRIGGERS
+        // ============================================================
 
         private static readonly int JumpHash =
             Animator.StringToHash(
@@ -110,12 +117,10 @@ namespace ProfessionalTPS
                 "MagicAttack"
             );
 
-
         private void OnEnable()
         {
             if (motor == null)
                 return;
-
 
             motor.Jumped +=
                 OnJumped;
@@ -124,12 +129,10 @@ namespace ProfessionalTPS
                 OnRollStarted;
         }
 
-
         private void OnDisable()
         {
             if (motor == null)
                 return;
-
 
             motor.Jumped -=
                 OnJumped;
@@ -138,42 +141,41 @@ namespace ProfessionalTPS
                 OnRollStarted;
         }
 
-
         private void Update()
         {
-            if (animator == null ||
-                motor == null)
-            {
+            if (animator == null)
                 return;
+
+            if (motor != null)
+            {
+                float normalizedSpeed =
+                    motor.MaxMoveSpeed > 0.001f
+                        ? motor.HorizontalSpeed /
+                          motor.MaxMoveSpeed
+                        : 0f;
+
+                animator.SetFloat(
+                    SpeedHash,
+                    normalizedSpeed,
+                    0.1f,
+                    Time.deltaTime
+                );
+
+                animator.SetFloat(
+                    VerticalSpeedHash,
+                    motor.VerticalVelocity
+                );
+
+                animator.SetBool(
+                    GroundedHash,
+                    motor.IsGrounded
+                );
+
+                animator.SetBool(
+                    SprintingHash,
+                    motor.IsSprinting
+                );
             }
-
-
-            float normalizedSpeed =
-                motor.MaxMoveSpeed > 0.001f
-                    ? motor.HorizontalSpeed /
-                      motor.MaxMoveSpeed
-                    : 0f;
-
-
-            animator.SetFloat(
-                SpeedHash,
-                normalizedSpeed,
-                0.1f,
-                Time.deltaTime
-            );
-
-
-            animator.SetFloat(
-                VerticalSpeedHash,
-                motor.VerticalVelocity
-            );
-
-
-            animator.SetBool(
-                GroundedHash,
-                motor.IsGrounded
-            );
-
 
             animator.SetBool(
                 AimingHash,
@@ -181,33 +183,44 @@ namespace ProfessionalTPS
                 input.AimHeld
             );
 
+            animator.SetFloat(
+                AttackSpeedHash,
+                combat != null
+                    ? combat.AttackSpeed
+                    : 1f
+            );
 
             animator.SetBool(
-                SprintingHash,
-                motor.IsSprinting
+                BowDrawingHash,
+                combat != null &&
+                combat.IsBowDrawing
+            );
+
+            animator.SetFloat(
+                BowChargeHash,
+                combat != null
+                    ? combat.BowCharge01
+                    : 0f
             );
         }
-
 
         public void SetCombatMode(
             CombatMode mode)
         {
-            if (animator != null)
-            {
-                animator.SetInteger(
-                    CombatModeHash,
-                    (int)mode
-                );
-            }
-        }
+            if (animator == null)
+                return;
 
+            animator.SetInteger(
+                CombatModeHash,
+                (int)mode
+            );
+        }
 
         public void PlayMeleeAttack(
             int comboIndex)
         {
             if (animator == null)
                 return;
-
 
             switch (comboIndex)
             {
@@ -219,7 +232,6 @@ namespace ProfessionalTPS
 
                     break;
 
-
                 case 1:
 
                     animator.SetTrigger(
@@ -227,7 +239,6 @@ namespace ProfessionalTPS
                     );
 
                     break;
-
 
                 default:
 
@@ -239,48 +250,44 @@ namespace ProfessionalTPS
             }
         }
 
-
         public void PlayBowAttack()
         {
-            if (animator != null)
-            {
-                animator.SetTrigger(
-                    BowAttackHash
-                );
-            }
-        }
+            if (animator == null)
+                return;
 
+            animator.SetTrigger(
+                BowAttackHash
+            );
+        }
 
         public void PlayMagicAttack()
         {
-            if (animator != null)
-            {
-                animator.SetTrigger(
-                    MagicAttackHash
-                );
-            }
-        }
+            if (animator == null)
+                return;
 
+            animator.SetTrigger(
+                MagicAttackHash
+            );
+        }
 
         private void OnJumped()
         {
-            if (animator != null)
-            {
-                animator.SetTrigger(
-                    JumpHash
-                );
-            }
-        }
+            if (animator == null)
+                return;
 
+            animator.SetTrigger(
+                JumpHash
+            );
+        }
 
         private void OnRollStarted()
         {
-            if (animator != null)
-            {
-                animator.SetTrigger(
-                    RollHash
-                );
-            }
+            if (animator == null)
+                return;
+
+            animator.SetTrigger(
+                RollHash
+            );
         }
     }
 }

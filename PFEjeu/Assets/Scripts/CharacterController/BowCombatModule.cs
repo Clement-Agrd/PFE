@@ -1,28 +1,23 @@
 using UnityEngine;
 using Core.HealthSystem;
+using Core.StatsSystem;
 
 namespace ProfessionalTPS
 {
-    public sealed class BowCombatModule : CombatModule
+    public sealed class BowCombatModule :
+        CombatModule
     {
         [Header("Animation")]
-        [Tooltip(
-            "OFF = le projectile part directement au relâchement.\n" +
-            "ON = AE_AttackImpact doit être placé sur la frame où la corde est libérée."
-        )]
         [SerializeField]
         private bool useAnimationEvents = false;
 
         [Header("Charge")]
         [Tooltip(
-            "Temps nécessaire pour atteindre la puissance maximale."
+            "Temps de charge maximale à AttackSpeed = 1."
         )]
         [SerializeField, Min(0.05f)]
         private float fullChargeTime = 1.1f;
 
-        [Tooltip(
-            "Courbe de puissance en fonction du temps de charge."
-        )]
         [SerializeField]
         private AnimationCurve chargeCurve =
             AnimationCurve.EaseInOut(
@@ -32,25 +27,31 @@ namespace ProfessionalTPS
                 1f
             );
 
-        [Header("Vitesse flèche")]
+        [Header("Damage")]
+        [SerializeField, Min(0f)]
+        private float baseDamage = 8f;
+
+        [SerializeField, Min(0f)]
+        private float physicDamageScaling = 1f;
+
+        [Tooltip(
+            "Dégâts d'un tir sans charge par rapport au maximum."
+        )]
+        [SerializeField, Range(0f, 1f)]
+        private float minimumDamageMultiplier = 0.35f;
+
+        [Tooltip(
+            "Assigne ici ton DamageType Physical."
+        )]
+        [SerializeField]
+        private DamageType damageType;
+
+        [Header("Projectile Speed")]
         [SerializeField, Min(0.1f)]
         private float minimumProjectileSpeed = 9f;
 
         [SerializeField, Min(0.1f)]
         private float maximumProjectileSpeed = 38f;
-
-        [Header("Dégâts")]
-        [SerializeField, Min(0)]
-        private int damage = 28;
-
-        [SerializeField]
-        private DamageType damageType;
-
-        [Tooltip(
-            "Dégâts d'un tir instantané par rapport aux dégâts maximum."
-        )]
-        [SerializeField, Range(0f, 1f)]
-        private float minimumDamageMultiplier = 0.35f;
 
         [Header("Projectile")]
         [SerializeField]
@@ -68,7 +69,7 @@ namespace ProfessionalTPS
         [SerializeField, Min(1f)]
         private float aimRange = 180f;
 
-        [Header("Fallback sans projectile")]
+        [Header("Fallback Hitscan")]
         [SerializeField]
         private LayerMask fallbackHitMask = ~0;
 
@@ -84,20 +85,38 @@ namespace ProfessionalTPS
         private float drawingMovementMultiplier = 0.5f;
 
         private float _drawTimer;
+
         private float _recoveryTimer;
 
         private float _pendingCharge;
 
         private bool _released;
 
-        public bool IsDrawing { get; private set; }
+        public bool IsDrawing
+        {
+            get;
+            private set;
+        }
+
+        private float EffectiveFullChargeTime
+        {
+            get
+            {
+                if (Owner == null)
+                    return fullChargeTime;
+
+                return Owner.ScaleAttackTime(
+                    fullChargeTime
+                );
+            }
+        }
 
         public float RawCharge01 =>
             Mathf.Clamp01(
                 _drawTimer /
                 Mathf.Max(
                     0.01f,
-                    fullChargeTime
+                    EffectiveFullChargeTime
                 )
             );
 
@@ -105,13 +124,16 @@ namespace ProfessionalTPS
         {
             get
             {
-                float raw = RawCharge01;
+                float raw =
+                    RawCharge01;
 
                 if (chargeCurve == null)
                     return raw;
 
                 return Mathf.Clamp01(
-                    chargeCurve.Evaluate(raw)
+                    chargeCurve.Evaluate(
+                        raw
+                    )
                 );
             }
         }
@@ -133,12 +155,15 @@ namespace ProfessionalTPS
                 return;
 
             IsBusy = true;
+
             IsDrawing = true;
 
             _drawTimer = 0f;
+
             _recoveryTimer = 0f;
 
             _released = false;
+
             _pendingCharge = 0f;
         }
 
@@ -150,12 +175,11 @@ namespace ProfessionalTPS
                 return;
             }
 
-            _pendingCharge = Charge01;
+            _pendingCharge =
+                Charge01;
 
             IsDrawing = false;
 
-            // Pour l'instant ce Trigger peut servir
-            // d'animation de lâcher de corde.
             Owner?.Animation?.PlayBowAttack();
 
             if (!useAnimationEvents)
@@ -170,29 +194,34 @@ namespace ProfessionalTPS
             if (!IsBusy)
                 return;
 
-            // Tant qu'on garde le bouton appuyé,
-            // la corde reste tendue.
             if (IsDrawing)
             {
-                _drawTimer += deltaTime;
+                _drawTimer +=
+                    deltaTime;
 
                 return;
             }
 
             if (useAnimationEvents)
-            {
-                // L'Animator appellera Impact puis Finished.
                 return;
-            }
 
-            if (_released)
+            if (!_released)
+                return;
+
+            _recoveryTimer +=
+                deltaTime;
+
+            float effectiveRecovery =
+                Owner != null
+                    ? Owner.ScaleAttackTime(
+                        recovery
+                    )
+                    : recovery;
+
+            if (_recoveryTimer >=
+                effectiveRecovery)
             {
-                _recoveryTimer += deltaTime;
-
-                if (_recoveryTimer >= recovery)
-                {
-                    AnimationFinished();
-                }
+                AnimationFinished();
             }
         }
 
@@ -207,7 +236,9 @@ namespace ProfessionalTPS
 
             _released = true;
 
-            Fire(_pendingCharge);
+            Fire(
+                _pendingCharge
+            );
 
             Owner?.Audio?.PlayBowRelease();
         }
@@ -215,12 +246,15 @@ namespace ProfessionalTPS
         public override void AnimationFinished()
         {
             IsBusy = false;
+
             IsDrawing = false;
 
             _drawTimer = 0f;
+
             _recoveryTimer = 0f;
 
             _pendingCharge = 0f;
+
             _released = false;
         }
 
@@ -231,9 +265,11 @@ namespace ProfessionalTPS
             IsDrawing = false;
 
             _drawTimer = 0f;
+
             _recoveryTimer = 0f;
 
             _pendingCharge = 0f;
+
             _released = false;
         }
 
@@ -253,6 +289,12 @@ namespace ProfessionalTPS
                       Vector3.up * 1.4f +
                       Owner.transform.forward * 0.5f;
 
+            Vector3 direction =
+                Owner.GetAimDirection(
+                    origin,
+                    aimRange
+                );
+
             float projectileSpeed =
                 Mathf.Lerp(
                     minimumProjectileSpeed,
@@ -260,7 +302,14 @@ namespace ProfessionalTPS
                     charge
                 );
 
-            float damageMultiplier =
+            int maximumDamage =
+                Owner.CalculateDamage(
+                    EnumStats.StatTypes.PhysicDamage,
+                    baseDamage,
+                    physicDamageScaling
+                );
+
+            float chargeDamageMultiplier =
                 Mathf.Lerp(
                     minimumDamageMultiplier,
                     1f,
@@ -271,20 +320,10 @@ namespace ProfessionalTPS
                 Mathf.Max(
                     1,
                     Mathf.RoundToInt(
-                        damage *
-                        damageMultiplier
+                        maximumDamage *
+                        chargeDamageMultiplier
                     )
                 );
-
-            Vector3 direction =
-                Owner.GetAimDirection(
-                    origin,
-                    aimRange
-                );
-
-            // ========================================================
-            // VRAIE FLECHE
-            // ========================================================
 
             if (projectilePrefab != null)
             {
@@ -310,11 +349,7 @@ namespace ProfessionalTPS
                 return;
             }
 
-            // ========================================================
-            // MODE TEST HITSCAN
-            // ========================================================
-
-            float testRange =
+            float fallbackRange =
                 Mathf.Lerp(
                     minimumFallbackRange,
                     aimRange,
@@ -324,7 +359,7 @@ namespace ProfessionalTPS
             TryHitscan(
                 origin,
                 direction,
-                testRange,
+                fallbackRange,
                 finalDamage
             );
         }
@@ -344,6 +379,9 @@ namespace ProfessionalTPS
                     QueryTriggerInteraction.Ignore
                 );
 
+            if (hits.Length == 0)
+                return;
+
             float nearestDistance =
                 float.PositiveInfinity;
 
@@ -352,9 +390,7 @@ namespace ProfessionalTPS
 
             bool found = false;
 
-            for (int i = 0;
-                 i < hits.Length;
-                 i++)
+            for (int i = 0; i < hits.Length; i++)
             {
                 RaycastHit hit =
                     hits[i];
@@ -363,21 +399,24 @@ namespace ProfessionalTPS
                     continue;
 
                 if (hit.transform.IsChildOf(
-                    Owner.transform))
+                        Owner.transform))
                 {
                     continue;
                 }
 
-                if (hit.distance <
+                if (hit.distance >=
                     nearestDistance)
                 {
-                    nearestDistance =
-                        hit.distance;
-
-                    nearestHit = hit;
-
-                    found = true;
+                    continue;
                 }
+
+                nearestDistance =
+                    hit.distance;
+
+                nearestHit =
+                    hit;
+
+                found = true;
             }
 
             if (!found)
@@ -413,13 +452,11 @@ namespace ProfessionalTPS
                 return null;
 
             MonoBehaviour[] behaviours =
-                collider.GetComponentsInParent<MonoBehaviour>(
-                    true
-                );
+                collider.GetComponentsInParent<
+                    MonoBehaviour
+                >(true);
 
-            for (int i = 0;
-                 i < behaviours.Length;
-                 i++)
+            for (int i = 0; i < behaviours.Length; i++)
             {
                 if (behaviours[i]
                     is IDamageable damageable)

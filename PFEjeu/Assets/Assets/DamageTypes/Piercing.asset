@@ -12,5 +12,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6228ecdb83825544e83104afb399724a, type: 3}
   m_Name: Piercing
   m_EditorClassIdentifier: Assembly-CSharp::Core.HealthSystem.DamageType
-  id: 
-  displayName: 
+  id: Physical
+  displayName: Physical
+  category: 0

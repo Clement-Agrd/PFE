@@ -1,26 +1,56 @@
 using System;
 using UnityEngine;
+using Core.StatsSystem;
 
 namespace ProfessionalTPS
 {
+    using StatType = EnumStats.StatTypes;
+
     [DisallowMultipleComponent]
     public sealed class PlayerCombatController : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private PlayerInputReader input;
-        [SerializeField] private ThirdPersonMotor motor;
-        [SerializeField] private Camera aimCamera;
-        [SerializeField] private PlayerAnimationBridge animationBridge;
-        [SerializeField] private PlayerAudioBridge audioBridge;
+        [SerializeField]
+        private PlayerInputReader input;
+
+        [SerializeField]
+        private ThirdPersonMotor motor;
+
+        [SerializeField]
+        private Camera aimCamera;
+
+        [SerializeField]
+        private PlayerAnimationBridge animationBridge;
+
+        [SerializeField]
+        private PlayerAudioBridge audioBridge;
+
+        [SerializeField]
+        private EntityStats stats;
 
         [Header("Combat Modules")]
-        [SerializeField] private MeleeCombatModule melee;
-        [SerializeField] private BowCombatModule bow;
-        [SerializeField] private MagicCombatModule magic;
+        [SerializeField]
+        private MeleeCombatModule melee;
+
+        [SerializeField]
+        private BowCombatModule bow;
+
+        [SerializeField]
+        private MagicCombatModule magic;
 
         [Header("Aiming")]
-        [SerializeField] private LayerMask aimMask = ~0;
-        [SerializeField, Min(1f)] private float defaultAimRange = 200f;
+        [SerializeField]
+        private LayerMask aimMask = ~0;
+
+        [SerializeField, Min(1f)]
+        private float defaultAimRange = 200f;
+
+        [Header("Attack Speed Safety")]
+        [SerializeField, Min(0.01f)]
+        private float minimumAttackSpeed = 0.1f;
+
+        [SerializeField, Min(0.1f)]
+        private float maximumAttackSpeed = 5f;
 
         private CombatModule _active;
 
@@ -39,10 +69,14 @@ namespace ProfessionalTPS
                 : 1f;
 
         public bool ShouldFaceCamera =>
-            (input != null && input.AimHeld) ||
-            (_active != null &&
-             _active.IsBusy &&
-             _active.FaceCameraWhileBusy);
+            (input != null &&
+             input.AimHeld)
+            ||
+            (
+                _active != null &&
+                _active.IsBusy &&
+                _active.FaceCameraWhileBusy
+            );
 
         public bool CanRoll =>
             _active == null ||
@@ -64,6 +98,9 @@ namespace ProfessionalTPS
         public LayerMask AimMask =>
             aimMask;
 
+        public EntityStats Stats =>
+            stats;
+
         public bool IsBowDrawing =>
             bow != null &&
             bow.IsDrawing;
@@ -73,10 +110,45 @@ namespace ProfessionalTPS
                 ? bow.Charge01
                 : 0f;
 
-        public event Action<CombatMode> ModeChanged;
+        /// <summary>
+        /// 1 = vitesse normale
+        /// 1.25 = +25 %
+        /// 2 = deux fois plus rapide
+        /// </summary>
+        public float AttackSpeed
+        {
+            get
+            {
+                if (stats == null)
+                    return 1f;
+
+                return Mathf.Clamp(
+                    stats.GetStat(
+                        StatType.AttackSpeed
+                    ),
+                    minimumAttackSpeed,
+                    maximumAttackSpeed
+                );
+            }
+        }
+
+        public event Action<CombatMode>
+            ModeChanged;
 
         private void Awake()
         {
+            if (stats == null)
+            {
+                stats =
+                    GetComponent<EntityStats>();
+            }
+
+            if (stats == null)
+            {
+                stats =
+                    GetComponentInParent<EntityStats>();
+            }
+
             melee?.Initialize(this);
             bow?.Initialize(this);
             magic?.Initialize(this);
@@ -87,7 +159,11 @@ namespace ProfessionalTPS
                 magic;
 
             if (_active != null)
-                animationBridge?.SetCombatMode(_active.Mode);
+            {
+                animationBridge?.SetCombatMode(
+                    _active.Mode
+                );
+            }
         }
 
         private void OnEnable()
@@ -95,12 +171,20 @@ namespace ProfessionalTPS
             if (input == null)
                 return;
 
-            input.AttackPressed += OnAttackPressed;
-            input.AttackReleased += OnAttackReleased;
+            input.AttackPressed +=
+                OnAttackPressed;
 
-            input.SelectMeleePressed += SelectMelee;
-            input.SelectBowPressed += SelectBow;
-            input.SelectMagicPressed += SelectMagic;
+            input.AttackReleased +=
+                OnAttackReleased;
+
+            input.SelectMeleePressed +=
+                SelectMelee;
+
+            input.SelectBowPressed +=
+                SelectBow;
+
+            input.SelectMagicPressed +=
+                SelectMagic;
         }
 
         private void OnDisable()
@@ -108,17 +192,27 @@ namespace ProfessionalTPS
             if (input == null)
                 return;
 
-            input.AttackPressed -= OnAttackPressed;
-            input.AttackReleased -= OnAttackReleased;
+            input.AttackPressed -=
+                OnAttackPressed;
 
-            input.SelectMeleePressed -= SelectMelee;
-            input.SelectBowPressed -= SelectBow;
-            input.SelectMagicPressed -= SelectMagic;
+            input.AttackReleased -=
+                OnAttackReleased;
+
+            input.SelectMeleePressed -=
+                SelectMelee;
+
+            input.SelectBowPressed -=
+                SelectBow;
+
+            input.SelectMagicPressed -=
+                SelectMagic;
         }
 
         private void Update()
         {
-            _active?.Tick(Time.deltaTime);
+            _active?.Tick(
+                Time.deltaTime
+            );
         }
 
         private void OnAttackPressed()
@@ -138,13 +232,19 @@ namespace ProfessionalTPS
         }
 
         public void SelectMelee()
-            => TrySwitch(melee);
+        {
+            TrySwitch(melee);
+        }
 
         public void SelectBow()
-            => TrySwitch(bow);
+        {
+            TrySwitch(bow);
+        }
 
         public void SelectMagic()
-            => TrySwitch(magic);
+        {
+            TrySwitch(magic);
+        }
 
         private void TrySwitch(
             CombatModule target)
@@ -171,6 +271,53 @@ namespace ProfessionalTPS
 
             ModeChanged?.Invoke(
                 _active.Mode
+            );
+        }
+
+        /// <summary>
+        /// Convertit un timing normal
+        /// selon AttackSpeed.
+        ///
+        /// 1.0 :
+        /// 1 sec -> 1 sec
+        ///
+        /// 2.0 :
+        /// 1 sec -> 0.5 sec
+        /// </summary>
+        public float ScaleAttackTime(
+            float normalDuration)
+        {
+            return normalDuration /
+                   AttackSpeed;
+        }
+
+        /// <summary>
+        /// Dégâts =
+        /// baseDamage +
+        /// stat offensive × scaling
+        /// </summary>
+        public int CalculateDamage(
+            StatType offensiveStat,
+            float baseDamage,
+            float statScaling)
+        {
+            float statValue =
+                stats != null
+                    ? stats.GetStat(
+                        offensiveStat
+                    )
+                    : 0f;
+
+            float damage =
+                baseDamage +
+                statValue *
+                statScaling;
+
+            return Mathf.Max(
+                0,
+                Mathf.RoundToInt(
+                    damage
+                )
             );
         }
 
@@ -207,13 +354,16 @@ namespace ProfessionalTPS
                     aimMask,
                     QueryTriggerInteraction.Ignore))
             {
-                targetPoint = hit.point;
+                targetPoint =
+                    hit.point;
             }
 
             Vector3 direction =
-                targetPoint - origin;
+                targetPoint -
+                origin;
 
-            return direction.sqrMagnitude > 0.001f
+            return direction.sqrMagnitude >
+                   0.001f
                 ? direction.normalized
                 : transform.forward;
         }

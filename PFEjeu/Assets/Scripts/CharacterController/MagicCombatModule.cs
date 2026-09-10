@@ -1,31 +1,31 @@
 using UnityEngine;
 using Core.HealthSystem;
+using Core.StatsSystem;
 
 namespace ProfessionalTPS
 {
-    public sealed class MagicCombatModule : CombatModule
+    public sealed class MagicCombatModule :
+        CombatModule
     {
         [Header("Prototype / Animation")]
-        [Tooltip(
-            "OFF = lancement du sort géré par timer.\n" +
-            "ON = l'animation doit appeler AE_AttackImpact et AE_AttackFinished."
-        )]
         [SerializeField]
         private bool useAnimationEvents = false;
 
         [SerializeField, Min(0f)]
-        private float castDelay = 0.30f;
+        private float castDelay = 0.3f;
 
         [SerializeField, Min(0f)]
-        private float recovery = 0.40f;
+        private float recovery = 0.4f;
 
-        [Header("Dégâts")]
-        [SerializeField, Min(0)]
-        private int damage = 35;
+        [Header("Damage")]
+        [SerializeField, Min(0f)]
+        private float baseDamage = 12f;
+
+        [SerializeField, Min(0f)]
+        private float magicDamageScaling = 1f;
 
         [Tooltip(
-            "Type de dégâts du sort. " +
-            "Exemple : Fire, Ice, Arcane..."
+            "Assigne ici ton DamageType Magic."
         )]
         [SerializeField]
         private DamageType damageType;
@@ -34,20 +34,12 @@ namespace ProfessionalTPS
         [SerializeField]
         private Transform castOrigin;
 
-        [Tooltip(
-            "Prefab contenant CombatProjectile. " +
-            "Peut rester vide pendant le prototype."
-        )]
         [SerializeField]
         private CombatProjectile projectilePrefab;
 
         [SerializeField, Min(0.1f)]
         private float projectileSpeed = 24f;
 
-        [Tooltip(
-            "0 = projectile droit.\n" +
-            "Valeur négative = projectile affecté par la gravité."
-        )]
         [SerializeField]
         private float projectileGravity = 0f;
 
@@ -57,19 +49,16 @@ namespace ProfessionalTPS
         [SerializeField, Min(1f)]
         private float aimRange = 150f;
 
-        [Header("Fallback sans prefab")]
-        [Tooltip(
-            "Si Projectile Prefab est vide, " +
-            "le sort utilise temporairement un Raycast."
-        )]
+        [Header("Fallback Hitscan")]
         [SerializeField]
         private LayerMask fallbackHitMask = ~0;
 
-        [Header("Déplacement pendant l'attaque")]
+        [Header("Movement")]
         [SerializeField, Range(0f, 1f)]
         private float attackMovementMultiplier = 0.4f;
 
         private float _timer;
+
         private bool _released;
 
         public override CombatMode Mode =>
@@ -91,6 +80,7 @@ namespace ProfessionalTPS
             IsBusy = true;
 
             _timer = 0f;
+
             _released = false;
 
             Owner?.Animation?.PlayMagicAttack();
@@ -107,14 +97,29 @@ namespace ProfessionalTPS
             if (useAnimationEvents)
                 return;
 
+            float effectiveCastDelay =
+                Owner != null
+                    ? Owner.ScaleAttackTime(
+                        castDelay
+                    )
+                    : castDelay;
+
+            float effectiveRecovery =
+                Owner != null
+                    ? Owner.ScaleAttackTime(
+                        recovery
+                    )
+                    : recovery;
+
             if (!_released &&
-                _timer >= castDelay)
+                _timer >= effectiveCastDelay)
             {
                 AnimationImpact();
             }
 
             if (_timer >=
-                castDelay + recovery)
+                effectiveCastDelay +
+                effectiveRecovery)
             {
                 AnimationFinished();
             }
@@ -122,8 +127,11 @@ namespace ProfessionalTPS
 
         public override void AnimationImpact()
         {
-            if (!IsBusy || _released)
+            if (!IsBusy ||
+                _released)
+            {
                 return;
+            }
 
             _released = true;
 
@@ -137,6 +145,7 @@ namespace ProfessionalTPS
             IsBusy = false;
 
             _timer = 0f;
+
             _released = false;
         }
 
@@ -145,6 +154,7 @@ namespace ProfessionalTPS
             base.Cancel();
 
             _timer = 0f;
+
             _released = false;
         }
 
@@ -166,9 +176,12 @@ namespace ProfessionalTPS
                     aimRange
                 );
 
-            // -----------------------------------
-            // Vrai projectile magique
-            // -----------------------------------
+            int finalDamage =
+                Owner.CalculateDamage(
+                    EnumStats.StatTypes.MagicDamage,
+                    baseDamage,
+                    magicDamageScaling
+                );
 
             if (projectilePrefab != null)
             {
@@ -184,7 +197,7 @@ namespace ProfessionalTPS
                 projectile.Launch(
                     direction,
                     Owner.gameObject,
-                    damage,
+                    finalDamage,
                     projectileSpeed,
                     projectileGravity,
                     projectileLifetime,
@@ -194,19 +207,17 @@ namespace ProfessionalTPS
                 return;
             }
 
-            // -----------------------------------
-            // Prototype sans prefab
-            // -----------------------------------
-
             TryHitscan(
                 origin,
-                direction
+                direction,
+                finalDamage
             );
         }
 
         private void TryHitscan(
             Vector3 origin,
-            Vector3 direction)
+            Vector3 direction,
+            int finalDamage)
         {
             RaycastHit[] hits =
                 Physics.RaycastAll(
@@ -226,12 +237,9 @@ namespace ProfessionalTPS
             RaycastHit nearestHit =
                 default;
 
-            bool found =
-                false;
+            bool found = false;
 
-            for (int i = 0;
-                 i < hits.Length;
-                 i++)
+            for (int i = 0; i < hits.Length; i++)
             {
                 RaycastHit hit =
                     hits[i];
@@ -239,25 +247,25 @@ namespace ProfessionalTPS
                 if (hit.collider == null)
                     continue;
 
-                // Ignore le lanceur.
                 if (hit.transform.IsChildOf(
-                    Owner.transform))
+                        Owner.transform))
                 {
                     continue;
                 }
 
-                if (hit.distance <
+                if (hit.distance >=
                     nearestDistance)
                 {
-                    nearestDistance =
-                        hit.distance;
-
-                    nearestHit =
-                        hit;
-
-                    found =
-                        true;
+                    continue;
                 }
+
+                nearestDistance =
+                    hit.distance;
+
+                nearestHit =
+                    hit;
+
+                found = true;
             }
 
             if (!found)
@@ -274,15 +282,15 @@ namespace ProfessionalTPS
                 return;
             }
 
-            DamageInfo damageInfo =
+            DamageInfo info =
                 new DamageInfo(
-                    damage,
+                    finalDamage,
                     damageType,
                     Owner.gameObject
                 );
 
             damageable.TakeDamage(
-                in damageInfo
+                in info
             );
         }
 
@@ -293,13 +301,11 @@ namespace ProfessionalTPS
                 return null;
 
             MonoBehaviour[] behaviours =
-                collider.GetComponentsInParent<MonoBehaviour>(
-                    true
-                );
+                collider.GetComponentsInParent<
+                    MonoBehaviour
+                >(true);
 
-            for (int i = 0;
-                 i < behaviours.Length;
-                 i++)
+            for (int i = 0; i < behaviours.Length; i++)
             {
                 if (behaviours[i]
                     is IDamageable damageable)
