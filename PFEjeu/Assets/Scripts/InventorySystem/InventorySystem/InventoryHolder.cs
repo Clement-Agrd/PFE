@@ -4,10 +4,6 @@ using UnityEngine;
 
 namespace Core.InventorySystem
 {
-    /// <summary>
-    /// Pont Unity : possède un Inventory, l'expose au reste du jeu, et le remplit
-    /// avec des items de départ définis dans l'Inspector.
-    /// </summary>
     public sealed class InventoryHolder : MonoBehaviour
     {
         [Serializable]
@@ -20,7 +16,6 @@ namespace Core.InventorySystem
         [SerializeField, Min(1)] private int capacity = 20;
         [SerializeField] private List<StartingItem> startingItems = new();
 
-        /// <summary>Le moteur d'inventaire. Disponible dès Awake.</summary>
         public Inventory Inventory { get; private set; }
 
         private void Awake()

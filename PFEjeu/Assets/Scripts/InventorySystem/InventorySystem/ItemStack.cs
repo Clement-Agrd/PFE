@@ -3,11 +3,6 @@ using UnityEngine;
 
 namespace Core.InventorySystem
 {
-    /// <summary>
-    /// Pile runtime : un type d'item (Definition) + une quantité. C'est ce qui
-    /// occupe un slot d'inventaire. La mutation passe par des méthodes contrôlées
-    /// (jamais de setter public sur quantity) pour garder les invariants.
-    /// </summary>
     [Serializable]
     public sealed class ItemStack
     {
@@ -27,7 +22,6 @@ namespace Core.InventorySystem
         public int SpaceLeft => definition == null ? 0 : definition.MaxStackSize - quantity;
         public bool IsFull => definition != null && quantity >= definition.MaxStackSize;
 
-        /// <summary>Ajoute jusqu'à 'amount'. Renvoie ce qui n'a PAS tenu (débordement).</summary>
         public int Add(int amount)
         {
             if (definition == null || amount <= 0) return amount;
@@ -37,7 +31,6 @@ namespace Core.InventorySystem
             return amount - accepted;
         }
 
-        /// <summary>Retire jusqu'à 'amount'. Renvoie la quantité réellement retirée.</summary>
         public int Remove(int amount)
         {
             if (amount <= 0) return 0;
