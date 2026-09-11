@@ -3,9 +3,7 @@ using UnityEngine;
 
 public class Tower : MonoBehaviour
 {
-    [SerializeField] private GameObject level1;
-    [SerializeField] private GameObject level2;
-    [SerializeField] private GameObject level3;
+    public int Level;
     
     // Zone de tire
     private void OnTriggerEnter(Collider other)
