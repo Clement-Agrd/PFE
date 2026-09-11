@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 3491176890352675715}
   - component: {fileID: -7563409891209372561}
   m_Layer: 0
-  m_Name: Wood
+  m_Name: Pierre
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -190,5 +190,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ed80305d6e30bb47b1701f1dca31913, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.InventorySystem.ItemPickup
-  Definition: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+  Definition: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
   Quantity: 1

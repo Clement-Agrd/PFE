@@ -12,7 +12,9 @@ namespace Core.InventorySystem
         
         [Header("Monde 3D")]
         [field: SerializeField] public GameObject WorldPrefab { get; private set; }
-
+       
+        [SerializeField] private string interactionVerb = "Ramasser";
+        public string InteractionVerb => string.IsNullOrEmpty(interactionVerb) ? "Ramasser" : interactionVerb;
         public bool IsStackable => MaxStackSize > 1;
     }
 }
