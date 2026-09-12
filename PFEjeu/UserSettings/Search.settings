@@ -15,7 +15,7 @@ scopes = {
 	"picker_window_position_offset.00000000" = "38,39996;37,6;320;550,4"
 >>>>>>> 95bf33d (ajout inventaire non opé)
 	"picker_visibility_flags.00000000" = "0"
-	"picker_item_size.00000000" = "32"
+	"picker_item_size.00000000" = "1"
 	"picker_inspector.00000000" = "0"
 }
 providers = {
