@@ -343,7 +343,8 @@ namespace ProfessionalTPS
                     projectileSpeed,
                     projectileGravity,
                     projectileLifetime,
-                    damageType
+                    damageType,
+                    DamageSourceKind.Bow
                 );
 
                 return;
@@ -437,7 +438,8 @@ namespace ProfessionalTPS
                 new DamageInfo(
                     finalDamage,
                     damageType,
-                    Owner.gameObject
+                    Owner.gameObject,
+                    DamageSourceKind.Bow
                 );
 
             damageable.TakeDamage(

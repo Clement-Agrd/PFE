@@ -51,6 +51,12 @@ namespace ProfessionalTPS
 
         [SerializeField, Min(0.1f)]
         private float maximumAttackSpeed = 5f;
+        
+        [SerializeField]
+        private GatheringToolCombatModule axe;
+
+        [SerializeField]
+        private GatheringToolCombatModule pickaxe;
 
         private CombatModule _active;
 
@@ -152,6 +158,8 @@ namespace ProfessionalTPS
             melee?.Initialize(this);
             bow?.Initialize(this);
             magic?.Initialize(this);
+            axe?.Initialize(this);
+            pickaxe?.Initialize(this);
 
             _active =
                 melee != null ? melee :
@@ -185,6 +193,12 @@ namespace ProfessionalTPS
 
             input.SelectMagicPressed +=
                 SelectMagic;
+            
+            input.SelectAxePressed +=
+                SelectAxe;
+
+            input.SelectPickaxePressed +=
+                SelectPickaxe;
         }
 
         private void OnDisable()
@@ -206,6 +220,12 @@ namespace ProfessionalTPS
 
             input.SelectMagicPressed -=
                 SelectMagic;
+            
+            input.SelectAxePressed -=
+                SelectAxe;
+
+            input.SelectPickaxePressed -=
+                SelectPickaxe;
         }
 
         private void Update()
@@ -244,6 +264,16 @@ namespace ProfessionalTPS
         public void SelectMagic()
         {
             TrySwitch(magic);
+        }
+        
+        public void SelectAxe()
+        {
+            TrySwitch(axe);
+        }
+
+        public void SelectPickaxe()
+        {
+            TrySwitch(pickaxe);
         }
 
         private void TrySwitch(

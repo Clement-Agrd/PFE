@@ -6,25 +6,53 @@ namespace ProfessionalTPS
     {
         Melee = 0,
         Bow = 1,
-        Magic = 2
+        Magic = 2,
+
+        Axe = 3,
+        Pickaxe = 4
     }
 
-    public abstract class CombatModule : MonoBehaviour
+
+    public abstract class CombatModule :
+        MonoBehaviour
     {
-        protected PlayerCombatController Owner { get; private set; }
+        protected PlayerCombatController Owner
+        {
+            get;
+            private set;
+        }
 
-        public abstract CombatMode Mode { get; }
 
-        public bool IsBusy { get; protected set; }
+        public abstract CombatMode Mode
+        {
+            get;
+        }
+
+
+        public bool IsBusy
+        {
+            get;
+            protected set;
+        }
+
 
         public virtual float MovementMultiplier =>
-            IsBusy ? 0.45f : 1f;
+            IsBusy
+                ? 0.45f
+                : 1f;
 
-        public virtual bool FaceCameraWhileBusy => false;
 
-        public virtual bool CanRoll => !IsBusy;
+        public virtual bool FaceCameraWhileBusy =>
+            false;
 
-        public virtual bool CanJump => !IsBusy;
+
+        public virtual bool CanRoll =>
+            !IsBusy;
+
+
+        public virtual bool CanJump =>
+            !IsBusy;
+
 
         public virtual void Initialize(
             PlayerCombatController owner)
@@ -32,26 +60,29 @@ namespace ProfessionalTPS
             Owner = owner;
         }
 
+
         public abstract void AttackPressed();
 
-        /// <summary>
-        /// Utilisé principalement par les armes
-        /// qui ont une mécanique de charge.
-        /// </summary>
+
         public virtual void AttackReleased()
         {
         }
 
-        public abstract void Tick(float deltaTime);
+
+        public abstract void Tick(
+            float deltaTime);
+
 
         public virtual void AnimationImpact()
         {
         }
 
+
         public virtual void AnimationFinished()
         {
             IsBusy = false;
         }
+
 
         public virtual void Cancel()
         {
