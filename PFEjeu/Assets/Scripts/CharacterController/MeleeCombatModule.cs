@@ -371,7 +371,8 @@ namespace ProfessionalTPS
                     new DamageInfo(
                         finalDamage,
                         damageType,
-                        Owner.gameObject
+                        Owner.gameObject,
+                        DamageSourceKind.Sword
                     );
 
                 damageable.TakeDamage(

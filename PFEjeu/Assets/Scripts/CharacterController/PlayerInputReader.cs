@@ -4,60 +4,116 @@ using UnityEngine.InputSystem;
 
 namespace ProfessionalTPS
 {
-    public sealed class PlayerInputReader : MonoBehaviour
+    public sealed class PlayerInputReader :
+        MonoBehaviour
     {
-        [Header("Input Actions")]
-        [SerializeField] private InputActionReference move;
-        [SerializeField] private InputActionReference look;
-        [SerializeField] private InputActionReference jump;
-        [SerializeField] private InputActionReference roll;
-        [SerializeField] private InputActionReference sprint;
-        [SerializeField] private InputActionReference attack;
-        [SerializeField] private InputActionReference aim;
-        [SerializeField] private InputActionReference selectMelee;
-        [SerializeField] private InputActionReference selectBow;
-        [SerializeField] private InputActionReference selectMagic;
+        [Header("Movement")]
+
+        [SerializeField]
+        private InputActionReference move;
+
+        [SerializeField]
+        private InputActionReference look;
+
+        [SerializeField]
+        private InputActionReference jump;
+
+        [SerializeField]
+        private InputActionReference roll;
+
+        [SerializeField]
+        private InputActionReference sprint;
+
+
+        [Header("Combat")]
+
+        [SerializeField]
+        private InputActionReference attack;
+
+        [SerializeField]
+        private InputActionReference aim;
+
+
+        [Header("Equipment Selection")]
+
+        [SerializeField]
+        private InputActionReference selectMelee;
+
+        [SerializeField]
+        private InputActionReference selectBow;
+
+        [SerializeField]
+        private InputActionReference selectMagic;
+
+        [SerializeField]
+        private InputActionReference selectAxe;
+
+        [SerializeField]
+        private InputActionReference selectPickaxe;
+
 
         public Vector2 Move =>
             move != null
                 ? move.action.ReadValue<Vector2>()
                 : Vector2.zero;
 
+
         public Vector2 Look =>
             look != null
                 ? look.action.ReadValue<Vector2>()
                 : Vector2.zero;
 
+
         public bool AimHeld =>
             aim != null &&
             aim.action.IsPressed();
 
+
         public bool SprintHeld =>
             sprint != null &&
             sprint.action.IsPressed();
+
 
         public bool LookIsPointerDelta =>
             look != null &&
             look.action.activeControl != null &&
             look.action.activeControl.device is Pointer;
 
+
         public event Action JumpPressed;
+
         public event Action RollPressed;
 
         public event Action AttackPressed;
+
         public event Action AttackReleased;
 
         public event Action SelectMeleePressed;
+
         public event Action SelectBowPressed;
+
         public event Action SelectMagicPressed;
+
+        public event Action SelectAxePressed;
+
+        public event Action SelectPickaxePressed;
+
 
         private void OnEnable()
         {
             Enable(move);
+
             Enable(look);
 
-            BindPressed(jump, OnJump);
-            BindPressed(roll, OnRoll);
+            BindPressed(
+                jump,
+                OnJump
+            );
+
+            BindPressed(
+                roll,
+                OnRoll
+            );
 
             Enable(sprint);
 
@@ -65,18 +121,48 @@ namespace ProfessionalTPS
 
             Enable(aim);
 
-            BindPressed(selectMelee, OnSelectMelee);
-            BindPressed(selectBow, OnSelectBow);
-            BindPressed(selectMagic, OnSelectMagic);
+            BindPressed(
+                selectMelee,
+                OnSelectMelee
+            );
+
+            BindPressed(
+                selectBow,
+                OnSelectBow
+            );
+
+            BindPressed(
+                selectMagic,
+                OnSelectMagic
+            );
+
+            BindPressed(
+                selectAxe,
+                OnSelectAxe
+            );
+
+            BindPressed(
+                selectPickaxe,
+                OnSelectPickaxe
+            );
         }
+
 
         private void OnDisable()
         {
             Disable(move);
+
             Disable(look);
 
-            UnbindPressed(jump, OnJump);
-            UnbindPressed(roll, OnRoll);
+            UnbindPressed(
+                jump,
+                OnJump
+            );
+
+            UnbindPressed(
+                roll,
+                OnRoll
+            );
 
             Disable(sprint);
 
@@ -84,44 +170,86 @@ namespace ProfessionalTPS
 
             Disable(aim);
 
-            UnbindPressed(selectMelee, OnSelectMelee);
-            UnbindPressed(selectBow, OnSelectBow);
-            UnbindPressed(selectMagic, OnSelectMagic);
+            UnbindPressed(
+                selectMelee,
+                OnSelectMelee
+            );
+
+            UnbindPressed(
+                selectBow,
+                OnSelectBow
+            );
+
+            UnbindPressed(
+                selectMagic,
+                OnSelectMagic
+            );
+
+            UnbindPressed(
+                selectAxe,
+                OnSelectAxe
+            );
+
+            UnbindPressed(
+                selectPickaxe,
+                OnSelectPickaxe
+            );
         }
+
 
         private void BindAttack()
         {
             if (attack == null)
                 return;
 
-            attack.action.performed += OnAttackPressed;
-            attack.action.canceled += OnAttackReleased;
+
+            attack.action.performed +=
+                OnAttackPressed;
+
+            attack.action.canceled +=
+                OnAttackReleased;
+
 
             attack.action.Enable();
         }
+
 
         private void UnbindAttack()
         {
             if (attack == null)
                 return;
 
-            attack.action.performed -= OnAttackPressed;
-            attack.action.canceled -= OnAttackReleased;
+
+            attack.action.performed -=
+                OnAttackPressed;
+
+            attack.action.canceled -=
+                OnAttackReleased;
+
 
             attack.action.Disable();
         }
 
-        private static void Enable(InputActionReference reference)
+
+        private static void Enable(
+            InputActionReference reference)
         {
             if (reference != null)
+            {
                 reference.action.Enable();
+            }
         }
 
-        private static void Disable(InputActionReference reference)
+
+        private static void Disable(
+            InputActionReference reference)
         {
             if (reference != null)
+            {
                 reference.action.Disable();
+            }
         }
+
 
         private static void BindPressed(
             InputActionReference reference,
@@ -130,9 +258,14 @@ namespace ProfessionalTPS
             if (reference == null)
                 return;
 
-            reference.action.performed += callback;
+
+            reference.action.performed +=
+                callback;
+
+
             reference.action.Enable();
         }
+
 
         private static void UnbindPressed(
             InputActionReference reference,
@@ -141,29 +274,75 @@ namespace ProfessionalTPS
             if (reference == null)
                 return;
 
-            reference.action.performed -= callback;
+
+            reference.action.performed -=
+                callback;
+
+
             reference.action.Disable();
         }
 
-        private void OnJump(InputAction.CallbackContext _)
-            => JumpPressed?.Invoke();
 
-        private void OnRoll(InputAction.CallbackContext _)
-            => RollPressed?.Invoke();
+        private void OnJump(
+            InputAction.CallbackContext _)
+        {
+            JumpPressed?.Invoke();
+        }
 
-        private void OnAttackPressed(InputAction.CallbackContext _)
-            => AttackPressed?.Invoke();
 
-        private void OnAttackReleased(InputAction.CallbackContext _)
-            => AttackReleased?.Invoke();
+        private void OnRoll(
+            InputAction.CallbackContext _)
+        {
+            RollPressed?.Invoke();
+        }
 
-        private void OnSelectMelee(InputAction.CallbackContext _)
-            => SelectMeleePressed?.Invoke();
 
-        private void OnSelectBow(InputAction.CallbackContext _)
-            => SelectBowPressed?.Invoke();
+        private void OnAttackPressed(
+            InputAction.CallbackContext _)
+        {
+            AttackPressed?.Invoke();
+        }
 
-        private void OnSelectMagic(InputAction.CallbackContext _)
-            => SelectMagicPressed?.Invoke();
+
+        private void OnAttackReleased(
+            InputAction.CallbackContext _)
+        {
+            AttackReleased?.Invoke();
+        }
+
+
+        private void OnSelectMelee(
+            InputAction.CallbackContext _)
+        {
+            SelectMeleePressed?.Invoke();
+        }
+
+
+        private void OnSelectBow(
+            InputAction.CallbackContext _)
+        {
+            SelectBowPressed?.Invoke();
+        }
+
+
+        private void OnSelectMagic(
+            InputAction.CallbackContext _)
+        {
+            SelectMagicPressed?.Invoke();
+        }
+
+
+        private void OnSelectAxe(
+            InputAction.CallbackContext _)
+        {
+            SelectAxePressed?.Invoke();
+        }
+
+
+        private void OnSelectPickaxe(
+            InputAction.CallbackContext _)
+        {
+            SelectPickaxePressed?.Invoke();
+        }
     }
 }

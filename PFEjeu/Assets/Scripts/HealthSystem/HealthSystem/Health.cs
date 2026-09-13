@@ -6,29 +6,29 @@ namespace Core.HealthSystem
 {
     using StatType = EnumStats.StatTypes;
 
-    /// <summary>
-    /// Vie d'une entité.
-    ///
-    /// Si EntityStats est présent :
-    /// - Life définit les PV max
-    /// - DefensePhysic réduit les dégâts physiques
-    /// - DefenseMagic réduit les dégâts magiques
-    ///
-    /// Le composant fonctionne également sans EntityStats
-    /// grâce à maxHealth comme valeur fallback.
-    /// </summary>
     public sealed class Health :
         MonoBehaviour,
         IDamageable,
         IHealable
     {
+        // ============================================================
+        // STATS
+        // ============================================================
+
         [Header("Stats")]
+
         [SerializeField]
         private EntityStats stats;
 
+
+        // ============================================================
+        // LIFE
+        // ============================================================
+
         [Header("Vie - Fallback")]
+
         [Tooltip(
-            "Utilisé comme PV max uniquement lorsqu'aucun EntityStats n'est présent."
+            "Utilisé uniquement si aucun EntityStats n'est présent."
         )]
         [SerializeField, Min(1)]
         private int maxHealth = 100;
@@ -39,25 +39,39 @@ namespace Core.HealthSystem
         [SerializeField, Min(0)]
         private int startHealth = 100;
 
+
+        // ============================================================
+        // DEFENSE
+        // ============================================================
+
         [Header("Défense")]
+
         [Tooltip(
-            "Constante de la formule de réduction.\n" +
-            "Avec 100 : 100 Defense = 50 % de dégâts reçus."
+            "100 signifie que 100 points de défense réduisent les dégâts de moitié."
         )]
         [SerializeField, Min(1f)]
         private float defenseConstant = 100f;
 
-        [Tooltip(
-            "Dégâts minimum après défense."
-        )]
         [SerializeField, Min(0)]
         private int minimumDamage = 1;
 
+
+        // ============================================================
+        // INVULNERABILITY
+        // ============================================================
+
         [Header("Invulnérabilité")]
+
         [SerializeField, Min(0f)]
         private float invulnAfterHitDuration = 0f;
 
+
+        // ============================================================
+        // DAMAGE NUMBERS
+        // ============================================================
+
         [Header("Chiffres de dégâts")]
+
         [SerializeField]
         private bool showDamageNumbers = true;
 
@@ -65,7 +79,8 @@ namespace Core.HealthSystem
         private int critThreshold = 30;
 
         [SerializeField]
-        private Color normalColor = Color.white;
+        private Color normalColor =
+            Color.white;
 
         [SerializeField]
         private Color critColor =
@@ -82,6 +97,11 @@ namespace Core.HealthSystem
                 0.85f,
                 0.4f
             );
+
+
+        // ============================================================
+        // PUBLIC
+        // ============================================================
 
         public int MaxHealth =>
             maxHealth;
@@ -110,14 +130,24 @@ namespace Core.HealthSystem
                   maxHealth
                 : 0f;
 
+
+        // ============================================================
+        // PRIVATE
+        // ============================================================
+
         private float _invulnUntil;
+
+        private IDamageFilter[] _damageFilters =
+            Array.Empty<IDamageFilter>();
+
+
+        // ============================================================
+        // EVENTS
+        // ============================================================
 
         public event Action<DamageInfo>
             OnDamaged;
 
-        /// <summary>
-        /// DamageInfo original + dégâts réellement reçus.
-        /// </summary>
         public event Action<DamageInfo, int>
             OnDamageResolved;
 
@@ -129,6 +159,7 @@ namespace Core.HealthSystem
 
         public event Action OnDeath;
 
+
         // ============================================================
         // UNITY
         // ============================================================
@@ -136,6 +167,8 @@ namespace Core.HealthSystem
         private void Awake()
         {
             ResolveStats();
+
+            CacheDamageFilters();
 
             maxHealth =
                 CalculateMaxHealth();
@@ -153,6 +186,7 @@ namespace Core.HealthSystem
                 CurrentHealth <= 0;
         }
 
+
         private void OnEnable()
         {
             ResolveStats();
@@ -164,6 +198,7 @@ namespace Core.HealthSystem
             }
         }
 
+
         private void OnDisable()
         {
             if (stats != null)
@@ -173,20 +208,75 @@ namespace Core.HealthSystem
             }
         }
 
-        private void ResolveStats()
+
+        // ============================================================
+        // FILTERS
+        // ============================================================
+
+        private void CacheDamageFilters()
         {
-            if (stats != null)
-                return;
+            MonoBehaviour[] behaviours =
+                GetComponents<MonoBehaviour>();
 
-            stats =
-                GetComponent<EntityStats>();
+            int count = 0;
 
-            if (stats == null)
+            for (int i = 0;
+                 i < behaviours.Length;
+                 i++)
             {
-                stats =
-                    GetComponentInParent<EntityStats>();
+                if (behaviours[i]
+                    is IDamageFilter)
+                {
+                    count++;
+                }
+            }
+
+            if (count == 0)
+            {
+                _damageFilters =
+                    Array.Empty<IDamageFilter>();
+
+                return;
+            }
+
+            _damageFilters =
+                new IDamageFilter[count];
+
+            int index = 0;
+
+            for (int i = 0;
+                 i < behaviours.Length;
+                 i++)
+            {
+                if (behaviours[i]
+                    is IDamageFilter filter)
+                {
+                    _damageFilters[index] =
+                        filter;
+
+                    index++;
+                }
             }
         }
+
+
+        private bool PassesDamageFilters(
+            in DamageInfo info)
+        {
+            for (int i = 0;
+                 i < _damageFilters.Length;
+                 i++)
+            {
+                if (!_damageFilters[i]
+                    .CanTakeDamage(in info))
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
 
         // ============================================================
         // DAMAGE
@@ -204,19 +294,31 @@ namespace Core.HealthSystem
             if (IsInvulnerable)
                 return;
 
-            if (Time.time < _invulnUntil)
+            if (Time.time <
+                _invulnUntil)
+            {
                 return;
+            }
+
+            if (!PassesDamageFilters(
+                    in info))
+            {
+                return;
+            }
+
 
             float multiplier =
                 GetDamageMultiplier(
                     info.Type
                 );
 
+
             int finalDamage =
                 Mathf.RoundToInt(
                     info.Amount *
                     multiplier
                 );
+
 
             if (info.Amount > 0)
             {
@@ -227,8 +329,10 @@ namespace Core.HealthSystem
                     );
             }
 
+
             if (finalDamage <= 0)
                 return;
+
 
             CurrentHealth =
                 Mathf.Max(
@@ -237,23 +341,28 @@ namespace Core.HealthSystem
                     finalDamage
                 );
 
+
             OnDamaged?.Invoke(
                 info
             );
+
 
             OnDamageResolved?.Invoke(
                 info,
                 finalDamage
             );
 
+
             OnHealthChanged?.Invoke(
                 CurrentHealth,
                 maxHealth
             );
 
+
             bool isCrit =
                 finalDamage >=
                 critThreshold;
+
 
             ShowNumber(
                 finalDamage,
@@ -264,12 +373,15 @@ namespace Core.HealthSystem
                 isCrit
             );
 
-            if (invulnAfterHitDuration > 0f)
+
+            if (invulnAfterHitDuration >
+                0f)
             {
                 _invulnUntil =
                     Time.time +
                     invulnAfterHitDuration;
             }
+
 
             if (CurrentHealth == 0)
             {
@@ -277,40 +389,33 @@ namespace Core.HealthSystem
             }
         }
 
+
         public void TakeDamage(
             int amount)
         {
             DamageInfo info =
-                new DamageInfo(amount);
+                new DamageInfo(
+                    amount
+                );
 
-            TakeDamage(in info);
+            TakeDamage(
+                in info
+            );
         }
 
-        /// <summary>
-        /// Formule :
-        ///
-        /// damageMultiplier =
-        /// defenseConstant /
-        /// (defenseConstant + Defense)
-        ///
-        /// Exemple avec defenseConstant = 100 :
-        ///
-        /// Defense 0   => 100 % dégâts
-        /// Defense 50  => 66.6 %
-        /// Defense 100 => 50 %
-        /// Defense 200 => 33.3 %
-        /// </summary>
+
         private float GetDamageMultiplier(
             DamageType type)
         {
-            // null = dégâts bruts
             if (type == null ||
                 stats == null)
             {
                 return 1f;
             }
 
+
             StatType defenseStat;
+
 
             switch (type.Category)
             {
@@ -321,6 +426,7 @@ namespace Core.HealthSystem
 
                     break;
 
+
                 case DamageCategory.Magical:
 
                     defenseStat =
@@ -328,10 +434,12 @@ namespace Core.HealthSystem
 
                     break;
 
+
                 default:
 
                     return 1f;
             }
+
 
             float defense =
                 Mathf.Max(
@@ -341,12 +449,14 @@ namespace Core.HealthSystem
                     )
                 );
 
+
             return defenseConstant /
                    (
                        defenseConstant +
                        defense
                    );
         }
+
 
         // ============================================================
         // HEAL
@@ -361,8 +471,10 @@ namespace Core.HealthSystem
                 return;
             }
 
+
             int oldHealth =
                 CurrentHealth;
+
 
             CurrentHealth =
                 Mathf.Min(
@@ -371,21 +483,26 @@ namespace Core.HealthSystem
                     amount
                 );
 
+
             int actualHeal =
                 CurrentHealth -
                 oldHealth;
 
+
             if (actualHeal <= 0)
                 return;
+
 
             OnHealed?.Invoke(
                 actualHeal
             );
 
+
             OnHealthChanged?.Invoke(
                 CurrentHealth,
                 maxHealth
             );
+
 
             ShowNumber(
                 actualHeal,
@@ -395,17 +512,40 @@ namespace Core.HealthSystem
             );
         }
 
+
         // ============================================================
-        // LIFE STAT
+        // STATS
         // ============================================================
+
+        private void ResolveStats()
+        {
+            if (stats != null)
+                return;
+
+            stats =
+                GetComponent<EntityStats>();
+
+            if (stats == null)
+            {
+                stats =
+                    GetComponentInParent<
+                        EntityStats
+                    >();
+            }
+        }
+
 
         private void OnStatChanged(
             StatType type,
             float oldValue,
             float newValue)
         {
-            if (type != StatType.Life)
+            if (type !=
+                StatType.Life)
+            {
                 return;
+            }
+
 
             int oldMax =
                 Mathf.Max(
@@ -413,12 +553,15 @@ namespace Core.HealthSystem
                     maxHealth
                 );
 
+
             float normalizedHealth =
                 (float)CurrentHealth /
                 oldMax;
 
+
             maxHealth =
                 CalculateMaxHealth();
+
 
             if (IsDead)
             {
@@ -437,11 +580,13 @@ namespace Core.HealthSystem
                     );
             }
 
+
             OnHealthChanged?.Invoke(
                 CurrentHealth,
                 maxHealth
             );
         }
+
 
         private int CalculateMaxHealth()
         {
@@ -453,6 +598,7 @@ namespace Core.HealthSystem
                 );
             }
 
+
             return Mathf.Max(
                 1,
                 Mathf.RoundToInt(
@@ -463,13 +609,7 @@ namespace Core.HealthSystem
             );
         }
 
-        /// <summary>
-        /// Si EntityStats est présent,
-        /// cette fonction modifie la valeur BASE de Life.
-        ///
-        /// C'est donc un changement permanent,
-        /// pas un buff temporaire.
-        /// </summary>
+
         public void SetMaxHealth(
             int value,
             bool healToFull = false)
@@ -479,6 +619,7 @@ namespace Core.HealthSystem
                     1,
                     value
                 );
+
 
             if (stats != null)
             {
@@ -494,6 +635,7 @@ namespace Core.HealthSystem
 
                     IsDead = false;
 
+
                     OnHealthChanged?.Invoke(
                         CurrentHealth,
                         maxHealth
@@ -503,7 +645,10 @@ namespace Core.HealthSystem
                 return;
             }
 
-            maxHealth = value;
+
+            maxHealth =
+                value;
+
 
             CurrentHealth =
                 healToFull
@@ -513,8 +658,10 @@ namespace Core.HealthSystem
                         maxHealth
                     );
 
+
             IsDead =
                 CurrentHealth <= 0;
+
 
             OnHealthChanged?.Invoke(
                 CurrentHealth,
@@ -522,14 +669,16 @@ namespace Core.HealthSystem
             );
         }
 
+
         // ============================================================
-        // LIFE / DEATH
+        // DEATH
         // ============================================================
 
         public void Revive(
             int health = -1)
         {
             IsDead = false;
+
 
             CurrentHealth =
                 health <= 0
@@ -540,36 +689,44 @@ namespace Core.HealthSystem
                         maxHealth
                     );
 
+
             OnHealthChanged?.Invoke(
                 CurrentHealth,
                 maxHealth
             );
         }
 
+
         public void Kill()
         {
             if (IsDead)
                 return;
 
+
             CurrentHealth = 0;
+
 
             OnHealthChanged?.Invoke(
                 0,
                 maxHealth
             );
 
+
             Die();
         }
+
 
         private void Die()
         {
             if (IsDead)
                 return;
 
+
             IsDead = true;
 
             OnDeath?.Invoke();
         }
+
 
         // ============================================================
         // SAVE
@@ -586,14 +743,11 @@ namespace Core.HealthSystem
                 maxHealth;
         }
 
+
         public void Restore(
             int current,
             int max)
         {
-            // Avec EntityStats, le max vient des stats.
-            //
-            // Les stats de base devront idéalement être
-            // sauvegardées séparément dans ton futur SaveSystem.
             if (stats != null)
             {
                 maxHealth =
@@ -608,6 +762,7 @@ namespace Core.HealthSystem
                     );
             }
 
+
             CurrentHealth =
                 Mathf.Clamp(
                     current,
@@ -615,14 +770,17 @@ namespace Core.HealthSystem
                     maxHealth
                 );
 
+
             IsDead =
                 CurrentHealth <= 0;
+
 
             OnHealthChanged?.Invoke(
                 CurrentHealth,
                 maxHealth
             );
         }
+
 
         // ============================================================
         // DAMAGE NUMBERS
@@ -637,8 +795,13 @@ namespace Core.HealthSystem
             if (!showDamageNumbers)
                 return;
 
-            if (SimpleDamageSpawner.Instance == null)
+
+            if (SimpleDamageSpawner.Instance ==
+                null)
+            {
                 return;
+            }
+
 
             SimpleDamageSpawner.Instance.Show(
                 transform.position,

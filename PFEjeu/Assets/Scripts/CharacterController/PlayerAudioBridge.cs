@@ -24,7 +24,15 @@ namespace ProfessionalTPS
         [Header("Mix")]
         [SerializeField, Range(0f, 1f)] private float movementVolume = 1f;
         [SerializeField, Range(0f, 1f)] private float combatVolume = 1f;
+        
+        [Header("Gathering")]
 
+        [SerializeField]
+        private AudioClip axeSwing;
+
+        [SerializeField]
+        private AudioClip pickaxeSwing;
+        
         private int _footstepIndex;
 
         private void Awake()
@@ -84,6 +92,20 @@ namespace ProfessionalTPS
         {
             if (oneShotSource != null && clip != null)
                 oneShotSource.PlayOneShot(clip, volume);
+        }
+        
+        public void PlayGatheringSwing(
+            bool isAxe)
+        {
+            AudioClip clip =
+                isAxe
+                    ? axeSwing
+                    : pickaxeSwing;
+
+            Play(
+                clip,
+                combatVolume
+            );
         }
     }
 }

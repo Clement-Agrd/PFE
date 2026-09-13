@@ -116,6 +116,16 @@ namespace ProfessionalTPS
             Animator.StringToHash(
                 "MagicAttack"
             );
+        
+        private static readonly int AxeAttackHash =
+            Animator.StringToHash(
+                "AxeAttack"
+            );
+
+        private static readonly int PickaxeAttackHash =
+            Animator.StringToHash(
+                "PickaxeAttack"
+            );
 
         private void OnEnable()
         {
@@ -287,6 +297,27 @@ namespace ProfessionalTPS
 
             animator.SetTrigger(
                 RollHash
+            );
+        }
+        
+        public void PlayAxeAttack()
+        {
+            if (animator == null)
+                return;
+
+            animator.SetTrigger(
+                AxeAttackHash
+            );
+        }
+
+
+        public void PlayPickaxeAttack()
+        {
+            if (animator == null)
+                return;
+
+            animator.SetTrigger(
+                PickaxeAttackHash
             );
         }
     }
