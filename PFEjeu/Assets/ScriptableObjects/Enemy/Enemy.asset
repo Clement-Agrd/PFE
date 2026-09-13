@@ -17,4 +17,4 @@ MonoBehaviour:
   speed: 3
   baseDamage: 1
   goldReward: 5
-  lootTable: {fileID: 0}
+  lootTable: {fileID: 11400000, guid: 4e0802299741f864db209573a8e78089, type: 2}

@@ -15,6 +15,6 @@ MonoBehaviour:
   waveName: 'Vague 1 petite '
   startDelay: 1
   spawns:
-  - prefab: {fileID: 3332579355218351000, guid: c4ad3d193f856a542bf9acc30b588af9, type: 3}
+  - prefab: {fileID: 1366603870273616279, guid: 9c8bd9bb334308e459b8338910f05702, type: 3}
     count: 15
     interval: 2
