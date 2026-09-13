@@ -201,7 +201,8 @@ namespace ProfessionalTPS
                     projectileSpeed,
                     projectileGravity,
                     projectileLifetime,
-                    damageType
+                    damageType,
+                    DamageSourceKind.Magic
                 );
 
                 return;
@@ -286,7 +287,8 @@ namespace ProfessionalTPS
                 new DamageInfo(
                     finalDamage,
                     damageType,
-                    Owner.gameObject
+                    Owner.gameObject,
+                    DamageSourceKind.Magic
                 );
 
             damageable.TakeDamage(

@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 5049545344184252771}
   - component: {fileID: 7065044352950090940}
   - component: {fileID: 8720349905989474603}
+  - component: {fileID: 5701256607540694788}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -445,7 +446,27 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.InventorySystem.InventoryHolder
   capacity: 20
-  startingItems: []
+  startingItems:
+  - definition: {fileID: 0}
+    amount: 0
+--- !u!114 &5701256607540694788
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602151265126596277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a7a59dff5af74659acb1dfd97609fb24, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.InventorySystem.PlayerInteractor
+  playerCamera: {fileID: 2348394047694948022}
+  inventoryHolder: {fileID: 8720349905989474603}
+  interactUI: {fileID: 0}
+  interactText: {fileID: 0}
+  interactRange: 7
+  interactKey: 101
 --- !u!1 &2619260517339198250
 GameObject:
   m_ObjectHideFlags: 0
