@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8121212628219478119}
   - component: {fileID: 7238587505152774970}
   - component: {fileID: 4025266684344492649}
+  - component: {fileID: 7226439810357801902}
   m_Layer: 0
   m_Name: Sphere
   m_TagString: Untagged
@@ -131,3 +132,15 @@ MonoBehaviour:
     m_Bits: 8
   triggerInteraction: 1
   impactPrefab: {fileID: 0}
+--- !u!114 &7226439810357801902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4628851246675182811}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 007e4111efacd2947993ba753adb9f7c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.PoolingSystem.PooledObject
