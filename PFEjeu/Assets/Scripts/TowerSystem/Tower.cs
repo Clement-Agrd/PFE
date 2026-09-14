@@ -39,6 +39,11 @@ public class Tower : MonoBehaviour
                 currentTarget = null;
             }
             
+            if (currentTarget != null)
+            {
+                Debug.Log("Cible : " + currentTarget.name);
+            }
+            
             Debug.Log(targets.Length);
 
             foreach (Collider target in targets)
