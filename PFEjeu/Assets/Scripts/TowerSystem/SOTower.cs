@@ -4,12 +4,17 @@ using UnityEngine;
 public class SOTower : ScriptableObject
 {
     [Header("Base Information")]
-    public string towerName;
-
-    [Header("Tower Mesh")] 
-    [SerializeField] private Mesh model1;
-    [SerializeField] private Mesh model2;
-    [SerializeField] private Mesh model3;
+    [SerializeField] private string towerName;
+    [SerializeField] private float detectionRange;
     
     
+    [SerializeField] private int minLevel;
+    [SerializeField] private int maxLevel;
+    
+    public int MinLevel => minLevel;
+    public int MaxLevel => maxLevel;
+    public float DetectionRange => detectionRange;
+    
+    [Header("Model")] 
+    public GameObject[] models;
 }
