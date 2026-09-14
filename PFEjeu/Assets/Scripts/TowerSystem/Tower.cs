@@ -16,12 +16,9 @@ public class Tower : MonoBehaviour
 
     private float timer;
     [SerializeField] private LayerMask enemyLayer;
-
-    public void Awake()
-    {
-        currentLevel = towerData.MinLevel;
-        UpdateModel();
-    }
+    private Collider currentTarget;
+    
+    //--------Détection--------//
 
     private void Update()
     {
@@ -33,6 +30,15 @@ public class Tower : MonoBehaviour
                 towerData.DetectionRange,
                 enemyLayer);
             
+            if (targets.Length > 0)
+            {
+                currentTarget = targets[0];
+            }
+            else
+            {
+                currentTarget = null;
+            }
+            
             Debug.Log(targets.Length);
 
             foreach (Collider target in targets)
@@ -43,7 +49,23 @@ public class Tower : MonoBehaviour
             timer = 0f;
         }
     }
+    
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawWireSphere(
+            transform.position,
+            towerData.DetectionRange
+        );
+    }
+    
+    //--------Niveau--------//
 
+    public void Awake()
+    {
+        currentLevel = towerData.MinLevel;
+        UpdateModel();
+    }
+    
     public void LevelUp()
     {
         currentLevel = Mathf.Clamp(currentLevel + 1, towerData.MinLevel, towerData.MaxLevel);
