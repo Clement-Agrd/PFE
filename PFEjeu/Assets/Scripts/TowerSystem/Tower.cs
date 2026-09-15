@@ -13,6 +13,9 @@ public class Tower : MonoBehaviour
     [Header("Model")]
     [SerializeField] private Transform modelParent;
     private GameObject currentModel;
+    
+    [Header("Projectile")]
+    [SerializeField] private Transform firePoint;
 
     private float timer;
     [SerializeField] private LayerMask enemyLayer;
