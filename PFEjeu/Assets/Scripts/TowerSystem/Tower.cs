@@ -16,6 +16,7 @@ public class Tower : MonoBehaviour
     
     [Header("Projectile")]
     [SerializeField] private Transform firePoint;
+    private float shootTimer;
 
     private float timer;
     [SerializeField] private LayerMask enemyLayer;
@@ -45,6 +46,18 @@ public class Tower : MonoBehaviour
             if (currentTarget != null)
             {
                 Debug.Log("Cible : " + currentTarget.name);
+                
+                shootTimer += 0.1f;
+
+                if (shootTimer >= 1f / towerData.FireRate)
+                {
+                    Shoot();
+                    shootTimer = 0f;
+                }
+                else
+                {
+                    shootTimer = 0f;
+                }
             }
             
             Debug.Log(targets.Length);
@@ -64,6 +77,19 @@ public class Tower : MonoBehaviour
             transform.position,
             towerData.DetectionRange
         );
+    }
+
+    private void Shoot()
+    {
+        GameObject arrow = Instantiate(
+            towerData.ProjectilePrefab,
+            firePoint.position,
+            firePoint.rotation
+        );
+
+        arrow.GetComponent<TowerProjectil>().SetTarget(currentTarget.transform);
+        
+        Debug.Log("La tour tire sur : " + currentTarget.name);
     }
     
     //--------Niveau--------//
@@ -92,5 +118,6 @@ public class Tower : MonoBehaviour
         
         currentModel = Instantiate(model, modelParent);
         currentModel.transform.localPosition = Vector3.zero;
+        firePoint = currentModel.transform.Find("FirePoint");
     }
 }

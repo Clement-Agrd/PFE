@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 3502354770167731154}
   - component: {fileID: 2961581622111586107}
   - component: {fileID: 3016630874431819686}
+  - component: {fileID: 7605996234388478982}
   m_Layer: 0
   m_Name: ProjectilTower
   m_TagString: Untagged
@@ -125,3 +126,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 007e4111efacd2947993ba753adb9f7c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.PoolingSystem.PooledObject
+--- !u!114 &7605996234388478982
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9222910484828156875}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7635fda3d27c6046b4844f571044d38, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerProjectil
+  speed: 10
