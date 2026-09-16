@@ -54,18 +54,9 @@ public class Tower : MonoBehaviour
                     Shoot();
                     shootTimer = 0f;
                 }
-                else
-                {
-                    shootTimer = 0f;
-                }
             }
             
             Debug.Log(targets.Length);
-
-            foreach (Collider target in targets)
-            {
-                
-            }
             
             timer = 0f;
         }
@@ -73,6 +64,9 @@ public class Tower : MonoBehaviour
     
     private void OnDrawGizmosSelected()
     {
+        if (towerData == null)
+            return;
+        
         Gizmos.DrawWireSphere(
             transform.position,
             towerData.DetectionRange
@@ -81,13 +75,28 @@ public class Tower : MonoBehaviour
 
     private void Shoot()
     {
+        if (currentTarget == null)
+            return;
+        if (towerData.ProjectilePrefab == null)
+            return;
+        if (firePoint == null)
+            return;
+        
         GameObject arrow = Instantiate(
             towerData.ProjectilePrefab,
             firePoint.position,
             firePoint.rotation
         );
+        
+        Debug.Log("Projectile créé : " + arrow.name);
 
-        arrow.GetComponent<TowerProjectil>().SetTarget(currentTarget.transform);
+        TowerProjectil projectile = arrow.GetComponent<TowerProjectil>();
+
+        if (projectile == null)
+            return;
+
+        projectile.SetTarget(currentTarget.transform,
+            towerData.DamageType);
         
         Debug.Log("La tour tire sur : " + currentTarget.name);
     }
@@ -96,6 +105,12 @@ public class Tower : MonoBehaviour
 
     public void Awake()
     {
+        if (towerData == null)
+        {
+            Debug.LogError("SOTower manquant sur " + gameObject.name);
+            return;
+        }
+        
         currentLevel = towerData.MinLevel;
         UpdateModel();
     }
@@ -107,9 +122,28 @@ public class Tower : MonoBehaviour
 
     private void UpdateModel()
     {
+        
+        if (towerData.models == null || towerData.models.Length == 0)
+        {
+            Debug.LogError("Aucun modèle n'est configuré dans le SOTower.");
+            return;
+        }
+        
         int modelIndex = currentLevel - 1;
         
+        if (modelIndex < 0 || modelIndex >= towerData.models.Length)
+        {
+            Debug.LogError("Le niveau " + currentLevel + " ne possède pas de modèle.");
+            return;
+        }
+        
         GameObject model = towerData.models[modelIndex];
+        
+        if (model == null)
+        {
+            Debug.LogError("Le modèle du niveau " + currentLevel + " est vide.");
+            return;
+        }
 
         if (currentModel != null)
         {
@@ -119,5 +153,18 @@ public class Tower : MonoBehaviour
         currentModel = Instantiate(model, modelParent);
         currentModel.transform.localPosition = Vector3.zero;
         firePoint = currentModel.transform.Find("FirePoint");
+        
+        if (firePoint == null)
+        {
+            Debug.LogError(
+                "FirePoint introuvable dans le modèle du niveau " + currentLevel);
+        }
+        
+        if (modelParent == null)
+        {
+            Debug.LogError("Model Parent manquant sur " + gameObject.name);
+            return;
+        }
+        
     }
 }

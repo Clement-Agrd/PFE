@@ -16,6 +16,7 @@ MonoBehaviour:
   detectionRange: 5
   projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
   fireRate: 1
+  damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
   minLevel: 1
   maxLevel: 3
   models:
