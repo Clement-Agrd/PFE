@@ -5,8 +5,8 @@ using Unity.Mathematics;
 
 /// <summary>
 /// Génère un rempart modulaire le long d'une Spline (package com.unity.splines) :
-/// - Place des tours à intervalle de distance régulier
-/// - Instancie des segments de mur entre chaque tour, soit :
+/// - Découpe la spline en points réguliers (Tower Interval) et y place des tours — optionnel, voir spawnTowers
+/// - Instancie des segments de mur entre chaque point de découpe, soit :
 ///     • étirés localement (rigide, rapide, mur reste droit visuellement)
 ///     • soit pliés pour suivre la courbure exacte de la spline (voir SplineMeshDeformer)
 ///
@@ -21,7 +21,9 @@ using Unity.Mathematics;
 ///          (T0)   (étiré/plié)   (T1)   (étiré/plié)
 ///
 /// Pré-requis prefabs :
-/// - wallSegmentPrefab : mesh orienté vers +Z (longueur), pivot au centre ou à une extrémité (voir wallPivotAtStart).
+/// - wallSegmentPrefab : pivot au centre ou à une extrémité (voir wallPivotAtStart, mode rigide uniquement).
+///   Vérifie le gizmo du prefab en Scene view pour savoir quel axe (X ou Z) correspond à sa longueur,
+///   et renseigne wallLengthAxis en conséquence — sinon le mesh sera mal orienté/déformé.
 ///   Pour le mode "bend", le MeshFilter doit être sur la racine du prefab (pas sur un enfant décalé).
 /// - towerPrefab       : pivot au centre de la base
 /// </summary>
@@ -42,13 +44,23 @@ public class SplineWallBuilder : MonoBehaviour
     #region Paramètres
 
     [Header("Paramètres de génération")]
-    [Tooltip("Distance en unités Unity entre deux tours consécutives.")]
+    [Tooltip("Si désactivé, aucune tour n'est instanciée : Tower Prefab devient optionnel et sert uniquement de " +
+             "repère interne pour découper le mur en segments (utile pour garder une bonne précision sur une " +
+             "grande spline), sans rien afficher à ces points.")]
+    [SerializeField] private bool spawnTowers = true;
+
+    [Tooltip("Distance en unités Unity entre deux points de découpe du mur (tours si Spawn Towers est activé, " +
+             "sinon simples repères internes invisibles).")]
     [SerializeField, Min(0.1f)] private float towerInterval = 10f;
 
-    [Tooltip("Longueur \"native\" du prefab de mur sur son axe Z (avant étirement). Utilisé en mode rigide uniquement.")]
+    [Tooltip("Longueur \"native\" du prefab de mur sur son axe de longueur (avant étirement). Utilisé en mode rigide uniquement.")]
     [SerializeField, Min(0.01f)] private float wallSegmentNativeLength = 1f;
 
-    [Tooltip("Si activé, le pivot du prefab de mur est considéré à une extrémité (Z=0) plutôt qu'au centre. Mode rigide uniquement.")]
+    [Tooltip("Axe local du prefab de mur qui correspond à sa longueur (le sens qui doit suivre la spline). " +
+             "Vérifie le gizmo du prefab en Scene view : la flèche alignée avec la grande dimension du panneau indique l'axe à choisir.")]
+    [SerializeField] private SplineLengthAxis wallLengthAxis = SplineLengthAxis.Z;
+
+    [Tooltip("Si activé, le pivot du prefab de mur est considéré à une extrémité plutôt qu'au centre. Mode rigide uniquement.")]
     [SerializeField] private bool wallPivotAtStart = false;
 
     [Tooltip("Place une tour à la toute fin de la spline même si elle ne tombe pas pile sur l'intervalle.")]
@@ -75,6 +87,10 @@ public class SplineWallBuilder : MonoBehaviour
     private const string GeneratedRootName = "__Generated";
     private const string BentMeshSuffix = "_Bent";
     private Transform _generatedRoot;
+
+    // -90° autour de Y : réaligne l'axe de longueur X du mesh sur l'axe canonique Z (= tangente),
+    // sans réflexion (contrairement à un simple échange de composantes). Identité si l'axe est déjà Z.
+    private static readonly Quaternion XAxisCorrection = Quaternion.Euler(0f, -90f, 0f);
 
     #endregion
 
@@ -109,9 +125,15 @@ public class SplineWallBuilder : MonoBehaviour
             return;
         }
 
-        if (wallSegmentPrefab == null || towerPrefab == null)
+        if (wallSegmentPrefab == null)
         {
-            Debug.LogWarning($"[{nameof(SplineWallBuilder)}] Prefabs manquants sur {name}.", this);
+            Debug.LogWarning($"[{nameof(SplineWallBuilder)}] Wall Segment Prefab manquant sur {name}.", this);
+            return;
+        }
+
+        if (spawnTowers && towerPrefab == null)
+        {
+            Debug.LogWarning($"[{nameof(SplineWallBuilder)}] Spawn Towers est activé mais Tower Prefab est vide sur {name}.", this);
             return;
         }
 
@@ -124,17 +146,20 @@ public class SplineWallBuilder : MonoBehaviour
 
         List<float> towerDistances = ComputeTowerDistances(distanceMap.TotalLength);
 
-        foreach (float distance in towerDistances)
+        if (spawnTowers)
         {
-            float t = distanceMap.DistanceToT(distance);
-            SplineUtility.Evaluate(spline, t, out float3 localPos, out float3 tangent, out float3 upVector);
+            foreach (float distance in towerDistances)
+            {
+                float t = distanceMap.DistanceToT(distance);
+                SplineUtility.Evaluate(spline, t, out float3 localPos, out float3 tangent, out float3 upVector);
 
-            Vector3 worldPos = splineContainer.transform.TransformPoint(localPos);
-            Quaternion rotation = Quaternion.LookRotation(
-                splineContainer.transform.TransformDirection((Vector3)tangent),
-                splineContainer.transform.TransformDirection((Vector3)upVector));
+                Vector3 worldPos = splineContainer.transform.TransformPoint(localPos);
+                Quaternion rotation = Quaternion.LookRotation(
+                    splineContainer.transform.TransformDirection((Vector3)tangent),
+                    splineContainer.transform.TransformDirection((Vector3)upVector));
 
-            SpawnPrefab(towerPrefab, worldPos, rotation);
+                SpawnPrefab(towerPrefab, worldPos, rotation);
+            }
         }
 
         for (int i = 0; i < towerDistances.Count - 1; i++)
@@ -168,7 +193,7 @@ public class SplineWallBuilder : MonoBehaviour
     }
 
     /// <summary>
-    /// Mode rigide : segment droit, positionné au milieu de l'écart, étiré en Z pour combler exactement la distance.
+    /// Mode rigide : segment droit, positionné au milieu de l'écart, étiré pour combler exactement la distance.
     /// </summary>
     private void BuildStraightWallSegment(Spline spline, SplineDistanceMap distanceMap, float distanceA, float distanceB)
     {
@@ -180,20 +205,25 @@ public class SplineWallBuilder : MonoBehaviour
         SplineUtility.Evaluate(spline, tMid, out float3 localPos, out float3 tangent, out float3 upVector);
 
         Vector3 worldPos = splineContainer.transform.TransformPoint(localPos);
-        Quaternion rotation = Quaternion.LookRotation(
-            splineContainer.transform.TransformDirection((Vector3)tangent),
-            splineContainer.transform.TransformDirection((Vector3)upVector));
+        Vector3 worldTangentDir = splineContainer.transform.TransformDirection((Vector3)tangent).normalized;
+        Vector3 worldUpDir = splineContainer.transform.TransformDirection((Vector3)upVector);
+
+        Quaternion baseRotation = Quaternion.LookRotation(worldTangentDir, worldUpDir);
+        Quaternion rotation = wallLengthAxis == SplineLengthAxis.X ? baseRotation * XAxisCorrection : baseRotation;
 
         GameObject instance = SpawnPrefab(wallSegmentPrefab, worldPos, rotation);
 
-        float scaleZ = segmentLength / wallSegmentNativeLength;
+        float scaleAmount = segmentLength / wallSegmentNativeLength;
         Vector3 scale = instance.transform.localScale;
-        scale.z = scaleZ;
+        if (wallLengthAxis == SplineLengthAxis.X) scale.x = scaleAmount;
+        else scale.z = scaleAmount;
         instance.transform.localScale = scale;
 
         if (wallPivotAtStart)
         {
-            instance.transform.position = worldPos - instance.transform.forward * (segmentLength * 0.5f);
+            // On utilise la tangente explicite plutôt que instance.transform.forward : ce dernier ne
+            // pointe plus forcément le long de la spline une fois XAxisCorrection appliquée.
+            instance.transform.position = worldPos - worldTangentDir * (segmentLength * 0.5f);
         }
     }
 
@@ -222,7 +252,8 @@ public class SplineWallBuilder : MonoBehaviour
             return;
         }
 
-        Mesh bentMesh = SplineMeshDeformer.BendMeshAlongSpline(meshFilter.sharedMesh, spline, distanceMap, distanceA, distanceB);
+        Mesh bentMesh = SplineMeshDeformer.BendMeshAlongSpline(
+            meshFilter.sharedMesh, spline, distanceMap, distanceA, distanceB, wallLengthAxis);
         if (bentMesh != null)
             meshFilter.mesh = bentMesh;
     }

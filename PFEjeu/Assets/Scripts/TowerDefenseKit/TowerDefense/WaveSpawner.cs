@@ -1,18 +1,15 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using Core.PoolingSystem;
 
 namespace Core.WaveSystem
 {
     /// <summary>
-    /// Déroule un WaveSet en DÉCLENCHEMENT MANUEL : chaque vague est lancée par
-    /// StartNextWave() (ton bouton). Quand la vague est nettoyée (tous les ennemis
-    /// vaincus — tués OU arrivés à la base), le spawner redevient prêt pour la suivante.
-    /// Spawn via le Pooling. Gère le mode endless avec difficulté croissante.
-    ///
-    /// NOTE : remplace le WaveSpawner d'origine (auto-enchaîné). L'ancien 'autoStart'
-    /// et 'delayBetweenWaves' ont été retirés (inutiles en manuel).
+    /// Déroule un WaveSet en déclenchement MANUEL, façon Dungeon Defenders :
+    /// plusieurs zones de spawn actives EN MÊME TEMPS, chacune crachant ses
+    /// ennemis par SALVES plutôt qu'un par un à la file. Spawn via le Pooling.
     /// </summary>
     public sealed class WaveSpawner : MonoBehaviour
     {
@@ -21,8 +18,10 @@ namespace Core.WaveSystem
         [Tooltip("Optionnel : si assigné, les ennemis sont poolés. Sinon, Instantiate.")]
         [SerializeField] private PoolManager poolManager;
 
-        [Tooltip("Points d'apparition. Vide = position du spawner. (En TD, l'ennemi se repositionne sur le chemin.)")]
-        [SerializeField] private Transform[] spawnPoints;
+        [Tooltip("Les zones de spawn de la scène. Chaque SpawnEntry en cible une par son Id.")]
+        [SerializeField] private List<SpawnZone> zones = new();
+
+        private Dictionary<string, SpawnZone> _zonesById;
 
         private int _waveIndex;
         private int _loop;
@@ -33,15 +32,12 @@ namespace Core.WaveSystem
         public int AliveCount => _aliveCount;
         public bool IsWaveActive => _isWaveActive;
 
-        /// <summary>Reste-t-il des vagues à lancer ? (toujours vrai en endless)</summary>
         public bool HasMoreWaves =>
             waveSet != null && waveSet.Waves.Count > 0 &&
             (waveSet.LoopEndless || _waveIndex < waveSet.Waves.Count);
 
-        /// <summary>Peut-on lancer la prochaine vague maintenant ? (bouton actif ?)</summary>
         public bool CanStartWave => !_isWaveActive && HasMoreWaves;
 
-        /// <summary>Numéro global de la prochaine vague (croît en endless).</summary>
         public int NextWaveNumber =>
             waveSet != null ? _loop * waveSet.Waves.Count + _waveIndex + 1 : 0;
 
@@ -49,6 +45,17 @@ namespace Core.WaveSystem
         public event Action<int> OnWaveCompleted;
         public event Action OnAllWavesCompleted;
         public event Action<GameObject> OnEnemySpawned;
+
+        private void Awake()
+        {
+            _zonesById = new Dictionary<string, SpawnZone>();
+            foreach (SpawnZone zone in zones)
+            {
+                if (zone == null) continue;
+                if (!_zonesById.TryAdd(zone.Id, zone))
+                    Debug.LogWarning($"[WaveSpawner] Id de zone en double ignoré : '{zone.Id}'.");
+            }
+        }
 
         /// <summary>À brancher sur ton bouton « Vague suivante ». Ignoré si une vague est en cours.</summary>
         public void StartNextWave()
@@ -72,15 +79,20 @@ namespace Core.WaveSystem
             if (wave.StartDelay > 0f)
                 yield return new WaitForSeconds(wave.StartDelay);
 
-            yield return SpawnWave(wave);
+            // Toutes les lignes de spawn tournent EN PARALLÈLE (zones simultanées).
+            var running = new List<Coroutine>();
+            foreach (SpawnEntry entry in wave.Spawns)
+                running.Add(StartCoroutine(RunEntry(entry)));
 
-            // Attendre que tous les ennemis de la vague soient vaincus (tués ou arrivés à la base).
+            foreach (Coroutine c in running)
+                yield return c;
+
+            // Attend que tous les ennemis de la vague soient vaincus.
             while (_aliveCount > 0)
                 yield return null;
 
             OnWaveCompleted?.Invoke(globalNumber);
 
-            // Avancer (ou reboucler en endless, ou terminer).
             _waveIndex++;
             if (_waveIndex >= waveSet.Waves.Count)
             {
@@ -97,36 +109,53 @@ namespace Core.WaveSystem
                 }
             }
 
-            _isWaveActive = false; // prêt pour la vague suivante → le bouton se réactive
+            _isWaveActive = false;
         }
 
-        private IEnumerator SpawnWave(WaveDefinition wave)
+        // Fait apparaître une ligne de spawn par SALVES dans sa zone.
+        private IEnumerator RunEntry(SpawnEntry entry)
         {
+            if (entry.prefab == null) yield break;
+
+            if (entry.startDelay > 0f)
+                yield return new WaitForSeconds(entry.startDelay);
+
             float scale = 1f + _loop * waveSet.CountScalePerLoop;
+            int totalCount = Mathf.Max(1, Mathf.RoundToInt(entry.count * scale));
 
-            foreach (SpawnEntry entry in wave.Spawns)
+            SpawnZone zone = ResolveZone(entry.zoneId);
+
+            int spawned = 0;
+            while (spawned < totalCount)
             {
-                if (entry.prefab == null) continue;
+                int thisBurst = Mathf.Min(entry.burstSize, totalCount - spawned);
 
-                int count = Mathf.Max(1, Mathf.RoundToInt(entry.count * scale));
-                for (int i = 0; i < count; i++)
-                {
-                    SpawnOne(entry.prefab);
-                    if (entry.interval > 0f)
-                        yield return new WaitForSeconds(entry.interval);
-                }
+                for (int i = 0; i < thisBurst; i++)
+                    SpawnOne(entry.prefab, zone);
+
+                spawned += thisBurst;
+
+                if (spawned < totalCount && entry.burstInterval > 0f)
+                    yield return new WaitForSeconds(entry.burstInterval);
             }
         }
 
-        private void SpawnOne(GameObject prefab)
+        private SpawnZone ResolveZone(string zoneId)
         {
-            Transform point = GetSpawnPoint();
-            Vector3 pos = point != null ? point.position : transform.position;
-            Quaternion rot = point != null ? point.rotation : Quaternion.identity;
+            if (!string.IsNullOrEmpty(zoneId) && _zonesById.TryGetValue(zoneId, out SpawnZone zone))
+                return zone;
+
+            Debug.LogWarning($"[WaveSpawner] Zone '{zoneId}' introuvable, spawn à la position du spawner.");
+            return null;
+        }
+
+        private void SpawnOne(GameObject prefab, SpawnZone zone)
+        {
+            Vector3 pos = zone != null ? zone.GetRandomPoint() : transform.position;
 
             GameObject instance = poolManager != null
-                ? poolManager.Spawn(prefab, pos, rot)
-                : Instantiate(prefab, pos, rot);
+                ? poolManager.Spawn(prefab, pos, Quaternion.identity)
+                : Instantiate(prefab, pos, Quaternion.identity);
 
             if (instance == null) return;
 
@@ -136,20 +165,13 @@ namespace Core.WaveSystem
             if (instance.TryGetComponent(out IWaveEnemy enemy))
                 enemy.Defeated += HandleDefeated;
             else
-                Debug.LogWarning($"[WaveSpawner] {instance.name} n'implémente pas IWaveEnemy → " +
-                                 "la vague ne saura pas quand il est vaincu.");
+                Debug.LogWarning($"[WaveSpawner] {instance.name} n'implémente pas IWaveEnemy.");
         }
 
         private void HandleDefeated(IWaveEnemy enemy)
         {
             enemy.Defeated -= HandleDefeated;
             _aliveCount = Mathf.Max(0, _aliveCount - 1);
-        }
-
-        private Transform GetSpawnPoint()
-        {
-            if (spawnPoints == null || spawnPoints.Length == 0) return null;
-            return spawnPoints[UnityEngine.Random.Range(0, spawnPoints.Length)];
         }
     }
 }
