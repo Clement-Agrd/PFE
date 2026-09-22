@@ -4,9 +4,7 @@ using UnityEngine;
 namespace Core.PoolingSystem
 {
     /// <summary>
-    /// Ajouté automatiquement à chaque instance issue d'un pool. Il sait comment
-    /// se rendre à SON pool (callback), gère un retour automatique après délai, et
-    /// met en cache les IPoolable de l'objet (pour éviter des GetComponent répétés).
+    /// Ajouté à chaque instance issue d'un pool. Sait se rendre à SON pool.
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class PooledObject : MonoBehaviour
@@ -14,28 +12,33 @@ namespace Core.PoolingSystem
         private IPoolable[] _poolables;
         private Action<GameObject> _returnToPool;
         private float _autoReleaseAt = -1f;
+        private bool _isReleasing;
 
-        /// <summary>Appelé une seule fois par le pool, à la création de l'instance.</summary>
         public void Initialize(Action<GameObject> returnToPool)
         {
             _returnToPool = returnToPool;
             _poolables = GetComponentsInChildren<IPoolable>(includeInactive: true);
         }
 
-        /// <summary>Programme un retour automatique au pool dans 'seconds'.</summary>
         public void ReleaseAfter(float seconds)
             => _autoReleaseAt = seconds > 0f ? Time.time + seconds : -1f;
 
-        /// <summary>Renvoie immédiatement l'objet à son pool.</summary>
         public void Release()
         {
+            if (_isReleasing) return;
+            _isReleasing = true;
+
             _autoReleaseAt = -1f;
-            _returnToPool?.Invoke(gameObject);
+
+            if (_returnToPool != null)
+                _returnToPool.Invoke(gameObject);
+            else
+                Destroy(gameObject);
         }
 
-        // Appelés par le pool au moment du spawn / despawn.
         public void InvokeSpawn()
         {
+            _isReleasing = false;
             if (_poolables == null) return;
             for (int i = 0; i < _poolables.Length; i++) _poolables[i].OnSpawn();
         }

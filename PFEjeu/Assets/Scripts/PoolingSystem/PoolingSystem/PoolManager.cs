@@ -3,10 +3,6 @@ using UnityEngine;
 
 namespace Core.PoolingSystem
 {
-    /// <summary>
-    /// Point d'accès au pooling : un pool par prefab, créé à la demande ou
-    /// préchargé via l'Inspector. Expose Spawn / Despawn typés.
-    /// </summary>
     public sealed class PoolManager : MonoBehaviour
     {
         [System.Serializable]
@@ -30,27 +26,25 @@ namespace Core.PoolingSystem
             }
         }
 
-        /// <summary>Sort une instance du prefab donné à la position/rotation voulues.</summary>
         public GameObject Spawn(GameObject prefab, Vector3 position, Quaternion rotation)
-            => GetOrCreatePool(prefab).Get(position, rotation);
+        {
+            if (prefab == null) return null;
+            return GetOrCreatePool(prefab).Get(position, rotation);
+        }
 
-        /// <summary>Comme Spawn, mais renvoie directement le composant T de l'instance.</summary>
         public T Spawn<T>(GameObject prefab, Vector3 position, Quaternion rotation) where T : Component
         {
             GameObject go = Spawn(prefab, position, rotation);
             return go != null ? go.GetComponent<T>() : null;
         }
 
-        /// <summary>Renvoie une instance à son pool (ou la détruit si elle n'en vient pas).</summary>
         public void Despawn(GameObject instance)
         {
             if (instance == null) return;
-
             if (instance.TryGetComponent(out PooledObject po)) po.Release();
             else Destroy(instance);
         }
 
-        /// <summary>Programme le retour de l'instance à son pool après 'delay' secondes.</summary>
         public void Despawn(GameObject instance, float delay)
         {
             if (instance != null && instance.TryGetComponent(out PooledObject po))
