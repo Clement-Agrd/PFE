@@ -221,6 +221,9 @@ namespace ProfessionalTPS
 
             _impactDone = true;
 
+            // VFX du mouvement d'épée.
+            Owner?.VFX?.PlaySlash();
+
             DoHit(
                 combo[_stepIndex]
             );
@@ -375,8 +378,42 @@ namespace ProfessionalTPS
                         DamageSourceKind.Sword
                     );
 
+
                 damageable.TakeDamage(
                     in damageInfo
+                );
+
+
+                // ========================================================
+                // IMPACT VFX
+                // ========================================================
+
+                Vector3 impactPoint =
+                    hit.ClosestPoint(
+                        center
+                    );
+
+
+                Vector3 impactNormal =
+                    center -
+                    impactPoint;
+
+
+                if (impactNormal.sqrMagnitude <
+                    0.001f)
+                {
+                    impactNormal =
+                        -Owner.transform.forward;
+                }
+                else
+                {
+                    impactNormal.Normalize();
+                }
+
+
+                Owner?.VFX?.PlayImpact(
+                    impactPoint,
+                    impactNormal
                 );
             }
         }

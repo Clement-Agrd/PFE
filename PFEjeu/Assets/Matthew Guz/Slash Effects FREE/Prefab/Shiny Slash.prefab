@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 1231740799838009829}
   - component: {fileID: 7047409975252356364}
   m_Layer: 0
-  m_Name: 'Shiny Slash '
+  m_Name: Shiny Slash
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

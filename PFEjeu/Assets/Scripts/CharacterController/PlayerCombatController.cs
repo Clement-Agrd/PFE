@@ -57,6 +57,9 @@ namespace ProfessionalTPS
 
         [SerializeField]
         private GatheringToolCombatModule pickaxe;
+        
+        [SerializeField]
+        private PlayerVFXBridge vfxBridge;
 
         private CombatModule _active;
 
@@ -97,6 +100,9 @@ namespace ProfessionalTPS
 
         public PlayerAudioBridge Audio =>
             audioBridge;
+        
+        public PlayerVFXBridge VFX =>
+            vfxBridge;
 
         public Camera AimCamera =>
             aimCamera;
