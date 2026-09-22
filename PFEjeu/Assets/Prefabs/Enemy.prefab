@@ -255,8 +255,9 @@ MonoBehaviour:
   baseDamage: 1
   goldReward: 5
   lootTable: {fileID: 11400000, guid: 4e0802299741f864db209573a8e78089, type: 2}
-  reachDistance: 1.06
+  reachDistance: 1
   repathInterval: 0.3
+  navSampleRadius: 5
 --- !u!1001 &8088656004379184935
 PrefabInstance:
   m_ObjectHideFlags: 0
