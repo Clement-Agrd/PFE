@@ -131,7 +131,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 8
   triggerInteraction: 1
-  impactPrefab: {fileID: 0}
+  impactPrefab: {fileID: 7904898002847524615, guid: 99b99ac8f48de4848bbba909ff1ce7bb, type: 3}
 --- !u!114 &-3090560013031125392
 MonoBehaviour:
   m_ObjectHideFlags: 0
