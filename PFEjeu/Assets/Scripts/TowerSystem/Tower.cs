@@ -126,6 +126,8 @@ public class Tower : MonoBehaviour
 
         // Démarre toujours au niveau minimum défini dans la fiche de données.
         currentLevel = towerData.MinLevel;
+        EntityStats stats = GetComponent<EntityStats>();
+        towerData.ApplyStatsTo(stats);
         UpdateModel();
     }
 

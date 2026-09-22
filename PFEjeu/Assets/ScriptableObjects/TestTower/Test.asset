@@ -19,5 +19,22 @@ MonoBehaviour:
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
   minLevel: 1
   maxLevel: 3
+  towerStats:
+  - type: 0
+    baseValue: 0
+  - type: 1
+    baseValue: 0
+  - type: 2
+    baseValue: 50
+  - type: 3
+    baseValue: 0
+  - type: 4
+    baseValue: 0
+  - type: 5
+    baseValue: 0
+  - type: 6
+    baseValue: 0
+  - type: 7
+    baseValue: 0
   models:
   - {fileID: 3604618397877428115, guid: 1446b2a4a67be3646a45cfc242bf407d, type: 3}
