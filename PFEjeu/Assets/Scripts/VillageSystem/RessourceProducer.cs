@@ -1,13 +1,14 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using Core.InventorySystem;
 
 namespace Core.Village
 {
     /// <summary>
-    /// Fait produire un bâtiment (Ferme/Mine/Scierie) dans le temps : toutes les
-    /// N secondes (réglées par le niveau), ajoute des ressources au stockage HDV.
-    /// Pour un bâtiment qui produit 2 ressources (ex. la Mine : pierre + fer),
-    /// pose DEUX ResourceProducer sur le même bâtiment.
+    /// Fait produire un bâtiment (Ferme/Mine/Scierie) dans le temps. Lit TOUTES
+    /// les productions du niveau actuel (une Mine peut produire pierre ET fer
+    /// avec des rythmes différents) et les ajoute au stockage HDV.
+    /// UN SEUL composant par bâtiment, quel que soit le nombre de ressources.
     /// </summary>
     [RequireComponent(typeof(Building))]
     public sealed class ResourceProducer : MonoBehaviour
@@ -16,7 +17,9 @@ namespace Core.Village
         [SerializeField] private InventoryHolder targetStorage;
 
         private Building _building;
-        private float _timer;
+
+        // Un minuteur indépendant par ressource produite (index dans la liste 'productions').
+        private readonly Dictionary<int, float> _timers = new();
 
         public event System.Action<ItemDefinition, int> OnProduced;
 
@@ -24,7 +27,7 @@ namespace Core.Village
 
         private void OnEnable()
         {
-            _timer = 0f;
+            _timers.Clear();
             _building.OnLevelChanged += HandleLevelChanged;
         }
 
@@ -36,26 +39,54 @@ namespace Core.Village
                 ? _building.Definition.GetLevelData(_building.CurrentLevel)
                 : null;
 
-            if (data == null || data.producedItem == null || data.productionAmount <= 0)
-                return; // ce bâtiment/niveau ne produit rien
+            if (data == null || data.productions == null)
+            {
+                Debug.Log($"[Producer] {gameObject.name} : data ou productions NULL (definition={_building.Definition}, level={_building.CurrentLevel})");
+                return;
+            }
 
-            _timer += Time.deltaTime;
-            if (_timer < data.productionInterval) return;
+            for (int i = 0; i < data.productions.Length; i++)
+            {
+                ProductionEntry entry = data.productions[i];
+                if (entry.item == null || entry.amount <= 0)
+                {
+                    Debug.Log($"[Producer] {gameObject.name} entrée {i} : item ou amount invalide (item={entry.item}, amount={entry.amount})");
+                    continue;
+                }
 
-            _timer -= data.productionInterval;
-            Produce(data.producedItem, data.productionAmount);
+                float timer = _timers.TryGetValue(i, out float t) ? t : 0f;
+                timer += Time.deltaTime;
+
+                Debug.Log($"[Producer] {gameObject.name} entrée {i} ({entry.item.DisplayName}) : timer={timer:F1}/{entry.interval}");
+
+                if (timer >= entry.interval)
+                {
+                    timer -= entry.interval;
+                    Produce(entry.item, entry.amount);
+                }
+
+                _timers[i] = timer;
+            }
         }
 
         private void Produce(ItemDefinition item, int amount)
         {
-            if (targetStorage == null || targetStorage.Inventory == null) return;
+            if (targetStorage == null || targetStorage.Inventory == null)
+            {
+                Debug.LogWarning($"[Producer] {gameObject.name} : targetStorage non assigné !");
+                return;
+            }
 
             targetStorage.Inventory.Add(item, amount);
             OnProduced?.Invoke(item, amount);
+            Debug.Log($"[Producer] {gameObject.name} a produit {amount}x {item.DisplayName}");
         }
 
-        // Remet le minuteur à zéro à chaque montée de niveau (évite un cycle "à cheval"
-        // entre l'ancien rythme et le nouveau).
-        private void HandleLevelChanged(int newLevel) => _timer = 0f;
+        // Remet tous les minuteurs à zéro à chaque montée de niveau.
+        private void HandleLevelChanged(int newLevel)
+        {
+            Debug.Log($"[Producer] {gameObject.name} : OnLevelChanged déclenché (nouveau niveau={newLevel}) → timers remis à zéro");
+            _timers.Clear();
+        }
     }
 }

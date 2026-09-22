@@ -4,9 +4,18 @@ using Core.InventorySystem;
 
 namespace Core.Village
 {
+    /// <summary>Une ressource produite par un bâtiment à un niveau donné.</summary>
+    [Serializable]
+    public struct ProductionEntry
+    {
+        public ItemDefinition item;
+        [Min(1)] public int amount;
+        [Min(0.1f)] public float interval; // secondes entre deux productions
+    }
+
     /// <summary>
-    /// Un niveau d'un bâtiment : son coût d'amélioration (pour l'ATTEINDRE), son
-    /// visuel optionnel, et sa production passive (Ferme/Mine/Scierie).
+    /// Un niveau d'un bâtiment : son coût d'amélioration, son visuel optionnel,
+    /// et TOUT ce qu'il produit à ce niveau (une Mine peut produire pierre ET fer).
     /// </summary>
     [Serializable]
     public sealed class BuildingLevelData
@@ -18,12 +27,8 @@ namespace Core.Village
         public GameObject visualPrefab;
 
         [Header("Production (Ferme / Mine / Scierie)")]
-        [Tooltip("L'item produit à ce niveau par CE producteur. Vide = ne produit rien.")]
-        public ItemDefinition producedItem;
-        [Tooltip("Quantité produite par cycle.")]
-        [Min(0)] public int productionAmount;
-        [Tooltip("Secondes entre deux productions.")]
-        [Min(0.1f)] public float productionInterval = 10f;
+        [Tooltip("Tout ce que ce bâtiment produit à ce niveau (une entrée par ressource).")]
+        public ProductionEntry[] productions;
     }
 
     /// <summary>
