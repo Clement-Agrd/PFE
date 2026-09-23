@@ -125,6 +125,26 @@
                     "interactions": "",
                     "initialStateCheck": false,
                     "priority": 0
+                },
+                {
+                    "name": "ViewVillage",
+                    "type": "Button",
+                    "id": "fd63460e-cd5f-41c0-9606-b8580a8cd1b3",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
+                },
+                {
+                    "name": "ExitVillageView",
+                    "type": "Button",
+                    "id": "377e35cd-ff55-460e-8800-78872f0f01b2",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false,
+                    "priority": 0
                 }
             ],
             "bindings": [
@@ -301,6 +321,39 @@
                     "processors": "",
                     "groups": "",
                     "action": "SelectPickaxe",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "73639dbd-ee00-49ae-8fa0-d63a28290bd5",
+                    "path": "<Mouse>/leftButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ViewVillage",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "f0b4d780-4384-49f2-971f-76c977651c2d",
+                    "path": "<Keyboard>/escape",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExitVillageView",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "75f6f290-cb15-45cd-a11d-5244e61639ad",
+                    "path": "",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ExitVillageView",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

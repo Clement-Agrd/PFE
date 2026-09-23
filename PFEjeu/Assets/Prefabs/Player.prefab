@@ -146,9 +146,9 @@ GameObject:
   m_Component:
   - component: {fileID: 6049880369452092882}
   - component: {fileID: 4314330595303993481}
-  - component: {fileID: 634414795037399987}
-  - component: {fileID: 6145931558672038888}
   - component: {fileID: 5696852118197156800}
+  - component: {fileID: 6145931558672038888}
+  - component: {fileID: 634414795037399987}
   - component: {fileID: 8915196170815359498}
   - component: {fileID: 8476859788016329439}
   - component: {fileID: 2996941395369023088}
@@ -217,7 +217,7 @@ CharacterController:
   m_SkinWidth: 0.09
   m_MinMoveDistance: 0
   m_Center: {x: 0, y: 0.9, z: 0}
---- !u!114 &634414795037399987
+--- !u!114 &5696852118197156800
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -226,21 +226,27 @@ MonoBehaviour:
   m_GameObject: {fileID: 1602151265126596277}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 66c3aa09a739b6c41819e9b66d1c2e1f, type: 3}
+  m_Script: {fileID: 11500000, guid: eff0742895d4bb3439d151c259f6a73f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerInputReader
-  move: {fileID: -6439938671191722971, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  look: {fileID: 1681530599986387066, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  jump: {fileID: -2475017380044744963, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  roll: {fileID: -7457282641837436403, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  sprint: {fileID: -3528008650494804680, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  attack: {fileID: -38450215899249389, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  aim: {fileID: 3220436852841582552, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  selectMelee: {fileID: -3017454021915181449, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  selectBow: {fileID: 5129088637729589846, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  selectMagic: {fileID: -5503065528062632261, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  selectAxe: {fileID: -5629401345378279974, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  selectPickaxe: {fileID: -222224657145104768, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerCombatController
+  input: {fileID: 634414795037399987}
+  motor: {fileID: 6145931558672038888}
+  aimCamera: {fileID: 2348394047694948022}
+  animationBridge: {fileID: 8697141717061842652}
+  audioBridge: {fileID: 9044873533130608792}
+  stats: {fileID: 5049545344184252771}
+  melee: {fileID: 8915196170815359498}
+  bow: {fileID: 8476859788016329439}
+  magic: {fileID: 2996941395369023088}
+  aimMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  defaultAimRange: 200
+  minimumAttackSpeed: 0.1
+  maximumAttackSpeed: 5
+  axe: {fileID: 5265492163179978160}
+  pickaxe: {fileID: 216625958983029822}
+  vfxBridge: {fileID: 4011075860081473745}
 --- !u!114 &6145931558672038888
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -319,7 +325,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   rollUsesStamina: 1
   rollStaminaCost: 20
---- !u!114 &5696852118197156800
+--- !u!114 &634414795037399987
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -328,27 +334,21 @@ MonoBehaviour:
   m_GameObject: {fileID: 1602151265126596277}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eff0742895d4bb3439d151c259f6a73f, type: 3}
+  m_Script: {fileID: 11500000, guid: 66c3aa09a739b6c41819e9b66d1c2e1f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerCombatController
-  input: {fileID: 634414795037399987}
-  motor: {fileID: 6145931558672038888}
-  aimCamera: {fileID: 2348394047694948022}
-  animationBridge: {fileID: 8697141717061842652}
-  audioBridge: {fileID: 9044873533130608792}
-  stats: {fileID: 5049545344184252771}
-  melee: {fileID: 8915196170815359498}
-  bow: {fileID: 8476859788016329439}
-  magic: {fileID: 2996941395369023088}
-  aimMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  defaultAimRange: 200
-  minimumAttackSpeed: 0.1
-  maximumAttackSpeed: 5
-  axe: {fileID: 5265492163179978160}
-  pickaxe: {fileID: 216625958983029822}
-  vfxBridge: {fileID: 4011075860081473745}
+  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerInputReader
+  move: {fileID: -6439938671191722971, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  look: {fileID: 1681530599986387066, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  jump: {fileID: -2475017380044744963, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  roll: {fileID: -7457282641837436403, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  sprint: {fileID: -3528008650494804680, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  attack: {fileID: -38450215899249389, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  aim: {fileID: 3220436852841582552, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  selectMelee: {fileID: -3017454021915181449, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  selectBow: {fileID: 5129088637729589846, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  selectMagic: {fileID: -5503065528062632261, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  selectAxe: {fileID: -5629401345378279974, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
+  selectPickaxe: {fileID: -222224657145104768, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
 --- !u!114 &8915196170815359498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1119,8 +1119,8 @@ GameObject:
   - component: {fileID: 3320637073451335339}
   - component: {fileID: 2348394047694948022}
   - component: {fileID: 3008462925987097826}
-  - component: {fileID: 7941474918085748826}
   - component: {fileID: 1543637796717967254}
+  - component: {fileID: 7941474918085748826}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -1202,6 +1202,39 @@ AudioListener:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8551814754036040921}
   m_Enabled: 1
+--- !u!114 &1543637796717967254
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8551814754036040921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d74b53958d202c4f871434df3b2c446, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.ThirdPersonCamera
+  input: {fileID: 634414795037399987}
+  target: {fileID: 1044498313947354830}
+  playerRoot: {fileID: 6049880369452092882}
+  controlledCamera: {fileID: 2348394047694948022}
+  mouseSensitivity: 0.12
+  gamepadDegreesPerSecond: 180
+  minPitch: -35
+  maxPitch: 70
+  lockCursor: 1
+  distance: 4.2
+  shoulderOffset: {x: 0.55, y: 0.15, z: 0}
+  normalFov: 60
+  aimDistance: 3
+  aimShoulderOffset: {x: 0.75, y: 0.2, z: 0}
+  aimFov: 52
+  aimBlendSpeed: 10
+  collisionMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  collisionRadius: 0.2
+  collisionPadding: 0.05
 --- !u!114 &7941474918085748826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1246,36 +1279,3 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
---- !u!114 &1543637796717967254
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8551814754036040921}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4d74b53958d202c4f871434df3b2c446, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.ThirdPersonCamera
-  input: {fileID: 634414795037399987}
-  target: {fileID: 1044498313947354830}
-  playerRoot: {fileID: 6049880369452092882}
-  controlledCamera: {fileID: 2348394047694948022}
-  mouseSensitivity: 0.12
-  gamepadDegreesPerSecond: 180
-  minPitch: -35
-  maxPitch: 70
-  lockCursor: 1
-  distance: 4.2
-  shoulderOffset: {x: 0.55, y: 0.15, z: 0}
-  normalFov: 60
-  aimDistance: 3
-  aimShoulderOffset: {x: 0.75, y: 0.2, z: 0}
-  aimFov: 52
-  aimBlendSpeed: 10
-  collisionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  collisionRadius: 0.2
-  collisionPadding: 0.05

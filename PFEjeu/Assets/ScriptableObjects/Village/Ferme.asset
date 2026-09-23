@@ -13,14 +13,22 @@ MonoBehaviour:
   m_Name: Ferme
   m_EditorClassIdentifier: Assembly-CSharp::Core.Village.BuildingDefinition
   displayName: Ferme
-  icon: {fileID: 0}
+  icon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   levels:
+  - level: 1
+    upgradeCost: []
+    visualPrefab: {fileID: 0}
+    productions:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 1111
+      interval: 1000
+  - level: 2
+    upgradeCost:
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 10
+    visualPrefab: {fileID: 919132149155446097, guid: d9964b72de174a949842e52a2e893419, type: 3}
+    productions: []
   - level: 0
     upgradeCost: []
     visualPrefab: {fileID: 0}
-  - level: 0
-    upgradeCost: []
-    visualPrefab: {fileID: 0}
-  - level: 0
-    upgradeCost: []
-    visualPrefab: {fileID: 0}
+    productions: []

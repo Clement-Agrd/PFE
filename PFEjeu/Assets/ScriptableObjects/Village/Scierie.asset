@@ -13,14 +13,22 @@ MonoBehaviour:
   m_Name: Scierie
   m_EditorClassIdentifier: Assembly-CSharp::Core.Village.BuildingDefinition
   displayName: Scierie
-  icon: {fileID: 0}
+  icon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   levels:
+  - level: 1
+    upgradeCost: []
+    visualPrefab: {fileID: 0}
+    productions:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 300
+      interval: 0
+  - level: 2
+    upgradeCost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 100
+    visualPrefab: {fileID: 0}
+    productions: []
   - level: 0
     upgradeCost: []
     visualPrefab: {fileID: 0}
-  - level: 0
-    upgradeCost: []
-    visualPrefab: {fileID: 0}
-  - level: 0
-    upgradeCost: []
-    visualPrefab: {fileID: 0}
+    productions: []

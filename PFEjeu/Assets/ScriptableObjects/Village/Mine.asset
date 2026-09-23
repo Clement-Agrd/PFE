@@ -13,23 +13,19 @@ MonoBehaviour:
   m_Name: Mine
   m_EditorClassIdentifier: Assembly-CSharp::Core.Village.BuildingDefinition
   displayName: Mine
-  icon: {fileID: 0}
+  icon: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   levels:
+  - level: 1
+    upgradeCost: []
+    visualPrefab: {fileID: 0}
+    productions: []
+  - level: 2
+    upgradeCost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 10
+    visualPrefab: {fileID: 0}
+    productions: []
   - level: 0
     upgradeCost: []
     visualPrefab: {fileID: 0}
-    producedItem: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
-    productionAmount: 2
-    productionInterval: 2
-  - level: 0
-    upgradeCost: []
-    visualPrefab: {fileID: 0}
-    producedItem: {fileID: 0}
-    productionAmount: 0
-    productionInterval: 10
-  - level: 0
-    upgradeCost: []
-    visualPrefab: {fileID: 0}
-    producedItem: {fileID: 0}
-    productionAmount: 0
-    productionInterval: 10
+    productions: []
