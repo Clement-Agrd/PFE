@@ -23,14 +23,15 @@ namespace Core.TowerDefense
         [SerializeField] private LootTable lootTable;
 
         [Header("Objectif")]
-        [Tooltip("Distance (à plat) à laquelle il considère avoir atteint la base.")]
         [SerializeField] private float reachDistance = 1.2f;
-        [Tooltip("Fréquence de recalcul de la destination (s).")]
         [SerializeField] private float repathInterval = 0.5f;
-        [Tooltip("Rayon de recherche pour poser l'ennemi/la cible sur le NavMesh.")]
         [SerializeField] private float navSampleRadius = 5f;
 
         public event System.Action<IWaveEnemy> Defeated;
+
+        // Accès public à la fiche : lisible sur le PREFAB (sans le spawner),
+        // utilisé par SpawnZonePreviewUI pour connaître le portrait à afficher.
+        public EnemyDefinition Definition => definition;
 
         private NavMeshAgent _agent;
         private Health _health;
@@ -93,7 +94,6 @@ namespace Core.TowerDefense
             _repathTimer = 0f;
             _agent.speed = _speed;
 
-            // Pose l'agent sur le NavMesh le plus proche (corrige l'erreur + les trajets erratiques).
             if (!_agent.isOnNavMesh)
             {
                 if (NavMesh.SamplePosition(transform.position, out NavMeshHit hit, navSampleRadius, NavMesh.AllAreas))
@@ -110,7 +110,7 @@ namespace Core.TowerDefense
         private void Update()
         {
             if (_finished || _target == null) return;
-            if (!_agent.isOnNavMesh) return; // évite l'erreur remainingDistance
+            if (!_agent.isOnNavMesh) return;
 
             _repathTimer -= Time.deltaTime;
             if (_repathTimer <= 0f)
@@ -119,11 +119,8 @@ namespace Core.TowerDefense
                 SetDestinationSafe();
             }
 
-            // Tant que le chemin se calcule, on n'évalue pas l'arrivée.
             if (_agent.pathPending) return;
 
-            // Vraie distance à la destination réelle (plan horizontal),
-            // plus fiable que remainingDistance qui peut renvoyer 0 pendant le calcul.
             Vector3 a = transform.position; a.y = 0f;
             Vector3 b = _destination; b.y = 0f;
 
@@ -131,7 +128,6 @@ namespace Core.TowerDefense
                 ReachBase();
         }
 
-        // Ramène la cible sur le NavMesh avant de l'assigner (base flottante / hors zone).
         private void SetDestinationSafe()
         {
             if (_target == null) return;
@@ -175,21 +171,10 @@ namespace Core.TowerDefense
 
         private void Defeat()
         {
-            if (_agent.isOnNavMesh) _agent.isStopped = true;
-
             Defeated?.Invoke(this);
 
             if (TryGetComponent(out PooledObject pooled)) pooled.Release();
             else Destroy(gameObject);
-        }
-
-        private void OnDrawGizmosSelected()
-        {
-            if (!Application.isPlaying) return;
-
-            Gizmos.color = Color.red;
-            Gizmos.DrawWireSphere(_destination, reachDistance);
-            Gizmos.DrawLine(transform.position, _destination);
         }
     }
 }

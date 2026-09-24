@@ -8,8 +8,7 @@ namespace Core.Village.UI
     /// <summary>
     /// Panneau d'amélioration d'un bâtiment : s'ouvre au clic (vue village),
     /// affiche nom/niveau/coût du prochain niveau, et tente l'amélioration via
-    /// le VillageManager. Se ferme automatiquement quand on quitte la vue
-    /// village (Échap), ou manuellement via le bouton Fermer.
+    /// le VillageManager. Se ferme automatiquement en sortant de la vue village.
     /// </summary>
     public sealed class BuildingPanelUI : MonoBehaviour
     {
@@ -29,7 +28,7 @@ namespace Core.Village.UI
         [Header("UI — Actions")]
         [SerializeField] private Button upgradeButton;
         [SerializeField] private TMP_Text upgradeButtonLabel;
-        [SerializeField] private TMP_Text feedbackLabel; // "Nécessite HDV niveau 3", etc.
+        [SerializeField] private TMP_Text feedbackLabel;
         [SerializeField] private Button closeButton;
 
         private Building _current;
@@ -46,7 +45,7 @@ namespace Core.Village.UI
             if (villageView != null)
             {
                 villageView.OnBuildingClicked += Show;
-                villageView.OnExitedVillageView += Hide; // ferme le panneau en sortant de la vue village
+                villageView.OnExitedVillageView += Hide;
             }
             if (villageManager != null)
             {
@@ -88,7 +87,7 @@ namespace Core.Village.UI
         private void HandleUpgradeClicked()
         {
             if (_current == null || villageManager == null) return;
-            villageManager.TryUpgrade(_current); // déclenche OnBuildingUpgraded ou OnUpgradeFailed
+            villageManager.TryUpgrade(_current);
         }
 
         private void HandleUpgraded(Building building, int newLevel)
@@ -118,7 +117,6 @@ namespace Core.Village.UI
 
             if (next == null)
             {
-                // Niveau maximum atteint : pas de coût à afficher, bouton désactivé.
                 ClearCostRows();
                 if (upgradeButtonLabel != null) upgradeButtonLabel.text = "Niveau max";
                 if (upgradeButton != null) upgradeButton.interactable = false;
@@ -127,8 +125,11 @@ namespace Core.Village.UI
 
             BuildCostRows(next.upgradeCost);
 
+            string reason = "";
+            bool canUpgrade = villageManager != null && villageManager.CanUpgrade(_current, out reason);
+
             if (upgradeButtonLabel != null) upgradeButtonLabel.text = $"Améliorer (Niv. {level + 1})";
-            if (upgradeButton != null) upgradeButton.interactable = villageManager.CanUpgrade(_current, out _);
+            if (upgradeButton != null) upgradeButton.interactable = canUpgrade;
         }
 
         private void BuildCostRows(ResourceCost[] costs)

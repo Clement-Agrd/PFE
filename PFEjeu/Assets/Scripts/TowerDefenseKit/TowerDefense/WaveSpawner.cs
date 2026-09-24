@@ -10,6 +10,8 @@ namespace Core.WaveSystem
     /// Déroule un WaveSet en déclenchement MANUEL, façon Dungeon Defenders :
     /// plusieurs zones de spawn actives EN MÊME TEMPS, chacune crachant ses
     /// ennemis par SALVES plutôt qu'un par un à la file. Spawn via le Pooling.
+    /// Un délai minimum garanti laisse toujours le temps à l'aperçu de spawn
+    /// (SpawnZonePreviewUI) d'être visible avant que les ennemis sortent.
     /// </summary>
     public sealed class WaveSpawner : MonoBehaviour
     {
@@ -20,6 +22,10 @@ namespace Core.WaveSystem
 
         [Tooltip("Les zones de spawn de la scène. Chaque SpawnEntry en cible une par son Id.")]
         [SerializeField] private List<SpawnZone> zones = new();
+
+        [Header("Aperçu de spawn")]
+        [Tooltip("Délai minimum GARANTI avant le premier spawn d'une entrée, même si son Start Delay est à 0. Laisse le temps à l'aperçu (icône au-dessus de la zone) d'être vu.")]
+        [SerializeField, Min(0f)] private float minPreviewDuration = 2.5f;
 
         private Dictionary<string, SpawnZone> _zonesById;
 
@@ -45,6 +51,11 @@ namespace Core.WaveSystem
         public event Action<int> OnWaveCompleted;
         public event Action OnAllWavesCompleted;
         public event Action<GameObject> OnEnemySpawned;
+
+        // Aperçu de spawn (façon Dungeon Defenders 2) : annonce ce qui va sortir
+        // d'une zone AVANT le spawn effectif.
+        public event Action<string, GameObject, int> OnZoneSpawnStarted;  // zoneId, prefab, totalCount
+        public event Action<string> OnZoneSpawnFinished;                  // zoneId
 
         private void Awake()
         {
@@ -117,11 +128,19 @@ namespace Core.WaveSystem
         {
             if (entry.prefab == null) yield break;
 
-            if (entry.startDelay > 0f)
-                yield return new WaitForSeconds(entry.startDelay);
-
             float scale = 1f + _loop * waveSet.CountScalePerLoop;
             int totalCount = Mathf.Max(1, Mathf.RoundToInt(entry.count * scale));
+
+            // Annonce l'aperçu AVANT le délai : le joueur voit venir la horde
+            // au-dessus de la zone, comme le halo d'un portail de DD2.
+            OnZoneSpawnStarted?.Invoke(entry.zoneId, entry.prefab, totalCount);
+
+            // Le délai avant spawn est le PLUS GRAND entre celui réglé sur
+            // l'entrée et le minimum garanti : l'aperçu est toujours visible
+            // assez longtemps, même si startDelay = 0 sur l'entrée.
+            float delay = Mathf.Max(entry.startDelay, minPreviewDuration);
+            if (delay > 0f)
+                yield return new WaitForSeconds(delay);
 
             SpawnZone zone = ResolveZone(entry.zoneId);
 
@@ -138,6 +157,8 @@ namespace Core.WaveSystem
                 if (spawned < totalCount && entry.burstInterval > 0f)
                     yield return new WaitForSeconds(entry.burstInterval);
             }
+
+            OnZoneSpawnFinished?.Invoke(entry.zoneId);
         }
 
         private SpawnZone ResolveZone(string zoneId)

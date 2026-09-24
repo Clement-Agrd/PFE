@@ -21,7 +21,7 @@ namespace Core.WaveSystem
         [Min(1)] public int burstSize = 4;
         [Tooltip("Temps entre deux salves (secondes).")]
         [Min(0f)] public float burstInterval = 0.3f;
-        [Tooltip("Délai avant que cette ligne commence (pour décaler plusieurs zones entre elles).")]
+        [Tooltip("Délai avant que cette ligne commence à spawner (pour décaler plusieurs zones entre elles).")]
         [Min(0f)] public float startDelay = 0f;
     }
 }

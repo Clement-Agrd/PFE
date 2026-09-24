@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Enemy
   m_EditorClassIdentifier: Assembly-CSharp::Core.TowerDefense.EnemyDefinition
   displayName: Gobelin
+  icon: {fileID: 21300000, guid: b05196484029ebb4e8ba363a1b67fb50, type: 3}
   maxHealth: 30
   speed: 3
   baseDamage: 1
