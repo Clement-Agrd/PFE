@@ -15,7 +15,7 @@ MonoBehaviour:
   displayName: Gobelin
   icon: {fileID: 21300000, guid: b05196484029ebb4e8ba363a1b67fb50, type: 3}
   maxHealth: 30
-  speed: 3
+  speed: 10
   baseDamage: 1
   goldReward: 5
   lootTable: {fileID: 11400000, guid: 4e0802299741f864db209573a8e78089, type: 2}
