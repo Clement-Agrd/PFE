@@ -1,6 +1,8 @@
 using System;
+using Core.HealthSystem;
 using Core.PoolingSystem;
 using Core.StatsSystem;
+using StatType = Core.StatsSystem.EnumStats.StatTypes;
 using UnityEngine;
 
 /// <summary>
@@ -49,6 +51,8 @@ public class Tower : MonoBehaviour
 
     // L'ennemi actuellement visé (le plus proche trouvé lors de la dernière détection).
     private Collider currentTarget;
+    
+    private EntityStats stats;
 
     //--------Détection--------//
 
@@ -115,7 +119,26 @@ public class Tower : MonoBehaviour
 
         // Donne au projectile sa cible et le type de dégâts à infliger
         // (le type sert aux résistances éventuelles côté Health de la cible).
-        projectile.SetTarget(currentTarget.transform, towerData.DamageType);
+
+        StatType damageStat;
+        switch (towerData.DamageType.Category)
+        {
+            case DamageCategory.Physical :
+                damageStat = StatType.PhysicDamage;
+                break;
+            
+            case DamageCategory.Magical:
+                damageStat = StatType.MagicDamage;
+                break;
+            
+            default:
+                damageStat = StatType.PhysicDamage;
+                break;
+        }
+        
+        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
+        
+        projectile.SetTarget(currentTarget.transform, towerData.DamageType, finalDamage);
     }
 
     //--------Niveau--------//
@@ -126,7 +149,7 @@ public class Tower : MonoBehaviour
 
         // Démarre toujours au niveau minimum défini dans la fiche de données.
         currentLevel = towerData.MinLevel;
-        EntityStats stats = GetComponent<EntityStats>();
+        stats = GetComponent<EntityStats>();
         towerData.ApplyStatsTo(stats);
         UpdateModel();
     }

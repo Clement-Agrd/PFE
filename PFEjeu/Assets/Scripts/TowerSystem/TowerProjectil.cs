@@ -25,7 +25,7 @@ public class TowerProjectil : MonoBehaviour
     [Tooltip("Distance à laquelle le projectile considère avoir touché sa cible.")]
     [SerializeField] private float hitDistance = 1f;
 
-    [SerializeField] private int damage = 10;
+    private int damage;
 
     // Référence au composant de pooling (récupérée une fois, dans Awake).
     private PooledObject _pooled;
@@ -52,10 +52,11 @@ public class TowerProjectil : MonoBehaviour
     }
 
     /// <summary>Appelé par Tower juste après avoir spawné ce projectile.</summary>
-    public void SetTarget(Transform newTarget, DamageType newDamageType)
+    public void SetTarget(Transform newTarget, DamageType newDamageType, int newDamage)
     {
         target = newTarget;
         damageType = newDamageType;
+        damage = newDamage;
     }
 
     private void Update()
