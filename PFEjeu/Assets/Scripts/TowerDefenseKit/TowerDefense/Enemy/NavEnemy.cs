@@ -50,10 +50,6 @@ namespace Core.TowerDefense
         [SerializeField, Min(0.1f)]
         private float speed = 3.5f;
 
-        [Tooltip(
-            "Dégâts infligés à la BASE lorsque l'ennemi atteint la fin."
-        )]
-
         [SerializeField, Min(0)]
         private int goldReward = 5;
 
@@ -743,15 +739,9 @@ namespace Core.TowerDefense
                             true;
                     }
 
-
-                    // Permet de frapper immédiatement
-                    // lorsqu'on arrive au contact.
-                    _nextAttackTime =
-                        Mathf.Min(
-                            _nextAttackTime,
-                            Time.time
-                        );
-
+                    // Ne touche pas à _nextAttackTime ici :
+                    // cela conserve correctement le cooldown si la cible
+                    // entre/sort rapidement de la portée d'attaque.
                     break;
 
 
