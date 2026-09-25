@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 
 using Core.PoolingSystem;
 
@@ -428,10 +429,42 @@ namespace Core.WaveSystem
             GameObject prefab,
             SpawnZone zone)
         {
-            Vector3 position =
-                zone != null
-                    ? zone.GetRandomPoint()
-                    : transform.position;
+            Vector3 position;
+
+            if (zone != null)
+            {
+                if (!zone.TryGetRandomPoint(
+                        out position))
+                {
+                    Debug.LogError(
+                        $"[WaveSpawner] Spawn annulé pour {prefab.name} : " +
+                        $"aucun NavMesh valide dans la zone '{zone.name}'.",
+                        zone
+                    );
+
+                    return;
+                }
+            }
+            else
+            {
+                if (!NavMesh.SamplePosition(
+                        transform.position,
+                        out NavMeshHit fallbackHit,
+                        5f,
+                        NavMesh.AllAreas))
+                {
+                    Debug.LogError(
+                        $"[WaveSpawner] Spawn annulé pour {prefab.name} : " +
+                        "aucun NavMesh valide près du WaveSpawner.",
+                        this
+                    );
+
+                    return;
+                }
+
+                position =
+                    fallbackHit.position;
+            }
 
 
             GameObject instance =
