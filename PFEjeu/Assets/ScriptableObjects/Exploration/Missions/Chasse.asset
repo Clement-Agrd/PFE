@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad17c2cef33d48a4ea36bca74dad1874, type: 3}
+  m_Name: Chasse
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.Exploration.ExplorationMissionDefinition
+  <DisplayName>k__BackingField: Chasse
+  <Zone>k__BackingField: 0
+  <DurationCycles>k__BackingField: 1
+  <BaseRisk>k__BackingField: 1
+  <Loot>k__BackingField:
+  - item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+    minAmount: 20
+    maxAmount: 35
+    dropChance: 1
+    isRare: 0
+  - item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+    minAmount: 5
+    maxAmount: 10
+    dropChance: 1
+    isRare: 0

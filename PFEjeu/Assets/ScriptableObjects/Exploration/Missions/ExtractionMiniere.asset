@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ad17c2cef33d48a4ea36bca74dad1874, type: 3}
+  m_Name: ExtractionMiniere
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.Exploration.ExplorationMissionDefinition
+  <DisplayName>k__BackingField: "Extraction mini\xE8re"
+  <Zone>k__BackingField: 1
+  <DurationCycles>k__BackingField: 2
+  <BaseRisk>k__BackingField: 1
+  <Loot>k__BackingField:
+  - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+    minAmount: 25
+    maxAmount: 45
+    dropChance: 1
+    isRare: 0
+  - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+    minAmount: 10
+    maxAmount: 20
+    dropChance: 1
+    isRare: 0
+  - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+    minAmount: 5
+    maxAmount: 10
+    dropChance: 0.3
+    isRare: 1

@@ -118,7 +118,7 @@ namespace Core.Village.UI
 
         public void Show(Building building)
         {
-            if (building == null) return;
+            if (building == null || building.Definition == null) return;
 
             bool wasOpen = _current != null;
             _current = building;
