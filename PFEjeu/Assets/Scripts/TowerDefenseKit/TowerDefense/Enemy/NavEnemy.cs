@@ -53,8 +53,6 @@ namespace Core.TowerDefense
         [Tooltip(
             "Dégâts infligés à la BASE lorsque l'ennemi atteint la fin."
         )]
-        [SerializeField, Min(1)]
-        private int baseDamage = 1;
 
         [SerializeField, Min(0)]
         private int goldReward = 5;
@@ -266,10 +264,6 @@ namespace Core.TowerDefense
         // WAVE REFERENCES
         // ============================================================
 
-        private Transform _target;
-
-        private PlayerBase _base;
-
         private Wallet _wallet;
 
         private InventoryHolder _inventory;
@@ -280,8 +274,6 @@ namespace Core.TowerDefense
         // ============================================================
 
         private float _fallbackSpeed;
-
-        private int _baseDamage;
 
         private int _goldReward;
 
@@ -446,38 +438,30 @@ namespace Core.TowerDefense
         // ============================================================
 
         public void Initialize(
-            Transform target,
-            PlayerBase playerBase,
             Wallet wallet,
             InventoryHolder inventory)
         {
-            _target =
-                target;
-
-            _base =
-                playerBase;
-
             _wallet =
                 wallet;
+
 
             _inventory =
                 inventory;
 
 
-            // ========================================================
+            // ============================================================
             // DEFINITION
-            // ========================================================
+            // ============================================================
 
             if (definition != null)
             {
                 _fallbackSpeed =
                     definition.Speed;
 
-                _baseDamage =
-                    definition.BaseDamage;
 
                 _goldReward =
                     definition.GoldReward;
+
 
                 _loot =
                     definition.LootTable;
@@ -491,8 +475,6 @@ namespace Core.TowerDefense
                 }
 
 
-                // Le système de stats universel devient
-                // la source de vérité pour la vitesse.
                 if (_stats != null &&
                     _stats.HasStat(
                         StatType.Speed))
@@ -508,16 +490,19 @@ namespace Core.TowerDefense
                 _fallbackSpeed =
                     speed;
 
-                _baseDamage =
-                    baseDamage;
 
                 _goldReward =
                     goldReward;
+
 
                 _loot =
                     lootTable;
             }
 
+
+            // ============================================================
+            // HEALTH
+            // ============================================================
 
             if (_health != null)
             {
@@ -525,26 +510,37 @@ namespace Core.TowerDefense
             }
 
 
-            // ========================================================
+            // ============================================================
             // RESET AI
-            // ========================================================
+            // ============================================================
 
-            _combatTarget = null;
-
-            _finished = false;
-
-            _repathTimer = 0f;
-
-            _detectionTimer = 0f;
-
-            _nextAttackTime = 0f;
-
-            _attackImpactPending = false;
+            _combatTarget =
+                null;
 
 
-            // ========================================================
+            _finished =
+                false;
+
+
+            _repathTimer =
+                0f;
+
+
+            _detectionTimer =
+                0f;
+
+
+            _nextAttackTime =
+                0f;
+
+
+            _attackImpactPending =
+                false;
+
+
+            // ============================================================
             // NAVMESH
-            // ========================================================
+            // ============================================================
 
             if (!_agent.isOnNavMesh)
             {
@@ -564,9 +560,14 @@ namespace Core.TowerDefense
             _agent.speed =
                 GetMovementSpeed();
 
+
             _agent.autoBraking =
                 false;
 
+
+            // ============================================================
+            // PATH
+            // ============================================================
 
             if (splinePath == null &&
                 autoFindSpline)
@@ -575,6 +576,17 @@ namespace Core.TowerDefense
                     FindFirstObjectByType<
                         EnemySplinePath
                     >();
+            }
+
+
+            if (splinePath == null ||
+                !splinePath.IsValid)
+            {
+                Debug.LogError(
+                    $"[{nameof(NavEnemy)}] " +
+                    $"{name} n'a aucune EnemySplinePath valide.",
+                    this
+                );
             }
 
 
@@ -793,18 +805,14 @@ namespace Core.TowerDefense
 
         private void TickFollowSpline()
         {
-            if (splinePath != null &&
-                splinePath.IsValid)
+            if (splinePath == null ||
+                !splinePath.IsValid)
             {
-                TickSplinePath();
-
                 return;
             }
 
 
-            // Fallback :
-            // comportement de ton ancien NavEnemy.
-            TickDirectPathToBase();
+            TickSplinePath();
         }
 
 
@@ -820,7 +828,7 @@ namespace Core.TowerDefense
             if (_pathIndex >=
                 splinePath.Count)
             {
-                ReachBase();
+                ReachPathEnd();
 
                 return;
             }
@@ -847,7 +855,7 @@ namespace Core.TowerDefense
                 distance <=
                 reachDistance)
             {
-                ReachBase();
+                ReachPathEnd();
 
                 return;
             }
@@ -863,7 +871,7 @@ namespace Core.TowerDefense
                 if (_pathIndex >=
                     splinePath.Count)
                 {
-                    ReachBase();
+                    ReachPathEnd();
 
                     return;
                 }
@@ -925,46 +933,6 @@ namespace Core.TowerDefense
                     closest + 1,
                     splinePath.Count - 1
                 );
-        }
-
-
-        // ============================================================
-        // FALLBACK DIRECT BASE
-        // ============================================================
-
-        private void TickDirectPathToBase()
-        {
-            if (_target == null)
-                return;
-
-
-            _repathTimer -=
-                Time.deltaTime;
-
-
-            if (_repathTimer <= 0f)
-            {
-                _repathTimer =
-                    repathInterval;
-
-
-                SetDestinationSafe(
-                    _target.position
-                );
-            }
-
-
-            float distance =
-                GetPlanarDistanceTo(
-                    _target.position
-                );
-
-
-            if (distance <=
-                reachDistance)
-            {
-                ReachBase();
-            }
         }
 
 
@@ -1539,7 +1507,7 @@ namespace Core.TowerDefense
         // BASE
         // ============================================================
 
-        private void ReachBase()
+        private void ReachPathEnd()
         {
             if (_finished)
                 return;
@@ -1555,14 +1523,18 @@ namespace Core.TowerDefense
             );
 
 
-            if (_base != null)
-            {
-                _base.TakeDamage(
-                    _baseDamage
-                );
-            }
+            Debug.Log(
+                $"[NavEnemy] {name} a atteint la fin de son chemin."
+            );
 
 
+            // Important :
+            //
+            // Pas de gold.
+            // Pas de loot.
+            //
+            // L'ennemi est simplement considéré
+            // comme sorti de la vague.
             Defeat();
         }
 

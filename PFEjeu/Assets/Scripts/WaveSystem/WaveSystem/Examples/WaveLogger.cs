@@ -18,7 +18,6 @@ namespace Core.WaveSystem.Examples
             _spawner.OnWaveStarted += HandleWaveStarted;
             _spawner.OnWaveCompleted += HandleWaveCompleted;
             _spawner.OnAllWavesCompleted += HandleAllCompleted;
-            _spawner.OnEnemySpawned += HandleEnemySpawned;
         }
 
         private void OnDisable()
@@ -26,8 +25,9 @@ namespace Core.WaveSystem.Examples
             _spawner.OnWaveStarted -= HandleWaveStarted;
             _spawner.OnWaveCompleted -= HandleWaveCompleted;
             _spawner.OnAllWavesCompleted -= HandleAllCompleted;
-            _spawner.OnEnemySpawned -= HandleEnemySpawned;
         }
+
+
 
         private void HandleWaveStarted(int wave)
             => Debug.Log($"[Wave] ▶ Vague {wave} démarrée (boucle {_spawner.Loop}).");
