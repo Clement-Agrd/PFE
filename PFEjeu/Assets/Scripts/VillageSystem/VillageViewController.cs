@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using Core.TweenSystem;
 
@@ -106,6 +107,9 @@ namespace Core.Village
 
         private void TrySelectBuilding()
         {
+            // Un clic sur l'UI (bouton du panneau...) ne doit pas sélectionner le bâtiment derrière.
+            if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
+
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = targetCamera.ScreenPointToRay(mousePos);
 

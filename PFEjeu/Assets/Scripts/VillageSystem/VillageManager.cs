@@ -20,6 +20,11 @@ namespace Core.Village
 
         public int TownHallLevel => townHall != null ? townHall.CurrentLevel : 0;
 
+        /// <summary>L'inventaire du stockage HDV (null si non assigné). Lecture seule côté UI.</summary>
+        public Inventory HdvInventory => hdvStorage != null ? hdvStorage.Inventory : null;
+
+        public bool IsTownHall(Building building) => building != null && building == townHall;
+
         public event Action<Building, int> OnBuildingUpgraded; // (bâtiment, nouveau niveau)
         public event Action<Building, string> OnUpgradeFailed; // (bâtiment, raison)
         public event Action OnResourcesTransferred;

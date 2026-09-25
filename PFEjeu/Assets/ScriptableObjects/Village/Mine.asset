@@ -22,7 +22,7 @@ MonoBehaviour:
   - level: 2
     upgradeCost:
     - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
-      amount: 10
+      amount: 194
     visualPrefab: {fileID: 0}
     productions: []
   - level: 0

@@ -13,14 +13,19 @@ namespace Core.InventorySystem.UI
         [SerializeField] private Transform slotsParent;
         [SerializeField] private InventorySlotUI slotPrefab;
 
-        [Header("Raccourci")]
+        [Header("Raccourci (optionnel)")]
+        [Tooltip("Décoche si ce panneau est piloté uniquement de l'extérieur (ex. la vue village), sans touche dédiée.")]
+        [SerializeField] private bool useToggleKey = true;
         [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
+        [Tooltip("Fige le temps quand ouvert (à désactiver pour un inventaire affiché EN PLUS d'une autre vue, comme la vue village).")]
+        [SerializeField] private bool pauseTimeWhenOpen = true;
 
         private Inventory _inventory;
         private InventorySlotUI[] _slots;
         private bool _isOpen = false;
 
         public Inventory Inventory => _inventory;
+        public bool IsOpen => _isOpen;
 
         private void Start()
         {
@@ -45,10 +50,8 @@ namespace Core.InventorySystem.UI
 
         private void Update()
         {
-            if (Input.GetKeyDown(toggleKey))
-            {
+            if (useToggleKey && Input.GetKeyDown(toggleKey))
                 SetOpen(!_isOpen);
-            }
         }
 
         public void SetOpen(bool open)
@@ -56,7 +59,8 @@ namespace Core.InventorySystem.UI
             _isOpen = open;
             if (panel != null) panel.SetActive(_isOpen);
 
-            Time.timeScale = open ? 0f : 1f;
+            if (pauseTimeWhenOpen) Time.timeScale = open ? 0f : 1f;
+
             Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
             Cursor.visible = open;
 
@@ -96,7 +100,6 @@ namespace Core.InventorySystem.UI
             ItemStack stack = _inventory.GetSlot(slotIndex);
             if (stack == null || stack.IsEmpty) return;
 
-            // Spawne l'objet 3D au sol devant le joueur s'il existe
             if (stack.Definition.WorldPrefab != null && inventoryHolder != null)
             {
                 Vector3 spawnPos = inventoryHolder.transform.position + inventoryHolder.transform.forward * 1.5f + Vector3.up * 0.5f;

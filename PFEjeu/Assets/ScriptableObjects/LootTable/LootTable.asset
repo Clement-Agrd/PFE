@@ -15,10 +15,10 @@ MonoBehaviour:
   entries:
   - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
     subTable: {fileID: 11400000}
-    weight: 0
+    weight: 1
     minAmount: 2
     maxAmount: 40
     guaranteed: 1
-    dropChance: 0.667
-  rolls: 1
+    dropChance: 1
+  rolls: 4
   nothingWeight: 1
