@@ -18,12 +18,6 @@ MonoBehaviour:
   - prefab: {fileID: 5298265848249930004, guid: 4c47db725f8e5fe46b0bdbec1774e79c, type: 3}
     count: 5
     zoneId: Ouest
-    burstSize: 4
-    burstInterval: 0.3
-    startDelay: 0
-  - prefab: {fileID: 5298265848249930004, guid: 4c47db725f8e5fe46b0bdbec1774e79c, type: 3}
-    count: 1
-    zoneId: Ouest
     burstSize: 1
-    burstInterval: 0.1
+    burstInterval: 1
     startDelay: 0
