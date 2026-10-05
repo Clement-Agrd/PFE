@@ -89,7 +89,16 @@ namespace Core.TowerDefense
                     _path.Count - 1
                 );
 
-            Resume();
+            // Retour au comportement de suivi de route.
+            if (_agent != null &&
+                _agent.isOnNavMesh)
+            {
+                _agent.stoppingDistance = 0f;
+                _agent.isStopped = false;
+            }
+
+            // Force une nouvelle destination dès le prochain Tick.
+            _repathTimer = 0f;
         }
 
 
@@ -225,8 +234,8 @@ namespace Core.TowerDefense
             if (_agent != null &&
                 _agent.isOnNavMesh)
             {
-                _agent.isStopped =
-                    false;
+                _agent.stoppingDistance = 0f;
+                _agent.isStopped = false;
             }
         }
 
