@@ -17,9 +17,6 @@ namespace Core.WaveSystem
     {
         [SerializeField] private WaveSetDefinition waveSet;
 
-        [Tooltip("Optionnel : si assigné, les ennemis sont poolés. Sinon, Instantiate.")]
-        [SerializeField] private PoolManager poolManager;
-
         [Tooltip("Les zones de spawn de la scène. Chaque SpawnEntry en cible une par son Id.")]
         [SerializeField] private List<SpawnZone> zones = new();
 
@@ -174,10 +171,7 @@ namespace Core.WaveSystem
         {
             Vector3 pos = zone != null ? zone.GetRandomPoint() : transform.position;
 
-            GameObject instance = poolManager != null
-                ? poolManager.Spawn(prefab, pos, Quaternion.identity)
-                : Instantiate(prefab, pos, Quaternion.identity);
-
+            GameObject instance = PoolManager.Instance.Spawn(prefab, pos, Quaternion.identity);
             if (instance == null) return;
 
             _aliveCount++;

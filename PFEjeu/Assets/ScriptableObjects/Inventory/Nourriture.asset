@@ -16,5 +16,8 @@ MonoBehaviour:
   <DisplayName>k__BackingField: Nourriture
   <Icon>k__BackingField: {fileID: 10901, guid: 0000000000000000f000000000000000, type: 0}
   <MaxStackSize>k__BackingField: 50
+  category: 3
   <WorldPrefab>k__BackingField: {fileID: 919132149155446097, guid: 2a9979b14acae404f8d4cd863daf1b34, type: 3}
   interactionVerb: Ramasser
+  healAmount: 15
+  statEffects: []

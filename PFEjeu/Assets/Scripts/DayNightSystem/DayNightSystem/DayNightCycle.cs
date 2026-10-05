@@ -19,6 +19,8 @@ namespace Core.DayNightSystem
 
         [Header("Visuel")]
         [SerializeField] private Light sun;
+        [Tooltip("Facultative : lumière de nuit (opposée au soleil), pour voir pendant les vagues nocturnes.")]
+        [SerializeField] private Light moon;
         [SerializeField] private DayNightProfile profile;
 
         [Header("Phases (fractions de journée, croissantes)")]
@@ -38,9 +40,23 @@ namespace Core.DayNightSystem
         public DayPhase Phase => _phase;
         public bool Paused { get => paused; set => paused = value; }
 
+        /// <summary>
+        /// 0 = plein jour, 1 = pleine nuit, avec un fondu lissé durant l'aube et
+        /// le crépuscule. Continu (contrairement à Phase), pratique pour piloter
+        /// un blend de skybox ou toute autre transition visuelle graduelle.
+        /// </summary>
+        public float NightBlend01 { get; private set; }
+
         public event Action<int> OnHourChanged;       // heure entière 0..23
         public event Action<int> OnDayPassed;         // numéro du nouveau jour
         public event Action<DayPhase> OnPhaseChanged;
+
+        private void Awake()
+        {
+            // Calculé tôt pour que les composants qui le lisent depuis leur propre
+            // OnEnable (ex. SkyboxSwitcher) aient déjà une valeur cohérente.
+            NightBlend01 = ComputeNightBlend(startTime01);
+        }
 
         private void Start()
         {
@@ -83,20 +99,45 @@ namespace Core.DayNightSystem
 
         private void ApplyVisual()
         {
+            NightBlend01 = ComputeNightBlend(_time01);
+
             if (sun != null)
             {
                 // 0.25 (6h) → soleil à l'horizon ; 0.5 (midi) → au zénith.
-                sun.transform.rotation = Quaternion.Euler(_time01 * 360f - 90f, 170f, 0f);
+                Quaternion sunRotation = Quaternion.Euler(_time01 * 360f - 90f, 170f, 0f);
+                sun.transform.rotation = sunRotation;
 
                 if (profile != null)
                 {
                     sun.color = profile.EvaluateSunColor(_time01);
                     sun.intensity = profile.EvaluateSunIntensity(_time01);
                 }
+
+                if (moon != null)
+                {
+                    // Toujours à l'opposé du soleil, sous l'horizon le jour.
+                    moon.transform.rotation = sunRotation * Quaternion.Euler(0f, 180f, 0f);
+
+                    if (profile != null)
+                    {
+                        moon.color = profile.EvaluateMoonColor(_time01);
+                        moon.intensity = profile.EvaluateMoonIntensity(_time01) * NightBlend01;
+                    }
+                }
             }
 
             if (profile != null && profile.DriveAmbient)
                 RenderSettings.ambientLight = profile.EvaluateAmbient(_time01);
+        }
+
+        /// <summary>0 = plein jour, 1 = pleine nuit, avec fondu lissé sur l'aube/le crépuscule.</summary>
+        private float ComputeNightBlend(float t)
+        {
+            if (t < dawnStart) return 1f;
+            if (t < dayStart) return 1f - Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(dawnStart, dayStart, t));
+            if (t < duskStart) return 0f;
+            if (t < nightStart) return Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(duskStart, nightStart, t));
+            return 1f;
         }
 
         private void DetectHour()

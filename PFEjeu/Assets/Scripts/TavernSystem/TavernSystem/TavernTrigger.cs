@@ -1,29 +1,42 @@
-using Core.Village.Exploration.UI;
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
+using Core.Village;
+using Core.TavernSystem.UI;
 
-namespace Core.Village.Exploration
+namespace Core.TavernSystem
 {
     /// <summary>
-    /// Ouvre le panneau du poste d'expédition en marchant dessus et en appuyant
-    /// sur E (même pattern que <see cref="VillageTableTrigger"/>) : le prompt
-    /// suit _playerInRange à chaque frame, indépendamment de tout le reste.
+    /// Zone d'interaction de la taverne : approche-toi, appuie sur E, la carte
+    /// s'ouvre (même pattern que VillageTableTrigger / ExplorationPostTrigger).
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public sealed class ExplorationPostTrigger : MonoBehaviour
+    [RequireComponent(typeof(Tavern))]
+    public sealed class TavernTrigger : MonoBehaviour
     {
-        [SerializeField] private ExplorationPanelUI panel;
+        [SerializeField] private TavernPanelUI panel;
+        [SerializeField] private VillageInputReader input;
         [Tooltip("Texte affiché quand le joueur est dans la zone.")]
         [SerializeField] private GameObject promptUI;
-        [SerializeField] private string promptMessage = "[E] Poste d'expédition";
+        [SerializeField] private string promptMessage = "[E] Taverne";
 
+        private Tavern _tavern;
         private bool _playerInRange;
         private TMP_Text _promptText;
 
         private void Awake()
         {
+            _tavern = GetComponent<Tavern>();
             if (promptUI != null) _promptText = promptUI.GetComponentInChildren<TMP_Text>(true);
+        }
+
+        private void OnEnable()
+        {
+            if (input != null) input.InteractPressed += HandleInteractPressed;
+        }
+
+        private void OnDisable()
+        {
+            if (input != null) input.InteractPressed -= HandleInteractPressed;
         }
 
         private void Update()
@@ -34,11 +47,12 @@ namespace Core.Village.Exploration
                 if (shouldShowPrompt && _promptText != null) _promptText.text = promptMessage;
                 promptUI.SetActive(shouldShowPrompt);
             }
+        }
 
+        private void HandleInteractPressed()
+        {
             if (!_playerInRange || panel == null || panel.IsShown) return;
-
-            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
-                panel.Show();
+            panel.Show(_tavern);
         }
 
         private void OnTriggerEnter(Collider other)

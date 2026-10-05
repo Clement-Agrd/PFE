@@ -31,12 +31,6 @@ public class Tower : MonoBehaviour
     // niveau courant (doit être un enfant nommé exactement "FirePoint").
     [SerializeField] private Transform firePoint;
 
-    // Le gestionnaire de pooling. INDISPENSABLE pour que les projectiles soient
-    // recyclés au lieu d'être détruits/recréés à chaque tir (perf). Si ce champ
-    // est vide, la tour utilise Instantiate() en secours (fonctionne, mais sans
-    // le bénéfice du pooling).
-    [SerializeField] private PoolManager poolManager;
-
     // Temps écoulé depuis le dernier tir, comparé à la cadence de tir (FireRate).
     private float shootTimer;
 
@@ -92,9 +86,9 @@ public class Tower : MonoBehaviour
     }
 
     /// <summary>
-    /// Fait apparaître un projectile (via le pool si possible) et lui donne
-    /// sa cible + son type de dégâts. Toute la logique de vol/impact vit
-    /// ensuite dans TowerProjectil, pas ici.
+    /// Fait apparaître un projectile via le pool et lui donne sa cible + son
+    /// type de dégâts. Toute la logique de vol/impact vit ensuite dans
+    /// TowerProjectil, pas ici.
     /// </summary>
     private void Shoot()
     {
@@ -102,13 +96,7 @@ public class Tower : MonoBehaviour
         if (towerData.ProjectilePrefab == null) return;
         if (firePoint == null) return; // le modèle du niveau actuel n'a pas de FirePoint valide
 
-        // Passe par le PoolManager si assigné (recyclage), sinon Instantiate
-        // classique en secours (le projectile sera alors Destroy() à l'impact
-        // au lieu d'être remis dans un pool).
-        GameObject arrow = poolManager != null
-            ? poolManager.Spawn(towerData.ProjectilePrefab, firePoint.position, firePoint.rotation)
-            : Instantiate(towerData.ProjectilePrefab, firePoint.position, firePoint.rotation);
-
+        GameObject arrow = PoolManager.Instance.Spawn(towerData.ProjectilePrefab, firePoint.position, firePoint.rotation);
         if (arrow == null) return;
 
         if (!arrow.TryGetComponent(out TowerProjectil projectile)) return;

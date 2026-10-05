@@ -66,8 +66,15 @@ namespace ProfessionalTPS
             if (!lockCursor)
                 return;
 
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
+            // Relâche notre propre demande ; si un autre système (inventaire,
+            // vue village...) tient toujours le curseur déverrouillé, on ne
+            // force pas le verrouillage par-dessus.
+            Core.GameFreeze.ReleaseCursorUnlock(this);
+            if (!Core.GameFreeze.IsCursorUnlocked)
+            {
+                Cursor.lockState = CursorLockMode.Locked;
+                Cursor.visible = false;
+            }
         }
 
         private void OnDisable()
@@ -75,13 +82,18 @@ namespace ProfessionalTPS
             if (!lockCursor)
                 return;
 
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            Core.GameFreeze.RequestCursorUnlock(this);
         }
 
         private void LateUpdate()
         {
             if (input == null || target == null)
+                return;
+
+            // Time.timeScale = 0 ne stoppe pas Update/LateUpdate : sans ce garde,
+            // la caméra continuait de tourner (delta souris) même inventaire/UI
+            // ouvert, puisque ce script n'est jamais désactivé comme en vue village.
+            if (Core.GameFreeze.IsCursorUnlocked)
                 return;
 
             UpdateLook();

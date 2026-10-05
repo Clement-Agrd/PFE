@@ -1,4 +1,5 @@
 using UnityEngine;
+using Core;
 
 namespace Core.InventorySystem.UI
 {
@@ -37,12 +38,18 @@ namespace Core.InventorySystem.UI
                 inventoryCanvas.SetActive(_isOpen);
             }
 
-            // 2. Gestion du temps (Pause)
-            Time.timeScale = _isOpen ? 0f : 1f;
-
-            // 3. Liberation / Blocage du curseur pour le Drag & Drop
-            Cursor.lockState = _isOpen ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = _isOpen;
+            // 2. Pause + curseur, via l'autorité partagée (composent avec les autres
+            // panneaux : la vue village, l'exploration...)
+            if (_isOpen)
+            {
+                GameFreeze.RequestPause(this);
+                GameFreeze.RequestCursorUnlock(this);
+            }
+            else
+            {
+                GameFreeze.ReleasePause(this);
+                GameFreeze.ReleaseCursorUnlock(this);
+            }
         }
     }
 }

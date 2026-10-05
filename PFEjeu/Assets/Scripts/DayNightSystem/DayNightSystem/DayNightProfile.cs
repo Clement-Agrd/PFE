@@ -22,10 +22,19 @@ namespace Core.DayNightSystem
 
         [SerializeField] private bool driveAmbient = true;
 
+        [Header("Lune (facultative)")]
+        [Tooltip("Couleur de la lune selon l'heure (utile surtout la nuit).")]
+        [SerializeField] private Gradient moonColor;
+
+        [Tooltip("Intensité de la lune selon l'heure (0 → 1 sur la journée).")]
+        [SerializeField] private AnimationCurve moonIntensity = AnimationCurve.EaseInOut(0.72f, 0f, 0.85f, 0.3f);
+
         public bool DriveAmbient => driveAmbient;
 
         public Color EvaluateSunColor(float t) => sunColor.Evaluate(t);
         public float EvaluateSunIntensity(float t) => sunIntensity.Evaluate(t);
         public Color EvaluateAmbient(float t) => ambientColor.Evaluate(t);
+        public Color EvaluateMoonColor(float t) => moonColor.Evaluate(t);
+        public float EvaluateMoonIntensity(float t) => moonIntensity.Evaluate(t);
     }
 }

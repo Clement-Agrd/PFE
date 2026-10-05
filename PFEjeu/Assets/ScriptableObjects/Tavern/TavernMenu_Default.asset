@@ -1,0 +1,24 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc2659a25876ae841af6e49f9ed8ae6c, type: 3}
+  m_Name: TavernMenu_Default
+  m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernMenuDefinition
+  dishes:
+  - {fileID: 11400000, guid: 74912868c1b41ac4caabcbff82ed5419, type: 2}
+  - {fileID: 11400000, guid: b277a857f397e2c409b20b5fe92c2553, type: 2}
+  - {fileID: 11400000, guid: 32a32a2d2428f0549ae7a5f82949229e, type: 2}
+  - {fileID: 11400000, guid: 790644467e1dfac4ba98c551f3ef396f, type: 2}
+  - {fileID: 11400000, guid: 1bd4afedbf6fbf949b9fd2e2b80f0029, type: 2}
+  - {fileID: 11400000, guid: 10c300d323be0da4f980ed957b3f37ab, type: 2}
+  - {fileID: 11400000, guid: eda8192b12e1e194e8f9420b46c9eacf, type: 2}
+  - {fileID: 11400000, guid: 6658070ed01b6174c987b558f65d4b93, type: 2}
+  - {fileID: 11400000, guid: 394a217af9041cc43ad93795a3762bd6, type: 2}

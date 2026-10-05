@@ -1,6 +1,5 @@
 using TMPro;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using Core.TweenSystem;
 
 namespace Core.Village
@@ -15,6 +14,7 @@ namespace Core.Village
     public sealed class VillageTableTrigger : MonoBehaviour
     {
         [SerializeField] private VillageViewController villageView;
+        [SerializeField] private VillageInputReader input;
         [Tooltip("Texte affiché quand le joueur est dans la zone (optionnel).")]
         [SerializeField] private GameObject promptUI;
         [Tooltip("Message affiché dans promptUI (si celui-ci a un TMP_Text).")]
@@ -49,11 +49,13 @@ namespace Core.Village
         private void OnEnable()
         {
             if (villageView != null) villageView.OnExitedVillageView += HandleExitedView;
+            if (input != null) input.InteractPressed += HandleInteractPressed;
         }
 
         private void OnDisable()
         {
             if (villageView != null) villageView.OnExitedVillageView -= HandleExitedView;
+            if (input != null) input.InteractPressed -= HandleInteractPressed;
         }
 
         private void Update()
@@ -67,12 +69,14 @@ namespace Core.Village
                 if (shouldShowPrompt && _promptText != null) _promptText.text = promptMessage;
                 promptUI.SetActive(shouldShowPrompt);
             }
+        }
 
+        private void HandleInteractPressed()
+        {
             if (!_playerInRange || _entering) return;
             if (villageView != null && villageView.IsInVillageView) return;
 
-            if (Keyboard.current != null && Keyboard.current.eKey.wasPressedThisFrame)
-                Press();
+            Press();
         }
 
         private void Press()

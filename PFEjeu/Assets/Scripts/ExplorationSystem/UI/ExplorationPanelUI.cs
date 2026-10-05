@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Core;
 using Core.InventorySystem;
 using TMPro;
 using UnityEngine;
@@ -36,7 +37,6 @@ namespace Core.Village.Exploration.UI
         [SerializeField] private Color unavailableColor = new(0.5f, 0.5f, 0.5f);
         [SerializeField] private Color failColor = new(0.95f, 0.4f, 0.35f);
 
-        private bool _pausedByThisPanel;
         private readonly List<GameObject> _spawnedRows = new();
 
         public bool IsShown => panel != null && panel.activeSelf;
@@ -85,10 +85,8 @@ namespace Core.Village.Exploration.UI
             bool alreadyInVillageView = villageView != null && villageView.IsInVillageView;
             if (!alreadyInVillageView)
             {
-                _pausedByThisPanel = true;
-                Time.timeScale = 0f;
-                Cursor.lockState = CursorLockMode.None;
-                Cursor.visible = true;
+                GameFreeze.RequestPause(this);
+                GameFreeze.RequestCursorUnlock(this);
             }
 
             Refresh();
@@ -100,13 +98,10 @@ namespace Core.Village.Exploration.UI
         {
             if (panel != null) panel.SetActive(false);
 
-            if (_pausedByThisPanel)
-            {
-                _pausedByThisPanel = false;
-                Time.timeScale = 1f;
-                Cursor.lockState = CursorLockMode.Locked;
-                Cursor.visible = false;
-            }
+            // No-op if this panel never held a request (e.g. shown while already
+            // in village view), since the requester sets are keyed by owner.
+            GameFreeze.ReleasePause(this);
+            GameFreeze.ReleaseCursorUnlock(this);
         }
 
         private void Refresh()

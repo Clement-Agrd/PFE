@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using Core;
 
 namespace Core.InventorySystem.UI
 {
@@ -59,10 +60,16 @@ namespace Core.InventorySystem.UI
             _isOpen = open;
             if (panel != null) panel.SetActive(_isOpen);
 
-            if (pauseTimeWhenOpen) Time.timeScale = open ? 0f : 1f;
-
-            Cursor.lockState = open ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = open;
+            if (open)
+            {
+                if (pauseTimeWhenOpen) GameFreeze.RequestPause(this);
+                GameFreeze.RequestCursorUnlock(this);
+            }
+            else
+            {
+                if (pauseTimeWhenOpen) GameFreeze.ReleasePause(this);
+                GameFreeze.ReleaseCursorUnlock(this);
+            }
 
             if (open) RefreshAll();
         }

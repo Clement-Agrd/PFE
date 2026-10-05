@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using Core.TweenSystem;
+using Core;
 
 namespace Core.Village
 {
@@ -31,6 +32,9 @@ namespace Core.Village
         [Header("Sélection de bâtiment")]
         [SerializeField] private LayerMask buildingLayer = ~0;
 
+        [Header("Input")]
+        [SerializeField] private VillageInputReader input;
+
         public bool IsInVillageView { get; private set; }
 
         public event Action<Building> OnBuildingClicked;
@@ -41,15 +45,30 @@ namespace Core.Village
         private Quaternion _savedRotation;
         private bool _isTransitioning;
 
-        private void Update()
+        private void OnEnable()
+        {
+            if (input == null) return;
+            input.ExitPressed += HandleExitPressed;
+            input.ClickPressed += HandleClickPressed;
+        }
+
+        private void OnDisable()
+        {
+            if (input == null) return;
+            input.ExitPressed -= HandleExitPressed;
+            input.ClickPressed -= HandleClickPressed;
+        }
+
+        private void HandleExitPressed()
         {
             if (!IsInVillageView || _isTransitioning) return;
+            ExitVillageView();
+        }
 
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
-                ExitVillageView();
-
-            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
-                TrySelectBuilding();
+        private void HandleClickPressed()
+        {
+            if (!IsInVillageView || _isTransitioning) return;
+            TrySelectBuilding();
         }
 
         /// <summary>À appeler pour entrer dans la vue village (table, bouton...).</summary>
@@ -72,8 +91,10 @@ namespace Core.Village
                 {
                     _isTransitioning = false;
                     IsInVillageView = true;
-                    Cursor.lockState = CursorLockMode.None;
-                    Cursor.visible = true;
+                    // Après la transition seulement : Tween tourne sur Time.deltaTime
+                    // (scaled), donc figer le temps plus tôt bloquerait l'animation.
+                    GameFreeze.RequestPause(this);
+                    GameFreeze.RequestCursorUnlock(this);
                     OnEnteredVillageView?.Invoke();
                 });
         }
@@ -84,6 +105,11 @@ namespace Core.Village
             if (!IsInVillageView || _isTransitioning || targetCamera == null) return;
 
             IsInVillageView = false;
+            // Libère avant de relancer le tween retour : sinon le temps resterait
+            // figé et l'animation ne progresserait jamais.
+            GameFreeze.ReleasePause(this);
+            GameFreeze.ReleaseCursorUnlock(this);
+
             _isTransitioning = true;
             targetCamera.transform.KillTweens();
 

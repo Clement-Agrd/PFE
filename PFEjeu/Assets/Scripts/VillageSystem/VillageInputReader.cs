@@ -13,20 +13,25 @@ namespace Core.Village
     {
         [SerializeField] private InputActionReference exitVillageView;
         [SerializeField] private InputActionReference click;
+        [Tooltip("Touche d'interaction (E) partagée par les points d'intérêt du village (table HDV, poste d'expédition...).")]
+        [SerializeField] private InputActionReference interact;
 
         public event Action ExitPressed;
         public event Action ClickPressed;
+        public event Action InteractPressed;
 
         private void OnEnable()
         {
             BindPressed(exitVillageView, OnExit);
             BindPressed(click, OnClick);
+            BindPressed(interact, OnInteract);
         }
 
         private void OnDisable()
         {
             UnbindPressed(exitVillageView, OnExit);
             UnbindPressed(click, OnClick);
+            UnbindPressed(interact, OnInteract);
         }
 
         private static void BindPressed(InputActionReference reference, Action<InputAction.CallbackContext> callback)
@@ -45,5 +50,6 @@ namespace Core.Village
 
         private void OnExit(InputAction.CallbackContext _) => ExitPressed?.Invoke();
         private void OnClick(InputAction.CallbackContext _) => ClickPressed?.Invoke();
+        private void OnInteract(InputAction.CallbackContext _) => InteractPressed?.Invoke();
     }
 }
