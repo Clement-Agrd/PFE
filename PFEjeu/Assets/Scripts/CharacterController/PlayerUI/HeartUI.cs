@@ -42,6 +42,9 @@ namespace ProfessionalTPS.UI
 
                 scale.x =
                     amount;
+                
+                scale.y =
+                    amount;
 
                 fill.rectTransform.localScale =
                     scale;
