@@ -151,27 +151,8 @@ namespace Core.TowerDefense
                 return;
 
 
-            if (!enemy.TryGetComponent(
-                    out NavEnemy navEnemy))
-            {
-                Debug.LogWarning(
-                    $"[TowerDefenseLevel] " +
-                    $"{enemy.name} possède IWaveEnemy " +
-                    $"mais pas NavEnemy.",
-                    enemy
-                );
-
-                return;
-            }
-
-
-            // ========================================================
-            // PATH
-            // ========================================================
-
             EnemySplinePath selectedPath =
                 null;
-
 
             if (spawnZone != null)
             {
@@ -179,39 +160,72 @@ namespace Core.TowerDefense
                     spawnZone.EnemyPath;
             }
 
-
             if (selectedPath == null)
             {
                 selectedPath =
                     defaultPath;
             }
 
-
             if (selectedPath == null)
             {
                 Debug.LogError(
-                    $"[TowerDefenseLevel] " +
-                    $"Aucune spline n'est configurée pour {enemy.name}. " +
-                    $"SpawnZone = " +
-                    $"{(spawnZone != null ? spawnZone.name : "None")}.",
+                    "[TowerDefenseLevel] Aucune spline n'est configurée pour " +
+                    enemy.name +
+                    ". SpawnZone = " +
+                    (spawnZone != null
+                        ? spawnZone.name
+                        : "None") +
+                    ".",
                     enemy
                 );
             }
-            else
+
+
+            // Nouvelle IA modulaire.
+            if (enemy.TryGetComponent(
+                    out EnemyController controller))
             {
-                navEnemy.SetPath(
-                    selectedPath
+                if (selectedPath != null)
+                {
+                    controller.SetPath(
+                        selectedPath
+                    );
+                }
+
+                controller.Initialize(
+                    wallet,
+                    playerInventory
                 );
+
+                return;
             }
 
 
-            // ========================================================
-            // INITIALIZATION
-            // ========================================================
+            // Compatibilité avec les anciens prefabs NavEnemy.
+            if (enemy.TryGetComponent(
+                    out NavEnemy navEnemy))
+            {
+                if (selectedPath != null)
+                {
+                    navEnemy.SetPath(
+                        selectedPath
+                    );
+                }
 
-            navEnemy.Initialize(
-                wallet,
-                playerInventory
+                navEnemy.Initialize(
+                    wallet,
+                    playerInventory
+                );
+
+                return;
+            }
+
+
+            Debug.LogWarning(
+                "[TowerDefenseLevel] " +
+                enemy.name +
+                " ne possède ni EnemyController ni NavEnemy.",
+                enemy
             );
         }
 
