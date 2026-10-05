@@ -35,15 +35,29 @@ public class SOTower : ScriptableObject
         public StatType type;
         public float baseValue;
     }
+
+    [Serializable]
+    public class TowerLevelStats
+    {
+        public List<TowerStatEntry> stats = new List<TowerStatEntry>();
+    }
     
     [Header("Tower Stats")]
-    [SerializeField] private List<TowerStatEntry> towerStats = new List<TowerStatEntry>();
+    [SerializeField] private List<TowerLevelStats> towerStats = new List<TowerLevelStats>();
     
-    public void ApplyStatsTo(EntityStats target)
+    public void ApplyStatsTo(EntityStats target, int level)
     {
-        foreach (TowerStatEntry entry in towerStats)
+        int index = level - minLevel;
+
+        if (index < 0 || index >= towerStats.Count)
         {
-            target.SetBaseStat( entry.type , entry.baseValue);
+            Debug.LogError("Le niveau " + level + " n'existe pas dans le SOTower.");
+            return;
+        }
+
+        foreach (TowerStatEntry entry in towerStats[index].stats)
+        {
+            target.SetBaseStat(entry.type, entry.baseValue);
         }
     }
     
@@ -60,22 +74,45 @@ public class SOTower : ScriptableObject
     {
         Array values = Enum.GetValues(typeof(StatType));
 
-        foreach (StatType type in values)
+        int levelCount = maxLevel - minLevel + 1;
+
+        // Crée les niveaux manquants
+        while (towerStats.Count < levelCount)
         {
-            bool found = false;
+            towerStats.Add(new TowerLevelStats());
+        }
 
-            for (int i = 0; i < towerStats.Count; i++)
+        // Supprime les niveaux en trop
+        while (towerStats.Count > levelCount)
+        {
+            towerStats.RemoveAt(towerStats.Count - 1);
+        }
+
+        // Remplit chaque niveau avec toutes les stats
+        foreach (TowerLevelStats levelStats in towerStats)
+        {
+            foreach (StatType type in values)
             {
-                if (towerStats[i].type == type)
+                bool found = false;
+
+                for (int i = 0; i < levelStats.stats.Count; i++)
                 {
-                    found = true;
-                    break;
+                    if (levelStats.stats[i].type == type)
+                    {
+                        found = true;
+                        break;
+                    }
                 }
+
+                if (found)
+                    continue;
+
+                levelStats.stats.Add(new TowerStatEntry
+                {
+                    type = type,
+                    baseValue = 0f
+                });
             }
-
-            if (found) continue;
-
-            towerStats.Add(new TowerStatEntry { type = type, baseValue = 0f });
         }
     }
 #endif
