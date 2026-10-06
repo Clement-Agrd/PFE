@@ -28,6 +28,33 @@ namespace Core.TowerDefense
         private float navSampleRadius = 5f;
 
 
+        [Header("Horde")]
+
+        [Tooltip(
+            "Chaque ennemi reçoit sa propre position latérale autour de la spline."
+        )]
+        [SerializeField]
+        private bool spreadAcrossPath = true;
+
+        [Tooltip(
+            "Evite que l'offset de base soit exactement sur le bord du couloir."
+        )]
+        [SerializeField, Range(0.1f, 1f)]
+        private float widthUsage = 0.85f;
+
+        [Tooltip(
+            "Utilise l'évitement haute qualité du NavMeshAgent pour mieux séparer les groupes."
+        )]
+        [SerializeField]
+        private bool useHighQualityAvoidance = true;
+
+        [SerializeField, Range(0, 99)]
+        private int minAvoidancePriority = 25;
+
+        [SerializeField, Range(0, 99)]
+        private int maxAvoidancePriority = 75;
+
+
         private NavMeshAgent _agent;
 
         private EnemySplinePath _path;
@@ -35,6 +62,10 @@ namespace Core.TowerDefense
         private int _pathIndex = -1;
 
         private float _repathTimer;
+
+        private float _baseLateralOffset;
+
+        private float _wanderSeed;
 
 
         public EnemySplinePath Path =>
@@ -51,6 +82,8 @@ namespace Core.TowerDefense
         {
             _agent =
                 GetComponent<NavMeshAgent>();
+
+            ApplyAvoidanceProfile();
         }
 
 
@@ -65,6 +98,10 @@ namespace Core.TowerDefense
             ReachedEnd = false;
 
             _repathTimer = 0f;
+
+            RandomizeHordePosition();
+
+            ApplyAvoidanceProfile();
         }
 
 
@@ -126,7 +163,7 @@ namespace Core.TowerDefense
             }
 
             Vector3 waypoint =
-                _path.GetPoint(
+                GetNavigationWaypoint(
                     _pathIndex
                 );
 
@@ -162,7 +199,7 @@ namespace Core.TowerDefense
                 }
 
                 waypoint =
-                    _path.GetPoint(
+                    GetNavigationWaypoint(
                         _pathIndex
                     );
 
@@ -185,6 +222,109 @@ namespace Core.TowerDefense
                     waypoint
                 );
             }
+        }
+
+
+        private Vector3 GetNavigationWaypoint(
+            int index)
+        {
+            Vector3 center =
+                _path.GetPoint(
+                    index
+                );
+
+            Vector3 desired =
+                spreadAcrossPath
+                    ? _path.GetPointWithOffset(
+                        index,
+                        _baseLateralOffset,
+                        _wanderSeed
+                    )
+                    : center;
+
+            if (NavMesh.SamplePosition(
+                    desired,
+                    out NavMeshHit offsetHit,
+                    navSampleRadius,
+                    NavMesh.AllAreas))
+            {
+                return offsetHit.position;
+            }
+
+            // Si la largeur dépasse localement le NavMesh,
+            // on retombe proprement sur le centre du chemin.
+            if (NavMesh.SamplePosition(
+                    center,
+                    out NavMeshHit centerHit,
+                    navSampleRadius,
+                    NavMesh.AllAreas))
+            {
+                return centerHit.position;
+            }
+
+            return center;
+        }
+
+
+        private void RandomizeHordePosition()
+        {
+            if (!spreadAcrossPath ||
+                _path == null)
+            {
+                _baseLateralOffset = 0f;
+                _wanderSeed = 0f;
+                return;
+            }
+
+            float usableHalfWidth =
+                _path.PathHalfWidth *
+                Mathf.Clamp01(
+                    widthUsage
+                );
+
+            _baseLateralOffset =
+                Random.Range(
+                    -usableHalfWidth,
+                    usableHalfWidth
+                );
+
+            _wanderSeed =
+                Random.Range(
+                    0f,
+                    Mathf.PI * 2f
+                );
+        }
+
+
+        private void ApplyAvoidanceProfile()
+        {
+            if (_agent == null)
+                return;
+
+            if (useHighQualityAvoidance)
+            {
+                _agent.obstacleAvoidanceType =
+                    ObstacleAvoidanceType
+                        .HighQualityObstacleAvoidance;
+            }
+
+            int minPriority =
+                Mathf.Min(
+                    minAvoidancePriority,
+                    maxAvoidancePriority
+                );
+
+            int maxPriority =
+                Mathf.Max(
+                    minAvoidancePriority,
+                    maxAvoidancePriority
+                );
+
+            _agent.avoidancePriority =
+                Random.Range(
+                    minPriority,
+                    maxPriority + 1
+                );
         }
 
 

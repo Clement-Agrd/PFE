@@ -43,6 +43,28 @@ namespace Core.TowerDefense
         private float navMeshSampleRadius = 1.5f;
 
 
+        [Header("Horde / largeur")]
+
+        [Tooltip(
+            "Demi-largeur du couloir autour de la spline. " +
+            "2.5 = environ 5 mètres de largeur totale."
+        )]
+        [SerializeField, Min(0f)]
+        private float pathHalfWidth = 2.5f;
+
+        [Tooltip(
+            "Petite dérive latérale pour éviter des lignes trop parfaites."
+        )]
+        [SerializeField, Min(0f)]
+        private float wanderAmount = 0.4f;
+
+        [Tooltip(
+            "Fréquence de la dérive le long des points de la spline."
+        )]
+        [SerializeField, Min(0f)]
+        private float wanderFrequency = 0.55f;
+
+
         [Header("Debug")]
 
         [SerializeField]
@@ -62,6 +84,16 @@ namespace Core.TowerDefense
         public bool IsValid =>
             splineContainer != null &&
             Count >= 2;
+
+
+        public float PathHalfWidth =>
+            pathHalfWidth;
+
+        public float WanderAmount =>
+            wanderAmount;
+
+        public float WanderFrequency =>
+            wanderFrequency;
 
 
         private void Awake()
@@ -159,6 +191,77 @@ namespace Core.TowerDefense
 
 
             return _points[index];
+        }
+
+
+        /// <summary>
+        /// Retourne un point décalé latéralement par rapport au centre
+        /// de la spline. L'offset suit les virages du chemin.
+        /// </summary>
+        public Vector3 GetPointWithOffset(
+            int index,
+            float baseLateralOffset,
+            float wanderSeed)
+        {
+            Vector3 center =
+                GetPoint(index);
+
+            if (pathHalfWidth <= 0f)
+            {
+                return center;
+            }
+
+            int previousIndex =
+                Mathf.Max(
+                    0,
+                    index - 1
+                );
+
+            int nextIndex =
+                Mathf.Min(
+                    Count - 1,
+                    index + 1
+                );
+
+            Vector3 direction =
+                GetPoint(nextIndex) -
+                GetPoint(previousIndex);
+
+            direction.y = 0f;
+
+            if (direction.sqrMagnitude <
+                0.001f)
+            {
+                return center;
+            }
+
+            direction.Normalize();
+
+            Vector3 right =
+                Vector3.Cross(
+                    Vector3.up,
+                    direction
+                );
+
+            float wander =
+                Mathf.Sin(
+                    index *
+                    wanderFrequency +
+                    wanderSeed
+                ) *
+                wanderAmount;
+
+            float finalOffset =
+                Mathf.Clamp(
+                    baseLateralOffset +
+                    wander,
+                    -pathHalfWidth,
+                    pathHalfWidth
+                );
+
+            return center +
+                   right *
+                   finalOffset;
         }
 
 
