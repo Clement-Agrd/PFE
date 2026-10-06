@@ -110,6 +110,9 @@ namespace Core.TowerDefense
         public EnemyPathFollower PathFollower => pathFollower;
         public EnemyAttackModule AttackModule => attackModule;
         public Health Target { get; private set; }
+        
+        public EnemyDefinition Definition =>
+            definition;
 
         public string CurrentStateName =>
             _stateMachine != null

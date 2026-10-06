@@ -328,6 +328,8 @@ namespace Core.TowerDefense
         public Health CurrentCombatTarget =>
             _combatTarget;
 
+        public EnemyDefinition Definition =>
+            definition;
 
         // ============================================================
         // UNITY

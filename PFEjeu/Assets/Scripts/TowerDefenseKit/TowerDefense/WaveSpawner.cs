@@ -46,6 +46,14 @@ namespace Core.WaveSystem
         private List<SpawnZone> zones =
             new();
 
+        [Header("Aperçu de spawn")]
+
+        [Tooltip(
+            "Délai minimum avant le premier spawn afin que " +
+            "l'aperçu de la zone reste visible."
+        )]
+        [SerializeField, Min(0f)]
+        private float minPreviewDuration = 2.5f;
 
         // ============================================================
         // RUNTIME
@@ -131,6 +139,14 @@ namespace Core.WaveSystem
             SpawnZone
         > OnEnemySpawned;
 
+        public event Action<
+            string,
+            GameObject,
+            int
+        > OnZoneSpawnStarted;
+
+        public event Action<string>
+            OnZoneSpawnFinished;
 
         // ============================================================
         // UNITY
@@ -322,14 +338,6 @@ namespace Core.WaveSystem
                 yield break;
 
 
-            if (entry.startDelay > 0f)
-            {
-                yield return new WaitForSeconds(
-                    entry.startDelay
-                );
-            }
-
-
             float scale =
                 1f +
                 _loop *
@@ -346,6 +354,29 @@ namespace Core.WaveSystem
                 );
 
 
+            // Affiche l'aperçu AVANT le spawn.
+            OnZoneSpawnStarted?.Invoke(
+                entry.zoneId,
+                entry.prefab,
+                totalCount
+            );
+
+
+            float delay =
+                Mathf.Max(
+                    entry.startDelay,
+                    minPreviewDuration
+                );
+
+
+            if (delay > 0f)
+            {
+                yield return new WaitForSeconds(
+                    delay
+                );
+            }
+
+
             SpawnZone zone =
                 ResolveZone(
                     entry.zoneId
@@ -354,9 +385,8 @@ namespace Core.WaveSystem
 
             int spawned = 0;
 
-
             while (spawned <
-                totalCount)
+                   totalCount)
             {
                 int thisBurst =
                     Mathf.Min(
@@ -382,7 +412,7 @@ namespace Core.WaveSystem
 
 
                 if (spawned <
-                        totalCount &&
+                    totalCount &&
                     entry.burstInterval > 0f)
                 {
                     yield return
@@ -392,7 +422,10 @@ namespace Core.WaveSystem
                 }
             }
 
-            OnZoneSpawnFinished?.Invoke(entry.zoneId);
+
+            OnZoneSpawnFinished?.Invoke(
+                entry.zoneId
+            );
         }
 
 

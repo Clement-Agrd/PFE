@@ -59,11 +59,22 @@ namespace Core.TowerDefense
                 slot = Instantiate(slotPrefab, iconsParent);
 
                 Sprite icon = null;
-                if (prefab.TryGetComponent(out NavEnemy navEnemy) && navEnemy.Definition != null)
-                    icon = navEnemy.Definition.Icon;
 
-                slot.SetIcon(icon);
-                _slots[prefab] = slot;
+                
+                if (prefab.TryGetComponent(
+                        out EnemyController controller) &&
+                    controller.Definition != null)
+                {
+                    icon =
+                        controller.Definition.Icon;
+                }
+                else if (prefab.TryGetComponent(
+                             out NavEnemy navEnemy) &&
+                         navEnemy.Definition != null)
+                {
+                    icon =
+                        navEnemy.Definition.Icon;
+                }
             }
 
             slot.SetCount(totalCount);
