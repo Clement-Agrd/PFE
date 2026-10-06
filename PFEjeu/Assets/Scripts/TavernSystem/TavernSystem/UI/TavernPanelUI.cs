@@ -4,6 +4,7 @@ using UnityEngine.UI;
 using TMPro;
 using Core.ShopSystem;
 using Core.TweenSystem;
+using Core;
 
 namespace Core.TavernSystem.UI
 {
@@ -55,7 +56,12 @@ namespace Core.TavernSystem.UI
             if (panel != null) panel.SetActive(true);
             Refresh();
 
-            if (!wasOpen) PlayOpenAnimation();
+            if (!wasOpen)
+            {
+                GameFreeze.RequestPause(this);
+                GameFreeze.RequestCursorUnlock(this);
+                PlayOpenAnimation();
+            }
         }
 
         public void Hide()
@@ -63,6 +69,8 @@ namespace Core.TavernSystem.UI
             if (_current == null) return;
             Unwatch();
             _current = null;
+            GameFreeze.ReleasePause(this);
+            GameFreeze.ReleaseCursorUnlock(this);
 
             if (panelGroup == null || fadeDuration <= 0f)
             {
@@ -83,6 +91,8 @@ namespace Core.TavernSystem.UI
             Unwatch();
             _current = null;
             if (panel != null) panel.SetActive(false);
+            GameFreeze.ReleasePause(this);
+            GameFreeze.ReleaseCursorUnlock(this);
         }
 
         private void PlayOpenAnimation()
