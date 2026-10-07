@@ -34,6 +34,21 @@ namespace ProfessionalTPS
                 "Speed"
             );
 
+        private static readonly int MoveXHash =
+            Animator.StringToHash(
+                "MoveX"
+            );
+
+        private static readonly int MoveYHash =
+            Animator.StringToHash(
+                "MoveY"
+            );
+
+        private static readonly int DirectionalLocomotionHash =
+            Animator.StringToHash(
+                "DirectionalLocomotion"
+            );
+
         private static readonly int VerticalSpeedHash =
             Animator.StringToHash(
                 "VerticalSpeed"
@@ -186,6 +201,39 @@ namespace ProfessionalTPS
                     motor.IsSprinting
                 );
             }
+
+            Vector2 moveInput =
+                input != null
+                    ? Vector2.ClampMagnitude(
+                        input.Move,
+                        1f
+                    )
+                    : Vector2.zero;
+
+            animator.SetFloat(
+                MoveXHash,
+                moveInput.x,
+                0.08f,
+                Time.deltaTime
+            );
+
+            animator.SetFloat(
+                MoveYHash,
+                moveInput.y,
+                0.08f,
+                Time.deltaTime
+            );
+
+            bool directionalLocomotion =
+                combat != null
+                    ? combat.ShouldFaceCamera
+                    : input != null &&
+                      input.AimHeld;
+
+            animator.SetBool(
+                DirectionalLocomotionHash,
+                directionalLocomotion
+            );
 
             animator.SetBool(
                 AimingHash,
