@@ -39,7 +39,7 @@ public class Tower : MonoBehaviour
     // le bénéfice du pooling).
     [SerializeField] private PoolManager poolManager;
 
-    // Temps écoulé depuis le dernier tir, comparé à la cadence de tir (FireRate).
+    // Temps écoulé depuis le dernier tir.
     private float shootTimer;
 
     // Minuteur interne : la détection ne tourne pas à chaque frame mais toutes
@@ -80,8 +80,10 @@ public class Tower : MonoBehaviour
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
         shootTimer += 0.1f;
 
-        // FireRate = tirs par seconde → 1/FireRate = secondes entre deux tirs.
-        if (shootTimer >= 1f / towerData.FireRate)
+        
+        float attackSpeed = stats.GetStat(StatType.AttackSpeed);
+
+        if (attackSpeed > 0f && shootTimer >= 1f / attackSpeed)
         {
             Shoot();
             shootTimer = 0f;
@@ -157,7 +159,19 @@ public class Tower : MonoBehaviour
     /// <summary>Fait monter la tour d'un niveau (borné entre MinLevel et MaxLevel), et met à jour son modèle.</summary>
     public void LevelUp()
     {
-        currentLevel = Mathf.Clamp(currentLevel + 1, towerData.MinLevel, towerData.MaxLevel);
+        int newLevel = Mathf.Clamp(
+            currentLevel + 1,
+            towerData.MinLevel,
+            towerData.MaxLevel
+        );
+
+        if (newLevel == currentLevel)
+            return;
+
+        currentLevel = newLevel;
+
+        towerData.ApplyStatsTo(stats, currentLevel);
+
         UpdateModel();
     }
 

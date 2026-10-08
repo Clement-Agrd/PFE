@@ -17,9 +17,6 @@ public class SOTower : ScriptableObject
     [SerializeField] private GameObject projectilePrefab;
     public GameObject ProjectilePrefab => projectilePrefab;
     
-    [SerializeField] private float fireRate;
-    public float FireRate => fireRate;
-    
     [SerializeField] private DamageType damageType;
     public DamageType DamageType => damageType;
     
@@ -30,6 +27,7 @@ public class SOTower : ScriptableObject
     [SerializeField] private int maxLevel;
     public int MaxLevel => maxLevel;
     
+    
     [Serializable] public struct TowerStatEntry
     {
         public StatType type;
@@ -39,6 +37,8 @@ public class SOTower : ScriptableObject
     [Serializable]
     public class TowerLevelStats
     {
+        public int level;
+
         public List<TowerStatEntry> stats = new List<TowerStatEntry>();
     }
     
@@ -75,11 +75,22 @@ public class SOTower : ScriptableObject
         Array values = Enum.GetValues(typeof(StatType));
 
         int levelCount = maxLevel - minLevel + 1;
+        
+        if (levelCount <= 0)
+        {
+            Debug.LogError("Max Level doit être supérieur ou égal à Min Level.");
+            return;
+        }
 
         // Crée les niveaux manquants
         while (towerStats.Count < levelCount)
         {
-            towerStats.Add(new TowerLevelStats());
+            int level = minLevel + towerStats.Count;
+
+            towerStats.Add(new TowerLevelStats
+            {
+                level = level
+            });
         }
 
         // Supprime les niveaux en trop
@@ -89,8 +100,13 @@ public class SOTower : ScriptableObject
         }
 
         // Remplit chaque niveau avec toutes les stats
-        foreach (TowerLevelStats levelStats in towerStats)
+        for (int levelIndex = 0; levelIndex < towerStats.Count; levelIndex++)
         {
+            TowerLevelStats levelStats = towerStats[levelIndex];
+
+            // Définit le numéro du niveau
+            levelStats.level = minLevel + levelIndex;
+
             foreach (StatType type in values)
             {
                 bool found = false;
