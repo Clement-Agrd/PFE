@@ -507,17 +507,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerAudioBridge
   oneShotSource: {fileID: 520034127296229322}
   motor: {fileID: 6145931558672038888}
-  jump: {fileID: 0}
-  land: {fileID: 0}
+  jump: {fileID: 8300000, guid: 1300ba85622aa5b48b06311b16ff56f0, type: 3}
+  land: {fileID: 8300000, guid: 0e8f601017e0d144e83855813dcf0a91, type: 3}
   roll: {fileID: 0}
   footsteps:
   - {fileID: 8300000, guid: 0e8f601017e0d144e83855813dcf0a91, type: 3}
   meleeSwings:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
+  - {fileID: 8300000, guid: ba715b77210fe0a45a7b4e4a13544a58, type: 3}
+  - {fileID: 8300000, guid: ba715b77210fe0a45a7b4e4a13544a58, type: 3}
+  - {fileID: 8300000, guid: ba715b77210fe0a45a7b4e4a13544a58, type: 3}
   bowRelease: {fileID: 0}
-  magicCast: {fileID: 0}
+  magicCast: {fileID: 8300000, guid: 176f04708cb1e28478286ca02d176e2f, type: 3}
   movementVolume: 1
   combatVolume: 1
   axeSwing: {fileID: 0}
