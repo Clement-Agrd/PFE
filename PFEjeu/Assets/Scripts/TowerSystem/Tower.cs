@@ -1,6 +1,8 @@
 using System;
+using Core.HealthSystem;
 using Core.PoolingSystem;
 using Core.StatsSystem;
+using StatType = Core.StatsSystem.EnumStats.StatTypes;
 using UnityEngine;
 
 /// <summary>
@@ -31,7 +33,13 @@ public class Tower : MonoBehaviour
     // niveau courant (doit être un enfant nommé exactement "FirePoint").
     [SerializeField] private Transform firePoint;
 
-    // Temps écoulé depuis le dernier tir, comparé à la cadence de tir (FireRate).
+    // Le gestionnaire de pooling. INDISPENSABLE pour que les projectiles soient
+    // recyclés au lieu d'être détruits/recréés à chaque tir (perf). Si ce champ
+    // est vide, la tour utilise Instantiate() en secours (fonctionne, mais sans
+    // le bénéfice du pooling).
+    [SerializeField] private PoolManager poolManager;
+
+    // Temps écoulé depuis le dernier tir.
     private float shootTimer;
 
     // Minuteur interne : la détection ne tourne pas à chaque frame mais toutes
@@ -43,6 +51,8 @@ public class Tower : MonoBehaviour
 
     // L'ennemi actuellement visé (le plus proche trouvé lors de la dernière détection).
     private Collider currentTarget;
+    
+    private EntityStats stats;
 
     //--------Détection--------//
 
@@ -70,8 +80,10 @@ public class Tower : MonoBehaviour
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
         shootTimer += 0.1f;
 
-        // FireRate = tirs par seconde → 1/FireRate = secondes entre deux tirs.
-        if (shootTimer >= 1f / towerData.FireRate)
+        
+        float attackSpeed = stats.GetStat(StatType.AttackSpeed);
+
+        if (attackSpeed > 0f && shootTimer >= 1f / attackSpeed)
         {
             Shoot();
             shootTimer = 0f;
@@ -103,7 +115,26 @@ public class Tower : MonoBehaviour
 
         // Donne au projectile sa cible et le type de dégâts à infliger
         // (le type sert aux résistances éventuelles côté Health de la cible).
-        projectile.SetTarget(currentTarget.transform, towerData.DamageType);
+
+        StatType damageStat;
+        switch (towerData.DamageType.Category)
+        {
+            case DamageCategory.Physical :
+                damageStat = StatType.PhysicDamage;
+                break;
+            
+            case DamageCategory.Magical:
+                damageStat = StatType.MagicDamage;
+                break;
+            
+            default:
+                damageStat = StatType.PhysicDamage;
+                break;
+        }
+        
+        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
+        
+        projectile.SetTarget(currentTarget.transform, towerData.DamageType, finalDamage);
     }
 
     //--------Niveau--------//
@@ -114,15 +145,27 @@ public class Tower : MonoBehaviour
 
         // Démarre toujours au niveau minimum défini dans la fiche de données.
         currentLevel = towerData.MinLevel;
-        EntityStats stats = GetComponent<EntityStats>();
-        towerData.ApplyStatsTo(stats);
+        stats = GetComponent<EntityStats>();
+        towerData.ApplyStatsTo(stats, currentLevel);
         UpdateModel();
     }
 
     /// <summary>Fait monter la tour d'un niveau (borné entre MinLevel et MaxLevel), et met à jour son modèle.</summary>
     public void LevelUp()
     {
-        currentLevel = Mathf.Clamp(currentLevel + 1, towerData.MinLevel, towerData.MaxLevel);
+        int newLevel = Mathf.Clamp(
+            currentLevel + 1,
+            towerData.MinLevel,
+            towerData.MaxLevel
+        );
+
+        if (newLevel == currentLevel)
+            return;
+
+        currentLevel = newLevel;
+
+        towerData.ApplyStatsTo(stats, currentLevel);
+
         UpdateModel();
     }
 

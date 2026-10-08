@@ -15,26 +15,63 @@ MonoBehaviour:
   towerName: Test
   detectionRange: 15
   projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
-  fireRate: 1
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
   minLevel: 1
   maxLevel: 3
   towerStats:
-  - type: 0
-    baseValue: 0
-  - type: 1
-    baseValue: 0
-  - type: 2
-    baseValue: 50
-  - type: 3
-    baseValue: 0
-  - type: 4
-    baseValue: 0
-  - type: 5
-    baseValue: 0
-  - type: 6
-    baseValue: 0
-  - type: 7
-    baseValue: 0
+  - level: 1
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 20
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 5
+  - level: 2
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 0
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 0
+  - level: 3
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 0
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 0
   models:
   - {fileID: 3604618397877428115, guid: 1446b2a4a67be3646a45cfc242bf407d, type: 3}
