@@ -8,10 +8,41 @@ using StatType = Core.StatsSystem.EnumStats.StatTypes;
 [CreateAssetMenu(fileName = "SOTower", menuName = "Scriptable Objects/SOTower")]
 public class SOTower : ScriptableObject
 {
+    public enum TypeTower
+    {
+        Physical,
+        Magic,
+    }
+
+    public enum Distance
+    {
+        Closest,
+        Farthest,
+    }
+
+    public enum TargetType
+    {
+        HighDefP,
+        LowDefP,
+        
+        HighDefM,
+        LoweDefM,
+    }
+    
     [Header("Base Information")]
     [SerializeField] private string towerName;
     [SerializeField] private float detectionRange;
     public float DetectionRange => detectionRange;
+    
+    [SerializeField] private TypeTower towerType;
+    public TypeTower TowerType => towerType;
+    
+    [Header("IA")]
+    [SerializeField] private Distance distance;
+    public Distance DistanceType => distance;
+    
+    [SerializeField] private TargetType towerTarget;
+    public TargetType TowerTarget => towerTarget;
     
     [Header("Projectile")]
     [SerializeField] private GameObject projectilePrefab;
@@ -19,7 +50,6 @@ public class SOTower : ScriptableObject
     
     [SerializeField] private DamageType damageType;
     public DamageType DamageType => damageType;
-    
     
     [Header("Level Information")]
     [SerializeField] private int minLevel;

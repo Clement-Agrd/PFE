@@ -17,6 +17,9 @@ public class Tower : MonoBehaviour
     // La fiche de données de cette tour (portée, cadence de tir, dégâts, modèles par niveau...).
     // Voir SOTower.cs pour le détail des champs.
     [SerializeField] private SOTower towerData;
+    
+    // Donné du héro qui va modifier la tour
+    [SerializeField] private SoHero heroData;
 
     [Header("Level")]
     // Le niveau actuel de la tour. Initialisé à towerData.MinLevel au démarrage.
