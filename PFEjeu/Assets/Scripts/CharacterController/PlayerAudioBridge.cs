@@ -16,6 +16,25 @@ namespace ProfessionalTPS
         [SerializeField] private AudioClip roll;
         [SerializeField] private AudioClip[] footsteps;
 
+        [Header("Automatic Footsteps")]
+        [SerializeField]
+        private bool automaticFootsteps = true;
+
+        [SerializeField, Min(0f)]
+        private float minimumFootstepSpeed = 0.35f;
+
+        [SerializeField, Min(0.05f)]
+        private float walkStepInterval = 0.52f;
+
+        [SerializeField, Min(0.05f)]
+        private float runStepInterval = 0.36f;
+
+        [SerializeField, Min(0.05f)]
+        private float sprintStepInterval = 0.28f;
+
+        [SerializeField, Min(0f)]
+        private float firstStepDelay = 0.08f;
+
         [Header("Combat")]
         [SerializeField] private AudioClip[] meleeSwings = new AudioClip[3];
         [SerializeField] private AudioClip bowRelease;
@@ -34,6 +53,8 @@ namespace ProfessionalTPS
         private AudioClip pickaxeSwing;
         
         private int _footstepIndex;
+        private float _footstepTimer;
+        private bool _wasMovingOnGround;
 
         private void Awake()
         {
@@ -61,6 +82,11 @@ namespace ProfessionalTPS
             motor.RollStarted -= OnRoll;
         }
 
+        private void Update()
+        {
+            TickAutomaticFootsteps();
+        }
+
         public void PlayMeleeSwing(int comboIndex)
         {
             if (meleeSwings == null || meleeSwings.Length == 0)
@@ -73,15 +99,105 @@ namespace ProfessionalTPS
         public void PlayBowRelease() => Play(bowRelease, combatVolume);
         public void PlayMagicCast() => Play(magicCast, combatVolume);
 
-        /// <summary>Call from a future footstep Animation Event.</summary>
+        /// <summary>
+        /// Peut être appelé par un Animation Event.
+        /// Le timer automatique est aussi recalé pour éviter un double pas.
+        /// </summary>
         public void PlayFootstep()
         {
             if (footsteps == null || footsteps.Length == 0)
                 return;
 
-            AudioClip clip = footsteps[_footstepIndex % footsteps.Length];
+            AudioClip clip =
+                footsteps[
+                    _footstepIndex %
+                    footsteps.Length
+                ];
+
             _footstepIndex++;
-            Play(clip, movementVolume);
+
+            Play(
+                clip,
+                movementVolume
+            );
+
+            _footstepTimer =
+                GetCurrentFootstepInterval();
+        }
+
+        private void TickAutomaticFootsteps()
+        {
+            if (!automaticFootsteps ||
+                motor == null)
+            {
+                return;
+            }
+
+            bool canPlayFootstep =
+                motor.IsGrounded &&
+                !motor.IsRolling &&
+                motor.HorizontalSpeed >=
+                    minimumFootstepSpeed &&
+                footsteps != null &&
+                footsteps.Length > 0;
+
+            if (!canPlayFootstep)
+            {
+                _wasMovingOnGround =
+                    false;
+
+                _footstepTimer =
+                    0f;
+
+                return;
+            }
+
+            if (!_wasMovingOnGround)
+            {
+                _wasMovingOnGround =
+                    true;
+
+                _footstepTimer =
+                    firstStepDelay;
+            }
+
+            _footstepTimer -=
+                Time.deltaTime;
+
+            if (_footstepTimer > 0f)
+                return;
+
+            PlayFootstep();
+        }
+
+        private float GetCurrentFootstepInterval()
+        {
+            if (motor == null)
+                return runStepInterval;
+
+            if (motor.IsSprinting)
+                return sprintStepInterval;
+
+            float normalizedSpeed =
+                motor.MaxMoveSpeed > 0.001f
+                    ? Mathf.Clamp01(
+                        motor.HorizontalSpeed /
+                        motor.MaxMoveSpeed
+                    )
+                    : 0f;
+
+            float runBlend =
+                Mathf.InverseLerp(
+                    0.2f,
+                    0.65f,
+                    normalizedSpeed
+                );
+
+            return Mathf.Lerp(
+                walkStepInterval,
+                runStepInterval,
+                runBlend
+            );
         }
 
         private void OnJump() => Play(jump, movementVolume);

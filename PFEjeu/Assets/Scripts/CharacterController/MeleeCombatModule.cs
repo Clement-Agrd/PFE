@@ -227,10 +227,6 @@ namespace ProfessionalTPS
             DoHit(
                 combo[_stepIndex]
             );
-
-            Owner?.Audio?.PlayMeleeSwing(
-                _stepIndex
-            );
         }
 
         public override void AnimationFinished()
@@ -275,6 +271,12 @@ namespace ProfessionalTPS
             _damagedThisSwing.Clear();
 
             IsBusy = true;
+
+            // Le whoosh accompagne le départ du swing,
+            // pas le moment où la hitbox inflige les dégâts.
+            Owner?.Audio?.PlayMeleeSwing(
+                _stepIndex
+            );
 
             Owner?.Animation?.PlayMeleeAttack(
                 _stepIndex
