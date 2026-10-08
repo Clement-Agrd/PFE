@@ -26,6 +26,9 @@ namespace Core.Minimap
         [SerializeField] private int worldTextureWidth = 1536;
         [SerializeField] private int worldTextureHeight = 864;
         [SerializeField, Min(0f)] private float worldPadding = 25f;
+        [Tooltip("Si coché, la grande carte utilise ces limites (monde) au lieu de les déduire des marqueurs : utile quand des zones n'ont pas de marqueur.")]
+        [SerializeField] private bool useMapLimits;
+        [SerializeField] private Bounds mapLimits = new Bounds(Vector3.zero, new Vector3(100f, 10f, 100f));
 
         [Header("Rendu")]
         [SerializeField] private float cameraHeight = 120f;
@@ -181,6 +184,20 @@ namespace Core.Minimap
             WorldCamera.transform.position = new Vector3(WorldCenter.x + pan.x, cameraHeight, WorldCenter.y + pan.y);
         }
 
+        /// <summary>
+        /// Borne le décalage de la carte pour que la fenêtre visible reste dans les limites du monde :
+        /// on peut aller jusqu'à voir exactement chaque bord à n'importe quel zoom, sans les dépasser.
+        /// </summary>
+        public Vector2 ClampPan(Vector2 pan, float zoom)
+        {
+            float aspect = (float)worldTextureWidth / worldTextureHeight;
+            float halfH = FitHalfHeight() / Mathf.Max(0.2f, zoom);
+            float halfW = halfH * aspect;
+            float maxX = Mathf.Max(0f, WorldSize.x * 0.5f - halfW);
+            float maxY = Mathf.Max(0f, WorldSize.y * 0.5f - halfH);
+            return new Vector2(Mathf.Clamp(pan.x, -maxX, maxX), Mathf.Clamp(pan.y, -maxY, maxY));
+        }
+
         /// <summary>Hauteur visible (en mètres) de la grande carte à ce zoom.</summary>
         public float WorldMetersPerViewportHeight(float zoom) => FitHalfHeight() / Mathf.Max(0.2f, zoom) * 2f;
 
@@ -192,6 +209,13 @@ namespace Core.Minimap
 
         private void ComputeWorldBounds()
         {
+            if (useMapLimits)
+            {
+                WorldCenter = new Vector2(mapLimits.center.x, mapLimits.center.z);
+                WorldSize = new Vector2(mapLimits.size.x + worldPadding * 2f, mapLimits.size.z + worldPadding * 2f);
+                return;
+            }
+
             bool any = false;
             Bounds b = new Bounds();
             foreach (var m in MinimapMarker.All)

@@ -277,10 +277,7 @@ namespace Core.Minimap
 
         private void ClampPan(MinimapSystem sys)
         {
-            if (_zoom <= 1.001f) { _pan = Vector2.zero; return; }
-            Vector2 half = sys.WorldSize * 0.5f;
-            _pan.x = Mathf.Clamp(_pan.x, -half.x, half.x);
-            _pan.y = Mathf.Clamp(_pan.y, -half.y, half.y);
+            _pan = sys.ClampPan(_pan, _zoom);
         }
     }
 }
