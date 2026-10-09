@@ -508,16 +508,22 @@ MonoBehaviour:
   oneShotSource: {fileID: 520034127296229322}
   motor: {fileID: 6145931558672038888}
   jump: {fileID: 8300000, guid: 1300ba85622aa5b48b06311b16ff56f0, type: 3}
-  land: {fileID: 8300000, guid: 0e8f601017e0d144e83855813dcf0a91, type: 3}
+  land: {fileID: 0}
   roll: {fileID: 0}
   footsteps:
-  - {fileID: 8300000, guid: 0e8f601017e0d144e83855813dcf0a91, type: 3}
+  - {fileID: 8300000, guid: 5d86ecd5ec5cb7d4db91505ea8904805, type: 3}
+  automaticFootsteps: 1
+  minimumFootstepSpeed: 0.35
+  walkStepInterval: 0.52
+  runStepInterval: 0.36
+  sprintStepInterval: 0.28
+  firstStepDelay: 0.08
   meleeSwings:
   - {fileID: 8300000, guid: ba715b77210fe0a45a7b4e4a13544a58, type: 3}
   - {fileID: 8300000, guid: ba715b77210fe0a45a7b4e4a13544a58, type: 3}
   - {fileID: 8300000, guid: ba715b77210fe0a45a7b4e4a13544a58, type: 3}
   bowRelease: {fileID: 0}
-  magicCast: {fileID: 8300000, guid: 176f04708cb1e28478286ca02d176e2f, type: 3}
+  magicCast: {fileID: 8300000, guid: 993ecb93360264344b74946ed3adc345, type: 3}
   movementVolume: 1
   combatVolume: 1
   axeSwing: {fileID: 0}
@@ -1377,16 +1383,46 @@ PrefabInstance:
       propertyPath: m_Controller
       value: 
       objectReference: {fileID: 9100000, guid: b440e3b3945c7d046855f9599f933459, type: 2}
+    - target: {fileID: 5866666021909216657, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: -3858638838303969124, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4624022521812696093}
   m_SourcePrefab: {fileID: 100100000, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
 --- !u!95 &376257089780706330 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
   m_PrefabInstance: {fileID: 6075969964355441035}
   m_PrefabAsset: {fileID: 0}
+--- !u!4 &2005036865754404845 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -3494375403550423450, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+  m_PrefabInstance: {fileID: 6075969964355441035}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &2171141935140757783 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: -3858638838303969124, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+  m_PrefabInstance: {fileID: 6075969964355441035}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &4624022521812696093
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2171141935140757783}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dd95fd526fbaddd4e96feb1b5b051f7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::KevinIglesias.SpineProxy
+  originalSpine: {fileID: 2005036865754404845}
 --- !u!4 &6041744930163144288 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
