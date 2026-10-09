@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEngine;
+using KevinIglesias;
 
 namespace ProfessionalTPS.EditorTools
 {
@@ -22,12 +23,14 @@ namespace ProfessionalTPS.EditorTools
     ///
     /// Upper Body Bow :
     /// - arc Load / Hold / Release
-    /// - bras / mains / tête uniquement
-    /// - le torse reste piloté par la locomotion afin d'éviter
-    ///   la rotation de profil du haut du corps.
     ///
-    /// Les layers utilisent des AvatarMask humanoid afin que
-    /// les jambes continuent de jouer la locomotion pendant le combat.
+    /// Les layers utilisent le masque officiel Kevin Iglesias
+    /// "Human Body Upper Mask". Ce masque contient notamment
+    /// Rig/B-root/B-spineProxy, nécessaire pour conserver
+    /// l'orientation correcte du torse avec les animations d'arc.
+    ///
+    /// Le builder configure aussi automatiquement SpineProxy
+    /// sur le personnage sélectionné lorsque le rig Kevin est présent.
     /// </summary>
     public static class KevinIglesiasPlayerAnimatorBuilder
     {
@@ -38,11 +41,15 @@ namespace ProfessionalTPS.EditorTools
             OutputFolder +
             "/PFE_KevinIglesias_Player.controller";
 
-        private const string MeleeMaskPath =
+        private const string KevinUpperBodyMaskPath =
+            "Assets/Animations/Kevin Iglesias/Human Animations/Models/" +
+            "Avatar Masks/Human Body Upper Mask.mask";
+
+        private const string LegacyMeleeMaskPath =
             OutputFolder +
             "/PFE_UpperBody_Melee.mask";
 
-        private const string BowMaskPath =
+        private const string LegacyBowMaskPath =
             OutputFolder +
             "/PFE_UpperBody_Bow.mask";
 
@@ -77,19 +84,13 @@ namespace ProfessionalTPS.EditorTools
             AnimatorController controller =
                 CreateController();
 
-            DeleteLegacyMask();
+            DeleteGeneratedMasks();
 
-            AvatarMask meleeUpperBodyMask =
-                CreateUpperBodyMask(
-                    MeleeMaskPath,
-                    true
-                );
+            AvatarMask upperBodyMask =
+                LoadKevinUpperBodyMask();
 
-            AvatarMask bowUpperBodyMask =
-                CreateUpperBodyMask(
-                    BowMaskPath,
-                    false
-                );
+            if (upperBodyMask == null)
+                return;
 
             AddParameters(
                 controller
@@ -102,13 +103,13 @@ namespace ProfessionalTPS.EditorTools
 
             BuildMeleeUpperBodyLayer(
                 controller,
-                meleeUpperBodyMask,
+                upperBodyMask,
                 clips
             );
 
             BuildBowUpperBodyLayer(
                 controller,
-                bowUpperBodyMask,
+                upperBodyMask,
                 clips
             );
 
@@ -133,10 +134,9 @@ namespace ProfessionalTPS.EditorTools
             Debug.Log(
                 "[Kevin Iglesias Animator] Controller créé : " +
                 ControllerPath +
-                " | Melee mask : " +
-                MeleeMaskPath +
-                " | Bow mask : " +
-                BowMaskPath
+                " | Kevin upper-body mask : " +
+                KevinUpperBodyMaskPath +
+                " | SpineProxy configuré automatiquement si disponible"
             );
         }
 
@@ -931,105 +931,58 @@ namespace ProfessionalTPS.EditorTools
 
 
         // ============================================================
-        // MASKS
+        // MASK
         // ============================================================
 
-        private static AvatarMask CreateUpperBodyMask(
-            string path,
-            bool includeBody)
+        private static AvatarMask LoadKevinUpperBodyMask()
         {
-            if (AssetDatabase.LoadAssetAtPath<
-                    AvatarMask
-                >(path) != null)
-            {
-                AssetDatabase.DeleteAsset(
-                    path
-                );
-            }
-
             AvatarMask mask =
-                new AvatarMask
-                {
-                    name =
-                        includeBody
-                            ? "PFE Upper Body Melee"
-                            : "PFE Upper Body Bow"
-                };
+                AssetDatabase.LoadAssetAtPath<
+                    AvatarMask
+                >(KevinUpperBodyMaskPath);
 
-            for (int i = 0;
-                 i < (int)AvatarMaskBodyPart.LastBodyPart;
-                 i++)
+            if (mask == null)
             {
-                mask.SetHumanoidBodyPartActive(
-                    (AvatarMaskBodyPart)i,
-                    false
+                Debug.LogError(
+                    "[Kevin Iglesias Animator] Masque officiel introuvable : " +
+                    KevinUpperBodyMaskPath
                 );
+
+                return null;
             }
-
-            // L'épée peut utiliser la rotation du torse.
-            // L'arc ne contrôle volontairement PAS Body :
-            // la locomotion garde le torse face à la direction du joueur,
-            // tandis que les bras jouent Load / Hold / Release.
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.Body,
-                includeBody
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.Head,
-                true
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.LeftArm,
-                true
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.RightArm,
-                true
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.LeftFingers,
-                true
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.RightFingers,
-                true
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.LeftHandIK,
-                true
-            );
-
-            mask.SetHumanoidBodyPartActive(
-                AvatarMaskBodyPart.RightHandIK,
-                true
-            );
-
-            AssetDatabase.CreateAsset(
-                mask,
-                path
-            );
 
             return mask;
         }
 
 
-        private static void DeleteLegacyMask()
+        private static void DeleteGeneratedMasks()
+        {
+            DeleteMaskIfPresent(
+                LegacyMaskPath
+            );
+
+            DeleteMaskIfPresent(
+                LegacyMeleeMaskPath
+            );
+
+            DeleteMaskIfPresent(
+                LegacyBowMaskPath
+            );
+        }
+
+
+        private static void DeleteMaskIfPresent(
+            string path)
         {
             if (AssetDatabase.LoadAssetAtPath<
                     AvatarMask
-                >(LegacyMaskPath) == null)
+                >(path) == null)
             {
                 return;
             }
 
             AssetDatabase.DeleteAsset(
-                LegacyMaskPath
+                path
             );
         }
 
@@ -1657,6 +1610,10 @@ namespace ProfessionalTPS.EditorTools
                 animator
             );
 
+            ConfigureSpineProxy(
+                animator
+            );
+
 
             PlayerAnimationBridge bridge =
                 selected.GetComponentInChildren<
@@ -1696,6 +1653,132 @@ namespace ProfessionalTPS.EditorTools
                     bridge
                 );
             }
+        }
+
+
+        // ============================================================
+        // KEVIN IGLESIAS SPINE PROXY
+        // ============================================================
+
+        private static void ConfigureSpineProxy(
+            Animator animator)
+        {
+            if (animator == null)
+                return;
+
+            Transform proxy =
+                FindDeepChild(
+                    animator.transform,
+                    "B-spineProxy"
+                );
+
+            Transform spine =
+                FindDeepChild(
+                    animator.transform,
+                    "B-spine"
+                );
+
+            if (proxy == null ||
+                spine == null)
+            {
+                Debug.LogWarning(
+                    "[Kevin Iglesias Animator] SpineProxy non configuré : " +
+                    "B-spineProxy ou B-spine est introuvable sous l'Animator. " +
+                    "Sur un rig custom, recrée la structure prévue par Kevin Iglesias " +
+                    "et assigne manuellement le SpineProxy."
+                );
+
+                return;
+            }
+
+            SpineProxy spineProxy =
+                proxy.GetComponent<
+                    SpineProxy
+                >();
+
+            if (spineProxy == null)
+            {
+                spineProxy =
+                    Undo.AddComponent<
+                        SpineProxy
+                    >(
+                        proxy.gameObject
+                    );
+            }
+
+            SerializedObject serializedProxy =
+                new SerializedObject(
+                    spineProxy
+                );
+
+            SerializedProperty originalSpine =
+                serializedProxy.FindProperty(
+                    "originalSpine"
+                );
+
+            if (originalSpine == null)
+            {
+                Debug.LogWarning(
+                    "[Kevin Iglesias Animator] Le champ originalSpine " +
+                    "du composant SpineProxy est introuvable."
+                );
+
+                return;
+            }
+
+            originalSpine.objectReferenceValue =
+                spine;
+
+            serializedProxy
+                .ApplyModifiedPropertiesWithoutUndo();
+
+            EditorUtility.SetDirty(
+                spineProxy
+            );
+
+            if (PrefabUtility.IsPartOfPrefabInstance(
+                    spineProxy))
+            {
+                PrefabUtility
+                    .RecordPrefabInstancePropertyModifications(
+                        spineProxy
+                    );
+            }
+
+            Debug.Log(
+                "[Kevin Iglesias Animator] SpineProxy configuré : " +
+                proxy.name +
+                " -> " +
+                spine.name
+            );
+        }
+
+
+        private static Transform FindDeepChild(
+            Transform root,
+            string childName)
+        {
+            if (root == null)
+                return null;
+
+            if (root.name == childName)
+                return root;
+
+            for (int i = 0;
+                 i < root.childCount;
+                 i++)
+            {
+                Transform result =
+                    FindDeepChild(
+                        root.GetChild(i),
+                        childName
+                    );
+
+                if (result != null)
+                    return result;
+            }
+
+            return null;
         }
 
 
