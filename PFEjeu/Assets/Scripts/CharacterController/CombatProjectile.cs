@@ -48,6 +48,16 @@ namespace ProfessionalTPS
             new RaycastHit[12];
 
 
+        public float CollisionRadius =>
+            radius;
+
+        public LayerMask CollisionMask =>
+            collisionMask;
+
+        public QueryTriggerInteraction TriggerInteraction =>
+            triggerInteraction;
+
+
         public void Launch(
             Vector3 direction,
             GameObject owner,

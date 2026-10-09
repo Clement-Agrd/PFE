@@ -77,9 +77,12 @@ namespace ProfessionalTPS
                 ? _active.MovementMultiplier
                 : 1f;
 
+        public bool IsAiming =>
+            input != null &&
+            input.AimHeld;
+
         public bool ShouldFaceCamera =>
-            (input != null &&
-             input.AimHeld)
+            IsAiming
             ||
             (
                 _active != null &&

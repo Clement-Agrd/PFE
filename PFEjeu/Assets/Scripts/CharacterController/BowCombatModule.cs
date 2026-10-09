@@ -84,6 +84,31 @@ namespace ProfessionalTPS
         [SerializeField, Range(0f, 1f)]
         private float drawingMovementMultiplier = 0.5f;
 
+        [Header("Trajectory Preview")]
+        [SerializeField]
+        private bool showTrajectoryPreview = true;
+
+        [SerializeField]
+        private LineRenderer trajectoryLine;
+
+        [SerializeField, Min(4)]
+        private int trajectoryPointCount = 28;
+
+        [SerializeField, Min(0.1f)]
+        private float trajectoryPreviewDuration = 2f;
+
+        [SerializeField, Min(0.001f)]
+        private float trajectoryWidth = 0.025f;
+
+        [SerializeField]
+        private Color trajectoryColor =
+            new Color(
+                1f,
+                1f,
+                1f,
+                0.8f
+            );
+
         private float _drawTimer;
 
         private float _recoveryTimer;
@@ -91,6 +116,11 @@ namespace ProfessionalTPS
         private float _pendingCharge;
 
         private bool _released;
+
+        private readonly RaycastHit[] _previewHits =
+            new RaycastHit[16];
+
+        private Material _trajectoryMaterial;
 
         public bool IsDrawing
         {
@@ -149,6 +179,16 @@ namespace ProfessionalTPS
         public override bool FaceCameraWhileBusy =>
             true;
 
+        public override void Initialize(
+            PlayerCombatController owner)
+        {
+            base.Initialize(
+                owner
+            );
+
+            EnsureTrajectoryRenderer();
+        }
+
         public override void AttackPressed()
         {
             if (IsBusy)
@@ -191,6 +231,8 @@ namespace ProfessionalTPS
         public override void Tick(
             float deltaTime)
         {
+            UpdateTrajectoryPreview();
+
             if (!IsBusy)
                 return;
 
@@ -271,6 +313,10 @@ namespace ProfessionalTPS
             _pendingCharge = 0f;
 
             _released = false;
+
+            SetTrajectoryVisible(
+                false
+            );
         }
 
         private void Fire(
@@ -364,6 +410,377 @@ namespace ProfessionalTPS
                 finalDamage
             );
         }
+
+        private void UpdateTrajectoryPreview()
+        {
+            bool shouldShow =
+                showTrajectoryPreview &&
+                Owner != null &&
+                Owner.CurrentMode ==
+                    CombatMode.Bow &&
+                Owner.IsAiming &&
+                !_released;
+
+            if (!shouldShow)
+            {
+                SetTrajectoryVisible(
+                    false
+                );
+
+                return;
+            }
+
+            EnsureTrajectoryRenderer();
+
+            if (trajectoryLine == null)
+                return;
+
+            Vector3 origin =
+                muzzle != null
+                    ? muzzle.position
+                    : Owner.transform.position +
+                      Vector3.up * 1.4f +
+                      Owner.transform.forward * 0.5f;
+
+            Vector3 direction =
+                Owner.GetAimDirection(
+                    origin,
+                    aimRange
+                );
+
+            float previewCharge =
+                IsDrawing
+                    ? Charge01
+                    : 0f;
+
+            float speed =
+                Mathf.Lerp(
+                    minimumProjectileSpeed,
+                    maximumProjectileSpeed,
+                    previewCharge
+                );
+
+            int pointCount =
+                Mathf.Max(
+                    4,
+                    trajectoryPointCount
+                );
+
+            float duration =
+                Mathf.Min(
+                    Mathf.Max(
+                        0.1f,
+                        trajectoryPreviewDuration
+                    ),
+                    Mathf.Max(
+                        0.1f,
+                        projectileLifetime
+                    )
+                );
+
+            float stepTime =
+                duration /
+                (pointCount - 1);
+
+            float collisionRadius =
+                projectilePrefab != null
+                    ? projectilePrefab
+                        .CollisionRadius
+                    : 0.01f;
+
+            LayerMask collisionMask =
+                projectilePrefab != null
+                    ? projectilePrefab
+                        .CollisionMask
+                    : fallbackHitMask;
+
+            QueryTriggerInteraction triggerMode =
+                projectilePrefab != null
+                    ? projectilePrefab
+                        .TriggerInteraction
+                    : QueryTriggerInteraction.Ignore;
+
+            trajectoryLine.positionCount =
+                1;
+
+            trajectoryLine.SetPosition(
+                0,
+                origin
+            );
+
+            Vector3 position =
+                origin;
+
+            Vector3 velocity =
+                direction.normalized *
+                speed;
+
+            int writtenPoints =
+                1;
+
+            for (int i = 1;
+                 i < pointCount;
+                 i++)
+            {
+                velocity +=
+                    Vector3.up *
+                    (projectileGravity *
+                     stepTime);
+
+                Vector3 nextPosition =
+                    position +
+                    velocity *
+                    stepTime;
+
+                Vector3 segment =
+                    nextPosition -
+                    position;
+
+                float distance =
+                    segment.magnitude;
+
+                if (distance > 0.0001f &&
+                    TryGetPreviewHit(
+                        position,
+                        segment /
+                        distance,
+                        distance,
+                        collisionRadius,
+                        collisionMask,
+                        triggerMode,
+                        out RaycastHit hit))
+                {
+                    writtenPoints++;
+
+                    trajectoryLine.positionCount =
+                        writtenPoints;
+
+                    trajectoryLine.SetPosition(
+                        writtenPoints - 1,
+                        hit.point
+                    );
+
+                    break;
+                }
+
+                writtenPoints++;
+
+                trajectoryLine.positionCount =
+                    writtenPoints;
+
+                trajectoryLine.SetPosition(
+                    writtenPoints - 1,
+                    nextPosition
+                );
+
+                position =
+                    nextPosition;
+            }
+
+            SetTrajectoryVisible(
+                true
+            );
+        }
+
+
+        private bool TryGetPreviewHit(
+            Vector3 origin,
+            Vector3 direction,
+            float distance,
+            float radius,
+            LayerMask mask,
+            QueryTriggerInteraction triggerMode,
+            out RaycastHit nearestHit)
+        {
+            int hitCount =
+                Physics.SphereCastNonAlloc(
+                    origin,
+                    Mathf.Max(
+                        0.001f,
+                        radius
+                    ),
+                    direction,
+                    _previewHits,
+                    distance,
+                    mask,
+                    triggerMode
+                );
+
+            float nearestDistance =
+                float.PositiveInfinity;
+
+            nearestHit =
+                default;
+
+            bool found =
+                false;
+
+            for (int i = 0;
+                 i < hitCount;
+                 i++)
+            {
+                RaycastHit candidate =
+                    _previewHits[i];
+
+                if (candidate.collider ==
+                    null)
+                {
+                    continue;
+                }
+
+                if (Owner != null &&
+                    candidate.transform
+                        .IsChildOf(
+                            Owner.transform))
+                {
+                    continue;
+                }
+
+                if (candidate.distance >=
+                    nearestDistance)
+                {
+                    continue;
+                }
+
+                nearestDistance =
+                    candidate.distance;
+
+                nearestHit =
+                    candidate;
+
+                found =
+                    true;
+            }
+
+            return found;
+        }
+
+
+        private void EnsureTrajectoryRenderer()
+        {
+            if (trajectoryLine == null)
+            {
+                GameObject previewObject =
+                    new GameObject(
+                        "BowTrajectoryPreview"
+                    );
+
+                previewObject.transform.SetParent(
+                    transform,
+                    false
+                );
+
+                trajectoryLine =
+                    previewObject.AddComponent<
+                        LineRenderer
+                    >();
+            }
+
+            trajectoryLine.useWorldSpace =
+                true;
+
+            trajectoryLine.loop =
+                false;
+
+            trajectoryLine.startWidth =
+                trajectoryWidth;
+
+            trajectoryLine.endWidth =
+                trajectoryWidth;
+
+            trajectoryLine.startColor =
+                trajectoryColor;
+
+            trajectoryLine.endColor =
+                trajectoryColor;
+
+            trajectoryLine.numCapVertices =
+                2;
+
+            trajectoryLine.numCornerVertices =
+                2;
+
+            if (trajectoryLine.sharedMaterial ==
+                null)
+            {
+                Shader shader =
+                    Shader.Find(
+                        "Sprites/Default"
+                    );
+
+                if (shader == null)
+                {
+                    shader =
+                        Shader.Find(
+                            "Universal Render Pipeline/Unlit"
+                        );
+                }
+
+                if (shader != null)
+                {
+                    _trajectoryMaterial =
+                        new Material(
+                            shader
+                        )
+                        {
+                            name =
+                                "Bow Trajectory Preview",
+                            hideFlags =
+                                HideFlags.DontSave
+                        };
+
+                    trajectoryLine.material =
+                        _trajectoryMaterial;
+                }
+            }
+
+            SetTrajectoryVisible(
+                false
+            );
+        }
+
+
+        private void SetTrajectoryVisible(
+            bool visible)
+        {
+            if (trajectoryLine == null)
+                return;
+
+            trajectoryLine.enabled =
+                visible;
+
+            if (!visible)
+            {
+                trajectoryLine.positionCount =
+                    0;
+            }
+        }
+
+
+        private void OnDisable()
+        {
+            SetTrajectoryVisible(
+                false
+            );
+        }
+
+
+        private void OnDestroy()
+        {
+            if (_trajectoryMaterial ==
+                null)
+            {
+                return;
+            }
+
+            Destroy(
+                _trajectoryMaterial
+            );
+
+            _trajectoryMaterial =
+                null;
+        }
+
 
         private void TryHitscan(
             Vector3 origin,
