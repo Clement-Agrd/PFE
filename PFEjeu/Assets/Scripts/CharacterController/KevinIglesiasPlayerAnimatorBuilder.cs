@@ -17,11 +17,16 @@ namespace ProfessionalTPS.EditorTools
     /// - saut
     /// - roll temporaire
     ///
-    /// Upper Body Combat :
-    /// - combat 1H
-    /// - arc Load / Hold / Release
+    /// Upper Body Melee :
+    /// - combat 1H avec torse + bras
     ///
-    /// Le layer Upper Body utilise un AvatarMask humanoid afin que
+    /// Upper Body Bow :
+    /// - arc Load / Hold / Release
+    /// - bras / mains / tête uniquement
+    /// - le torse reste piloté par la locomotion afin d'éviter
+    ///   la rotation de profil du haut du corps.
+    ///
+    /// Les layers utilisent des AvatarMask humanoid afin que
     /// les jambes continuent de jouer la locomotion pendant le combat.
     /// </summary>
     public static class KevinIglesiasPlayerAnimatorBuilder
@@ -33,7 +38,15 @@ namespace ProfessionalTPS.EditorTools
             OutputFolder +
             "/PFE_KevinIglesias_Player.controller";
 
-        private const string MaskPath =
+        private const string MeleeMaskPath =
+            OutputFolder +
+            "/PFE_UpperBody_Melee.mask";
+
+        private const string BowMaskPath =
+            OutputFolder +
+            "/PFE_UpperBody_Bow.mask";
+
+        private const string LegacyMaskPath =
             OutputFolder +
             "/PFE_UpperBody.mask";
 
@@ -61,11 +74,22 @@ namespace ProfessionalTPS.EditorTools
             if (clips == null)
                 return;
 
-            AvatarMask upperBodyMask =
-                CreateUpperBodyMask();
-
             AnimatorController controller =
                 CreateController();
+
+            DeleteLegacyMask();
+
+            AvatarMask meleeUpperBodyMask =
+                CreateUpperBodyMask(
+                    MeleeMaskPath,
+                    true
+                );
+
+            AvatarMask bowUpperBodyMask =
+                CreateUpperBodyMask(
+                    BowMaskPath,
+                    false
+                );
 
             AddParameters(
                 controller
@@ -76,9 +100,15 @@ namespace ProfessionalTPS.EditorTools
                 clips
             );
 
-            BuildUpperBodyLayer(
+            BuildMeleeUpperBodyLayer(
                 controller,
-                upperBodyMask,
+                meleeUpperBodyMask,
+                clips
+            );
+
+            BuildBowUpperBodyLayer(
+                controller,
+                bowUpperBodyMask,
                 clips
             );
 
@@ -103,8 +133,10 @@ namespace ProfessionalTPS.EditorTools
             Debug.Log(
                 "[Kevin Iglesias Animator] Controller créé : " +
                 ControllerPath +
-                " | Upper body mask : " +
-                MaskPath
+                " | Melee mask : " +
+                MeleeMaskPath +
+                " | Bow mask : " +
+                BowMaskPath
             );
         }
 
@@ -499,10 +531,10 @@ namespace ProfessionalTPS.EditorTools
 
 
         // ============================================================
-        // UPPER BODY LAYER
+        // UPPER BODY - MELEE
         // ============================================================
 
-        private static void BuildUpperBodyLayer(
+        private static void BuildMeleeUpperBodyLayer(
             AnimatorController controller,
             AvatarMask mask,
             Dictionary<string, AnimationClip> clips)
@@ -511,7 +543,7 @@ namespace ProfessionalTPS.EditorTools
                 new AnimatorStateMachine
                 {
                     name =
-                        "Upper Body Combat"
+                        "Upper Body Melee"
                 };
 
             AssetDatabase.AddObjectToAsset(
@@ -523,7 +555,7 @@ namespace ProfessionalTPS.EditorTools
                 new AnimatorControllerLayer
                 {
                     name =
-                        "Upper Body Combat",
+                        "Upper Body Melee",
                     defaultWeight =
                         1f,
                     avatarMask =
@@ -538,7 +570,6 @@ namespace ProfessionalTPS.EditorTools
                 layer
             );
 
-
             AnimatorState empty =
                 machine.AddState(
                     "Empty",
@@ -552,17 +583,12 @@ namespace ProfessionalTPS.EditorTools
             machine.defaultState =
                 empty;
 
-
-            // --------------------------------------------------------
-            // 1H
-            // --------------------------------------------------------
-
             AnimatorState meleeIdle =
                 machine.AddState(
                     "1H Combat Idle",
                     new Vector3(
                         350f,
-                        20f,
+                        40f,
                         0f
                     )
                 );
@@ -575,7 +601,7 @@ namespace ProfessionalTPS.EditorTools
                     "1H Attack R",
                     new Vector3(
                         570f,
-                        -20f,
+                        0f,
                         0f
                     )
                 );
@@ -592,7 +618,7 @@ namespace ProfessionalTPS.EditorTools
                     "1H Attack L",
                     new Vector3(
                         570f,
-                        80f,
+                        100f,
                         0f
                     )
                 );
@@ -603,7 +629,6 @@ namespace ProfessionalTPS.EditorTools
             ConfigureAttackSpeed(
                 meleeL
             );
-
 
             AddModeAimEnter(
                 empty,
@@ -621,7 +646,6 @@ namespace ProfessionalTPS.EditorTools
                 empty,
                 0
             );
-
 
             AddAnyTrigger(
                 machine,
@@ -644,7 +668,6 @@ namespace ProfessionalTPS.EditorTools
                 0.03f
             );
 
-
             AddCombatAttackReturns(
                 meleeR,
                 meleeIdle,
@@ -658,18 +681,68 @@ namespace ProfessionalTPS.EditorTools
                 empty,
                 0
             );
+        }
 
 
-            // --------------------------------------------------------
-            // BOW
-            // --------------------------------------------------------
+        // ============================================================
+        // UPPER BODY - BOW
+        // ============================================================
+
+        private static void BuildBowUpperBodyLayer(
+            AnimatorController controller,
+            AvatarMask mask,
+            Dictionary<string, AnimationClip> clips)
+        {
+            AnimatorStateMachine machine =
+                new AnimatorStateMachine
+                {
+                    name =
+                        "Upper Body Bow"
+                };
+
+            AssetDatabase.AddObjectToAsset(
+                machine,
+                controller
+            );
+
+            AnimatorControllerLayer layer =
+                new AnimatorControllerLayer
+                {
+                    name =
+                        "Upper Body Bow",
+                    defaultWeight =
+                        1f,
+                    avatarMask =
+                        mask,
+                    blendingMode =
+                        AnimatorLayerBlendingMode.Override,
+                    stateMachine =
+                        machine
+                };
+
+            controller.AddLayer(
+                layer
+            );
+
+            AnimatorState empty =
+                machine.AddState(
+                    "Empty",
+                    new Vector3(
+                        120f,
+                        100f,
+                        0f
+                    )
+                );
+
+            machine.defaultState =
+                empty;
 
             AnimatorState bowIdle =
                 machine.AddState(
                     "Bow Idle",
                     new Vector3(
                         350f,
-                        240f,
+                        100f,
                         0f
                     )
                 );
@@ -682,7 +755,7 @@ namespace ProfessionalTPS.EditorTools
                     "Bow Load",
                     new Vector3(
                         570f,
-                        200f,
+                        60f,
                         0f
                     )
                 );
@@ -699,7 +772,7 @@ namespace ProfessionalTPS.EditorTools
                     "Bow Hold",
                     new Vector3(
                         760f,
-                        200f,
+                        60f,
                         0f
                     )
                 );
@@ -712,7 +785,7 @@ namespace ProfessionalTPS.EditorTools
                     "Bow Release",
                     new Vector3(
                         950f,
-                        200f,
+                        60f,
                         0f
                     )
                 );
@@ -723,7 +796,6 @@ namespace ProfessionalTPS.EditorTools
             ConfigureAttackSpeed(
                 bowRelease
             );
-
 
             AddModeAimEnter(
                 empty,
@@ -742,7 +814,6 @@ namespace ProfessionalTPS.EditorTools
                 1
             );
 
-
             AddBowDrawingTransition(
                 empty,
                 bowLoad
@@ -752,7 +823,6 @@ namespace ProfessionalTPS.EditorTools
                 bowIdle,
                 bowLoad
             );
-
 
             AnimatorStateTransition loadToHold =
                 bowLoad.AddTransition(
@@ -777,14 +847,12 @@ namespace ProfessionalTPS.EditorTools
                 "BowDrawing"
             );
 
-
             AddAnyTrigger(
                 machine,
                 bowRelease,
                 "BowAttack",
                 0.02f
             );
-
 
             AnimatorStateTransition releaseToBowIdle =
                 bowRelease.AddTransition(
@@ -812,7 +880,6 @@ namespace ProfessionalTPS.EditorTools
                 "CombatMode"
             );
 
-
             AnimatorStateTransition releaseToEmpty =
                 bowRelease.AddTransition(
                     empty
@@ -833,6 +900,11 @@ namespace ProfessionalTPS.EditorTools
                 "Aiming"
             );
 
+            AddModeExit(
+                bowRelease,
+                empty,
+                1
+            );
 
             AddModeExit(
                 bowHold,
@@ -859,17 +931,19 @@ namespace ProfessionalTPS.EditorTools
 
 
         // ============================================================
-        // MASK
+        // MASKS
         // ============================================================
 
-        private static AvatarMask CreateUpperBodyMask()
+        private static AvatarMask CreateUpperBodyMask(
+            string path,
+            bool includeBody)
         {
             if (AssetDatabase.LoadAssetAtPath<
                     AvatarMask
-                >(MaskPath) != null)
+                >(path) != null)
             {
                 AssetDatabase.DeleteAsset(
-                    MaskPath
+                    path
                 );
             }
 
@@ -877,10 +951,11 @@ namespace ProfessionalTPS.EditorTools
                 new AvatarMask
                 {
                     name =
-                        "PFE Upper Body"
+                        includeBody
+                            ? "PFE Upper Body Melee"
+                            : "PFE Upper Body Bow"
                 };
 
-            // On coupe d'abord tout.
             for (int i = 0;
                  i < (int)AvatarMaskBodyPart.LastBodyPart;
                  i++)
@@ -891,10 +966,13 @@ namespace ProfessionalTPS.EditorTools
                 );
             }
 
-            // Root et jambes restent pilotés par le Base Layer.
+            // L'épée peut utiliser la rotation du torse.
+            // L'arc ne contrôle volontairement PAS Body :
+            // la locomotion garde le torse face à la direction du joueur,
+            // tandis que les bras jouent Load / Hold / Release.
             mask.SetHumanoidBodyPartActive(
                 AvatarMaskBodyPart.Body,
-                true
+                includeBody
             );
 
             mask.SetHumanoidBodyPartActive(
@@ -934,10 +1012,25 @@ namespace ProfessionalTPS.EditorTools
 
             AssetDatabase.CreateAsset(
                 mask,
-                MaskPath
+                path
             );
 
             return mask;
+        }
+
+
+        private static void DeleteLegacyMask()
+        {
+            if (AssetDatabase.LoadAssetAtPath<
+                    AvatarMask
+                >(LegacyMaskPath) == null)
+            {
+                return;
+            }
+
+            AssetDatabase.DeleteAsset(
+                LegacyMaskPath
+            );
         }
 
 
