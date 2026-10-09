@@ -13,21 +13,6 @@ public class SOTower : ScriptableObject
         Physical,
         Magic,
     }
-
-    public enum Distance
-    {
-        Closest,
-        Farthest,
-    }
-
-    public enum TargetType
-    {
-        HighDefP,
-        LowDefP,
-        
-        HighDefM,
-        LoweDefM,
-    }
     
     [Header("Base Information")]
     [SerializeField] private string towerName;
@@ -38,11 +23,15 @@ public class SOTower : ScriptableObject
     public TypeTower TowerType => towerType;
     
     [Header("IA")]
-    [SerializeField] private Distance distance;
-    public Distance DistanceType => distance;
+    [SerializeField] private EnumTargetPriority.TargetPriority targetCondition1;
+    public EnumTargetPriority.TargetPriority TargetPriority => targetCondition1;
     
-    [SerializeField] private TargetType towerTarget;
-    public TargetType TowerTarget => towerTarget;
+    [SerializeField] private EnumTargetPriority.TargetPriority targetCondition2;
+    public EnumTargetPriority.TargetPriority TargetPriority2 => targetCondition2;
+    
+    [SerializeField] private EnumTargetDistance.TargetDistance targetDistance;
+    public EnumTargetDistance.TargetDistance TargetDistance => targetDistance;
+    
     
     [Header("Projectile")]
     [SerializeField] private GameObject projectilePrefab;

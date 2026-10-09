@@ -15,8 +15,9 @@ MonoBehaviour:
   towerName: Test
   detectionRange: 15
   towerType: 0
-  distance: 0
-  towerTarget: 0
+  targetCondition1: 0
+  targetCondition2: 4
+  targetDistance: 0
   projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
   minLevel: 1

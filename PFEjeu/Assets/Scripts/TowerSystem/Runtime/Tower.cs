@@ -42,6 +42,9 @@ public class Tower : MonoBehaviour
     // le bénéfice du pooling).
     [SerializeField] private PoolManager poolManager;
 
+    [Header("IA")]
+    [SerializeField] private IATower iaTower;
+    
     // Temps écoulé depuis le dernier tir.
     private float shootTimer;
 
@@ -61,23 +64,7 @@ public class Tower : MonoBehaviour
 
     private void Update()
     {
-        // On ne cherche une cible que toutes les 0.1s (pas chaque frame) :
-        // largement suffisant pour du gameplay, et bien moins coûteux en performance.
-        timer += Time.deltaTime;
-        if (timer < 0.1f) return;
-        timer = 0f;
-
-        // Cherche tous les colliders ennemis dans le rayon de détection de la tour.
-        Collider[] targets = Physics.OverlapSphere(
-            transform.position,
-            towerData.DetectionRange,
-            enemyLayer);
-
-        // Cible simple : le premier trouvé. (Pour cibler le plus proche/le plus
-        // avancé sur le chemin, il faudrait trier "targets" ici.)
-        currentTarget = targets.Length > 0 ? targets[0] : null;
-
-        if (currentTarget == null) return;
+        if (iaTower.CurrentTarget == null) return;
 
         // Le compteur de cadence avance par pas de 0.1s (le rythme de ce bloc),
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
