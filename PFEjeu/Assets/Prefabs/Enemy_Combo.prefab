@@ -220,18 +220,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1010000000000000000000000000007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Core.TowerDefense.EnemyComboMeleeAttack
-  attackRange: 4.9
+  attackRange: 5
   attackRangeLeeway: 0.06
-  damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
+  damageType: {fileID: 11400000, guid: b1bd59adeca496143b967b12e62be962, type: 2}
   lightBaseDamage: 3
   lightPhysicDamageScaling: 0.65
-  lightWindup: 0.18
-  lightRecovery: 0.22
+  lightWindup: 1.5
+  lightRecovery: 1
   lightTrigger: AttackLight
   heavyBaseDamage: 12
   heavyPhysicDamageScaling: 1.5
-  heavyWindup: 0.45
-  heavyRecovery: 0.55
+  heavyWindup: 1
+  heavyRecovery: 1
   heavyTrigger: AttackHeavy
   openingLightChance: 0.8
   chainHeavyChance: 0.85
@@ -348,7 +348,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5933886395000104603, guid: c2be2777e3dd1594099f494d2ef68bd5, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.43478262
       objectReference: {fileID: 0}
     - target: {fileID: 5933886395000104603, guid: c2be2777e3dd1594099f494d2ef68bd5, type: 3}
       propertyPath: m_LocalRotation.w
@@ -372,7 +372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5933886395000104603, guid: c2be2777e3dd1594099f494d2ef68bd5, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 1.3043479
+      value: 4.5652175
       objectReference: {fileID: 0}
     - target: {fileID: 5933886395000104603, guid: c2be2777e3dd1594099f494d2ef68bd5, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
