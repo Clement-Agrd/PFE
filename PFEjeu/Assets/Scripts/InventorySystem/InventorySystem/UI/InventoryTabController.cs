@@ -19,6 +19,10 @@ namespace Core.InventorySystem.UI
         [SerializeField] private Button villageTabButton;
         [SerializeField] private VillageOverviewPanelUI villageOverviewPanel;
 
+        [Header("Carte (optionnel)")]
+        [SerializeField] private GameObject mapContent;
+        [SerializeField] private Button mapTabButton;
+
         [Header("Couleurs")]
         [SerializeField] private Color activeTabColor = new(0.95f, 0.78f, 0.35f);
         [SerializeField] private Color inactiveTabColor = new(0.3f, 0.32f, 0.36f);
@@ -30,25 +34,43 @@ namespace Core.InventorySystem.UI
         {
             if (inventoryTabButton != null) inventoryTabButton.onClick.AddListener(ShowInventoryTab);
             if (villageTabButton != null) villageTabButton.onClick.AddListener(ShowVillageTab);
+            if (mapTabButton != null) mapTabButton.onClick.AddListener(ShowMapTab);
         }
 
         private void OnEnable() => ShowInventoryTab();
+
+        /// <summary>Vrai quand l'onglet Carte est celui affiché.</summary>
+        public bool IsMapShown => mapContent != null && mapContent.activeSelf;
 
         public void ShowInventoryTab()
         {
             if (inventoryContent != null) inventoryContent.SetActive(true);
             if (villageContent != null) villageContent.SetActive(false);
+            if (mapContent != null) mapContent.SetActive(false);
             SetTabVisual(inventoryTabButton, true);
             SetTabVisual(villageTabButton, false);
+            SetTabVisual(mapTabButton, false);
         }
 
         public void ShowVillageTab()
         {
             if (inventoryContent != null) inventoryContent.SetActive(false);
             if (villageContent != null) villageContent.SetActive(true);
+            if (mapContent != null) mapContent.SetActive(false);
             SetTabVisual(inventoryTabButton, false);
             SetTabVisual(villageTabButton, true);
+            SetTabVisual(mapTabButton, false);
             villageOverviewPanel?.Refresh();
+        }
+
+        public void ShowMapTab()
+        {
+            if (inventoryContent != null) inventoryContent.SetActive(false);
+            if (villageContent != null) villageContent.SetActive(false);
+            if (mapContent != null) mapContent.SetActive(true);
+            SetTabVisual(inventoryTabButton, false);
+            SetTabVisual(villageTabButton, false);
+            SetTabVisual(mapTabButton, true);
         }
 
         private void SetTabVisual(Button button, bool active)

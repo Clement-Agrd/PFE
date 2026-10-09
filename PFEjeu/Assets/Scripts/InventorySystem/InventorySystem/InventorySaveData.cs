@@ -18,6 +18,7 @@ namespace Core.InventorySystem
             public int index;
             public string itemId;
             public int quantity;
+            public int upgradeLevel; // 0 par défaut : les anciennes sauvegardes restent compatibles
         }
     }
 }

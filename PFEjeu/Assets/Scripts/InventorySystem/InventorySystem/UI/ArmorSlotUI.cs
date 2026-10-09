@@ -13,6 +13,8 @@ namespace Core.InventorySystem.UI
     public sealed class ArmorSlotUI : MonoBehaviour
     {
         [SerializeField] private InventoryHolder inventoryHolder;
+        [Tooltip("Emplacement géré par cette case. None = première armure trouvée, quel que soit son emplacement.")]
+        [SerializeField] private ArmorSlotType slotType = ArmorSlotType.None;
         [SerializeField] private Image icon;
         [SerializeField] private TMP_Text amountText;
 
@@ -40,7 +42,8 @@ namespace Core.InventorySystem.UI
             for (int i = 0; i < _inventory.Capacity && found == null; i++)
             {
                 ItemStack stack = _inventory.GetSlot(i);
-                if (stack != null && !stack.IsEmpty && stack.Definition != null && stack.Definition.Category == ItemCategory.Armor)
+                if (stack != null && !stack.IsEmpty && stack.Definition != null && stack.Definition.Category == ItemCategory.Armor
+                    && (slotType == ArmorSlotType.None || stack.Definition.ArmorSlot == slotType))
                     found = stack;
             }
 
@@ -56,8 +59,10 @@ namespace Core.InventorySystem.UI
 
             if (amountText != null)
             {
-                bool showAmount = hasItem && found.Quantity > 1;
-                amountText.text = showAmount ? found.Quantity.ToString() : "";
+                // Niveau d'amélioration de la Forge ("+3") prioritaire sur la quantité.
+                bool upgraded = hasItem && found.UpgradeLevel > 0;
+                bool showAmount = upgraded || (hasItem && found.Quantity > 1);
+                amountText.text = upgraded ? $"+{found.UpgradeLevel}" : (showAmount ? found.Quantity.ToString() : "");
                 amountText.enabled = showAmount;
             }
         }
