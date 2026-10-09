@@ -15,14 +15,8 @@ MonoBehaviour:
   waveName: 'Vague 1 petite '
   startDelay: 1
   spawns:
-  - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
-    count: 5
-    zoneId: Ouest
-    burstSize: 1
-    burstInterval: 1
-    startDelay: 0
   - prefab: {fileID: 1436972150820126028, guid: 6ce647c99ccba2d41a3ef95761032a52, type: 3}
-    count: 2
+    count: 1
     zoneId: Ouest
     burstSize: 2
     burstInterval: 1
