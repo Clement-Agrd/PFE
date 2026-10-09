@@ -11,6 +11,7 @@ namespace Core.InventorySystem
         Armor = 2,
         Consumable = 3,
         Material = 4,
-        Quest = 5
+        Quest = 5,
+        Trap = 6
     }
 }

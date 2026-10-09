@@ -1,0 +1,148 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cfd53154980b0bb408e89d6855e02586, type: 3}
+  m_Name: ForgeDefinition
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.ForgeDefinition
+  itemLevelsPerForgeLevel: 3
+  tiers:
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 5
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 4
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 2
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 8
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 7
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 4
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 11
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 10
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 6
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 14
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 13
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 8
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 17
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 16
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 10
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 20
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 19
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 12
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 23
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 22
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 14
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 26
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 25
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 16
+  - cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 29
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 28
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 18
+  categories:
+  - category: 1
+    bonuses:
+    - stat: 2
+      valuePerLevel: 2
+      modifierType: 0
+    - stat: 3
+      valuePerLevel: 2
+      modifierType: 0
+    appliesToPlayerStats: 1
+    baseRefund:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 3
+  - category: 2
+    bonuses:
+    - stat: 4
+      valuePerLevel: 2
+      modifierType: 0
+    - stat: 5
+      valuePerLevel: 1
+      modifierType: 0
+    appliesToPlayerStats: 1
+    baseRefund:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 3
+  - category: 6
+    bonuses:
+    - stat: 2
+      valuePerLevel: 3
+      modifierType: 0
+    - stat: 7
+      valuePerLevel: 0.05
+      modifierType: 0
+    appliesToPlayerStats: 0
+    baseRefund:
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 3
+  dismantleRefundPercent: 0.5
+  shop:
+  - item: {fileID: 11400000, guid: ea62114f9fffdaa4ba8178d3a257484b, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 8
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 4
+  - item: {fileID: 11400000, guid: fe16c17d491b5d3418685125c447adda, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 16
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 6
+  - item: {fileID: 11400000, guid: ef6b8dd722200854a99f7da8f6dc54df, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 12
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 4
+  - item: {fileID: 11400000, guid: 8f53c38a99dd8354ca0198dccc1062bc, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 8
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 4
+  - item: {fileID: 11400000, guid: c3a96bb4e879a304f80c16370a9728de, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 6
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 3

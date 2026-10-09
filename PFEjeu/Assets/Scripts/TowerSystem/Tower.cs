@@ -119,6 +119,24 @@ public class Tower : MonoBehaviour
         UpdateModel();
     }
 
+    /// <summary>
+    /// Applique les bonus de Forge d'un piège/tour amélioré (niveau d'amélioration de l'objet
+    /// posé). Remplace les bonus précédents de cette tour. À appeler au placement, avec
+    /// ItemStack.UpgradeLevel de l'objet consommé.
+    /// </summary>
+    public void ApplyForgeUpgrade(Core.Village.ForgeDefinition forge, int itemLevel)
+    {
+        EntityStats stats = GetComponent<EntityStats>();
+        if (stats == null || forge == null) return;
+
+        stats.RemoveModifiersFromSource(this);
+        Core.Village.ForgeCategoryRules rules = forge.GetRules(Core.InventorySystem.ItemCategory.Trap);
+        if (rules == null || rules.bonuses == null || itemLevel <= 0) return;
+
+        foreach (Core.Village.UpgradeBonus bonus in rules.bonuses)
+            stats.AddModifier(bonus.stat, bonus.valuePerLevel * itemLevel, bonus.modifierType, this);
+    }
+
     /// <summary>Fait monter la tour d'un niveau (borné entre MinLevel et MaxLevel), et met à jour son modèle.</summary>
     public void LevelUp()
     {

@@ -14,6 +14,10 @@ namespace Core.InventorySystem
         [Header("Catégorie")]
         [SerializeField] private ItemCategory category = ItemCategory.Misc;
 
+        [Header("Armure (si Catégorie = Armor)")]
+        [Tooltip("Emplacement de la pièce d'armure (tête, torse, jambes, pieds).")]
+        [SerializeField] private ArmorSlotType armorSlot = ArmorSlotType.None;
+
         [Header("Monde 3D")]
         [field: SerializeField] public GameObject WorldPrefab { get; private set; }
 
@@ -26,6 +30,7 @@ namespace Core.InventorySystem
         [SerializeField] private List<ConsumableStatEffect> statEffects = new();
 
         public ItemCategory Category => category;
+        public ArmorSlotType ArmorSlot => armorSlot;
         public string InteractionVerb => string.IsNullOrEmpty(interactionVerb) ? "Ramasser" : interactionVerb;
         public bool IsStackable => MaxStackSize > 1;
         public int HealAmount => healAmount;

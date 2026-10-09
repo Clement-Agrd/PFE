@@ -35,7 +35,7 @@ namespace Core.InventorySystem
                 for (int i = 0; i < _slots.Length && remaining > 0; i++)
                 {
                     ItemStack slot = _slots[i];
-                    if (slot != null && slot.Matches(definition) && !slot.IsFull)
+                    if (slot != null && slot.Matches(definition) && slot.UpgradeLevel == 0 && !slot.IsFull)
                     {
                         int before = remaining;
                         remaining = slot.Add(remaining);
@@ -101,6 +101,40 @@ namespace Core.InventorySystem
 
         #endregion
 
+        #region Amélioration (Forge)
+
+        /// <summary>
+        /// Fixe le niveau d'amélioration d'UN exemplaire de la case. Si la pile en contient
+        /// plusieurs, un exemplaire est détaché dans une case libre. Retourne l'index de la
+        /// case améliorée, ou -1 si impossible (case vide / aucune case libre pour détacher).
+        /// </summary>
+        public int SetUpgradeLevelAt(int index, int level)
+        {
+            if (index < 0 || index >= _slots.Length) return -1;
+            ItemStack slot = _slots[index];
+            if (slot == null || slot.IsEmpty) return -1;
+
+            if (slot.Quantity <= 1)
+            {
+                slot.SetUpgradeLevel(level);
+                RaiseSlot(index);
+                OnChanged?.Invoke();
+                return index;
+            }
+
+            int free = Array.IndexOf(_slots, null);
+            if (free < 0) return -1;
+
+            slot.Remove(1);
+            _slots[free] = new ItemStack(slot.Definition, 1, level);
+            RaiseSlot(index);
+            RaiseSlot(free);
+            OnChanged?.Invoke();
+            return free;
+        }
+
+        #endregion
+
         #region Échange et Déplacement de Slots
 
         public void SwapSlots(int indexA, int indexB)
@@ -112,7 +146,7 @@ namespace Core.InventorySystem
 
             if (slotA == null || slotA.IsEmpty) return;
 
-            if (slotB != null && !slotB.IsEmpty && slotB.Matches(slotA.Definition) && slotA.Definition.IsStackable)
+            if (slotB != null && !slotB.IsEmpty && slotB.CanMergeWith(slotA) && slotA.Definition.IsStackable)
             {
                 int remaining = slotB.Add(slotA.Quantity);
                 if (remaining <= 0)
