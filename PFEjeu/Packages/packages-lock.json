@@ -40,7 +40,7 @@
     },
     "com.unity.cinemachine": {
       "version": "6.6.0",
-      "depth": 1,
+      "depth": 0,
       "source": "builtin",
       "dependencies": {
         "com.unity.splines": "2.8.4",
