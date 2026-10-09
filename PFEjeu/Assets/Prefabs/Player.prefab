@@ -414,8 +414,8 @@ MonoBehaviour:
     - serializedVersion: 3
       time: 0
       value: 0
-      inSlope: 0
-      outSlope: 0
+      inSlope: 2
+      outSlope: 2
       tangentMode: 0
       weightedMode: 0
       inWeight: 0
@@ -432,23 +432,29 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
-  baseDamage: 8
+  baseDamage: 10
   physicDamageScaling: 1
-  minimumDamageMultiplier: 0.35
+  minimumDamageMultiplier: 0.5
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
-  minimumProjectileSpeed: 9
-  maximumProjectileSpeed: 38
-  muzzle: {fileID: 939751343951286135}
+  minimumProjectileSpeed: 10
+  maximumProjectileSpeed: 70
+  muzzle: {fileID: 8938406805726750}
   projectilePrefab: {fileID: 4025266684344492649, guid: afc5324e8615516408e5c04a5b5446b5, type: 3}
-  projectileGravity: -9
+  projectileGravity: -7
   projectileLifetime: 8
-  aimRange: 180
+  aimRange: 200
   fallbackHitMask:
     serializedVersion: 2
     m_Bits: 8
   minimumFallbackRange: 8
   recovery: 0.35
   drawingMovementMultiplier: 0.5
+  showTrajectoryPreview: 1
+  trajectoryLine: {fileID: 0}
+  trajectoryPointCount: 28
+  trajectoryPreviewDuration: 2
+  trajectoryWidth: 0.025
+  trajectoryColor: {r: 1, g: 1, b: 1, a: 0.8}
 --- !u!114 &2996941395369023088
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1395,6 +1401,11 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 4624022521812696093}
   m_SourcePrefab: {fileID: 100100000, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+--- !u!4 &8938406805726750 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6074774335629440917, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+  m_PrefabInstance: {fileID: 6075969964355441035}
+  m_PrefabAsset: {fileID: 0}
 --- !u!95 &376257089780706330 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
