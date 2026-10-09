@@ -186,6 +186,8 @@ namespace Core.TowerDefense
                     windup
                 );
 
+            ResetAttackAnimationTriggers();
+
             TriggerAnimation(
                 step == AttackStep.Light
                     ? lightTrigger
@@ -277,6 +279,10 @@ namespace Core.TowerDefense
 
             IsBusy = false;
 
+            _impactTime = 0f;
+
+            _phaseEndTime = 0f;
+
             _nextSequenceTime =
                 Mathf.Max(
                     _nextSequenceTime,
@@ -285,6 +291,69 @@ namespace Core.TowerDefense
                         0.15f
                     )
                 );
+
+            CancelAttackAnimation();
+        }
+
+
+        private void ResetAttackAnimationTriggers()
+        {
+            Animator animator =
+                Owner != null
+                    ? Owner.Animator
+                    : null;
+
+            if (animator == null)
+                return;
+
+            if (!string.IsNullOrWhiteSpace(
+                    lightTrigger))
+            {
+                animator.ResetTrigger(
+                    lightTrigger
+                );
+            }
+
+            if (!string.IsNullOrWhiteSpace(
+                    heavyTrigger))
+            {
+                animator.ResetTrigger(
+                    heavyTrigger
+                );
+            }
+        }
+
+
+        private void CancelAttackAnimation()
+        {
+            Animator animator =
+                Owner != null
+                    ? Owner.Animator
+                    : null;
+
+            if (animator == null)
+                return;
+
+            ResetAttackAnimationTriggers();
+
+            int idleStateHash =
+                Animator.StringToHash(
+                    "Base Layer.Idle"
+                );
+
+            if (!animator.HasState(
+                    0,
+                    idleStateHash))
+            {
+                return;
+            }
+
+            animator.CrossFadeInFixedTime(
+                idleStateHash,
+                0.05f,
+                0,
+                0f
+            );
         }
 
 
