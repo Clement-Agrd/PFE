@@ -4,6 +4,8 @@ public class EnumTargetPriority
 {
     public enum TargetPriority
     {
+        None,
+        
         HighDefPhy,
         LowDefPhy,
         

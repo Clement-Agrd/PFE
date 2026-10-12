@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Core.StatsSystem;
 using StatType = Core.StatsSystem.EnumStats.StatTypes;
@@ -29,16 +30,10 @@ public class IATower : MonoBehaviour
             enemyLayer);
         
         SelectTarget(targets);
-
-        // Cible simple : le premier trouvé. (Pour cibler le plus proche/le plus
-        // avancé sur le chemin, il faudrait trier "targets" ici.)
-        currentTarget = targets.Length > 0 ? targets[0] : null;
-        Debug.Log(currentTarget != null
-            ? "IATower : cible trouvée - " + currentTarget.name
-            : "IATower : aucune cible trouvée");
         
     }
     
+    // Récupére les stats des ennemis
     private float GetEnemyStat(Collider enemy, StatType statType)
     {
         EntityStats enemyStats = enemy.GetComponentInParent<EntityStats>();
@@ -49,21 +44,44 @@ public class IATower : MonoBehaviour
         return enemyStats.GetStat(statType);
     }
 
+    // Selectionne la cible en fonction du Target priority du SOTower
     private void SelectTarget(Collider[]target)
     {
-        
-        float HighDefense = 0f;
-
-        for (int i = 0; i < target.Length; i++)
+        if (Array.IndexOf(target, currentTarget) == -1)
         {
-            Collider enemy = target[i];
-            float enemyDef = GetEnemyStat(enemy, StatType.DefensePhysic);
+            currentTarget = target.Length > 0 ? target[0] : null;
+        }
+        
+        switch (towerData.TargetPriority)
+        {
+            case EnumTargetPriority.TargetPriority.None:
+                
+                // Cible simple : le premier trouvé. (Pour cibler le plus proche/le plus
+                // avancé sur le chemin, il faudrait trier "targets" ici.)
+                currentTarget = target.Length > 0 ? target[0] : null;
+                Debug.Log(currentTarget != null
+                    ? "IATower : cible trouvée - " + currentTarget.name
+                    : "IATower : aucune cible trouvée");
+                break;
+            
+            case EnumTargetPriority.TargetPriority.HighDefPhy:
+                
+                Debug.Log("Cible la plus grande defense");
+                
+                float HighDefense = GetEnemyStat(currentTarget, StatType.DefensePhysic);
 
-            if (HighDefense < enemyDef)
-            {
-                currentTarget = enemy;
-                HighDefense = enemyDef;
-            }
+                for (int i = 0; i < target.Length; i++)
+                {
+                    Collider enemy = target[i];
+                    float enemyDef = GetEnemyStat(enemy, StatType.DefensePhysic);
+
+                    if (HighDefense < enemyDef)
+                    {
+                        currentTarget = enemy;
+                        HighDefense = enemyDef;
+                    }
+                }
+                break;
         }
     }
     
