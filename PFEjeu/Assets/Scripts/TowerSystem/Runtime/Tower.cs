@@ -54,9 +54,6 @@ public class Tower : MonoBehaviour
 
     // Les layers physiques considérés comme des ennemis détectables.
     [SerializeField] private LayerMask enemyLayer;
-
-    // L'ennemi actuellement visé (le plus proche trouvé lors de la dernière détection).
-    private Collider currentTarget;
     
     private EntityStats stats;
 
@@ -68,7 +65,7 @@ public class Tower : MonoBehaviour
 
         // Le compteur de cadence avance par pas de 0.1s (le rythme de ce bloc),
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
-        shootTimer += 0.1f;
+        shootTimer += Time.deltaTime;
 
         
         float attackSpeed = stats.GetStat(StatType.AttackSpeed);
@@ -79,14 +76,7 @@ public class Tower : MonoBehaviour
             shootTimer = 0f;
         }
     }
-
-    // Dessine la portée de détection dans l'éditeur (visible quand la tour est sélectionnée).
-    private void OnDrawGizmosSelected()
-    {
-        if (towerData == null) return;
-        Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
-    }
-
+    
     /// <summary>
     /// Fait apparaître un projectile via le pool et lui donne sa cible + son
     /// type de dégâts. Toute la logique de vol/impact vit ensuite dans
@@ -94,7 +84,10 @@ public class Tower : MonoBehaviour
     /// </summary>
     private void Shoot()
     {
-        if (currentTarget == null) return;
+        if (iaTower == null) return;
+        if (stats == null) return;
+        if (towerData == null) return;
+        if (iaTower.CurrentTarget == null) return;
         if (towerData.ProjectilePrefab == null) return;
         if (firePoint == null) return; // le modèle du niveau actuel n'a pas de FirePoint valide
 
@@ -124,7 +117,7 @@ public class Tower : MonoBehaviour
         
         int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
         
-        projectile.SetTarget(currentTarget.transform, towerData.DamageType, finalDamage);
+        projectile.SetTarget(iaTower.CurrentTarget.transform, towerData.DamageType, finalDamage);
     }
 
     //--------Niveau--------//

@@ -39,6 +39,9 @@ public class SOTower : ScriptableObject
     
     [SerializeField] private DamageType damageType;
     public DamageType DamageType => damageType;
+
+    [SerializeField] private EnumShootType.ShootMode shootMode;
+    public EnumShootType.ShootMode ShootMode => shootMode;
     
     [Header("Level Information")]
     [SerializeField] private int minLevel;
