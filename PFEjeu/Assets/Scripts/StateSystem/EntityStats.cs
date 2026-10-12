@@ -305,6 +305,65 @@ namespace Core.StatsSystem
             );
         }
 
+
+        /// <summary>
+        /// Assigne une stat de base et la crée si elle n'existe pas encore.
+        /// Utile pour les entités ajoutées au runtime, par exemple les soldats
+        /// d'une caserne dont le prefab peut être très simple.
+        /// </summary>
+        public void SetOrAddBaseStat(
+            StatType type,
+            float value)
+        {
+            Initialize();
+
+            value =
+                Mathf.Max(
+                    0f,
+                    value
+                );
+
+            if (_baseStats.TryGetValue(
+                    type,
+                    out BaseStat existing))
+            {
+                SetBaseStat(
+                    type,
+                    value
+                );
+
+                return;
+            }
+
+            float oldValue =
+                GetStat(
+                    type
+                );
+
+            BaseStat created =
+                new BaseStat(
+                    type,
+                    value
+                );
+
+            baseStats.Add(
+                created
+            );
+
+            _baseStats.Add(
+                type,
+                created
+            );
+
+            NotifyChanged(
+                type,
+                oldValue,
+                GetStat(
+                    type
+                )
+            );
+        }
+
         // ============================================================
         // MODIFIERS
         // ============================================================

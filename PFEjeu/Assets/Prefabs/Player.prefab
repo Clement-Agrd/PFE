@@ -166,6 +166,7 @@ GameObject:
   - component: {fileID: 6982812934528912454}
   - component: {fileID: 4279102948163978847}
   - component: {fileID: 520034127296229322}
+  - component: {fileID: 7421993000000000001}
   m_Layer: 6
   m_Name: Player
   m_TagString: Untagged
@@ -1585,3 +1586,21 @@ MonoBehaviour:
   Use2DDistance: 0
   UseCameraSpace: 1
   SignalCombinationMode: 0
+--- !u!114 &7421993000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602151265126596277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6055bd28fcc9bad469c694fb3c99adfb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.InteractionSystem.Interactor
+  radius: 3.5
+  interactableMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  interactKey: 101
+  maxDetected: 16
