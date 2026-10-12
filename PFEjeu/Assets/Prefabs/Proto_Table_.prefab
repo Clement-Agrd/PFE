@@ -1,0 +1,186 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7861273904731929009
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 249.23
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7.88
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 648.75
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      propertyPath: m_Name
+      value: Proto_Table_
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 4046174272535942070}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7519215535724029130}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8895887108844699402}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5233886666299696731}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 867025418239571938}
+  m_SourcePrefab: {fileID: 100100000, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+--- !u!1 &7050863670797337824 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+  m_PrefabInstance: {fileID: 7861273904731929009}
+  m_PrefabAsset: {fileID: 0}
+--- !u!64 &4046174272535942070
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050863670797337824}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: -5495902117074765545, guid: 7f8b498e95fc862498815e6999f18776, type: 3}
+--- !u!65 &7519215535724029130
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050863670797337824}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 2.98, y: 23.27, z: 4.72}
+  m_Center: {x: 0, y: 2.4382176, z: 0}
+--- !u!114 &8895887108844699402
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050863670797337824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f31b6aba3a59014488822c484d3fda66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.InteractionSystem.Examples.SimpleInteractable
+  prompt: Interagir
+  onInteracted:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 0}
+        m_TargetAssemblyTypeName: Core.Village.VillageViewController, Assembly-CSharp
+        m_MethodName: EnterVillageView
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  once: 1
+--- !u!114 &5233886666299696731
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050863670797337824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 339be1fb089846188fe25e1ff01e80fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.VillageTableTrigger
+  villageView: {fileID: 0}
+  input: {fileID: 0}
+  promptUI: {fileID: 0}
+  promptMessage: "[E] Acc\xE9der \xE0 la Table"
+  pressVisual: {fileID: 0}
+  squash: 0.8434
+  delayBeforeView: 0.15
+  pressParticles: {fileID: 0}
+  pressSound: {fileID: 0}
+--- !u!114 &867025418239571938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7050863670797337824}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db3869c6b8f5c444795d5c22c20a4cc8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Minimap.MinimapMarker
+  type: 1
+  label: Table du village
