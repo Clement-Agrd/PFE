@@ -1272,6 +1272,7 @@ MonoBehaviour:
   target: {fileID: 1044498313947354830}
   playerRoot: {fileID: 6049880369452092882}
   controlledCamera: {fileID: 2348394047694948022}
+  playerHealth: {fileID: 2975613606298978251}
   mouseSensitivity: 0.12
   gamepadDegreesPerSecond: 180
   minPitch: -35
@@ -1284,11 +1285,15 @@ MonoBehaviour:
   aimShoulderOffset: {x: 0.75, y: 0.2, z: 0}
   aimFov: 52
   aimBlendSpeed: 10
-  collisionMask:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  collisionRadius: 0.2
-  collisionPadding: 0.05
+  cinemachineCamera: {fileID: 0}
+  thirdPersonFollow: {fileID: 0}
+  damageImpulseSource: {fileID: 0}
+  impulseListener: {fileID: 0}
+  followDamping: {x: 0.06, y: 0.08, z: 0.06}
+  minimumShakeStrength: 2
+  maximumShakeStrength: 3
+  damageForMaximumShake: 35
+  shakeListenerGain: 1
 --- !u!114 &7941474918085748826
 MonoBehaviour:
   m_ObjectHideFlags: 0
