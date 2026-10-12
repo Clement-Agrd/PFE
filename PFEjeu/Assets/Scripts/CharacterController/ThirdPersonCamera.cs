@@ -39,9 +39,17 @@ namespace ProfessionalTPS
         [SerializeField] private CinemachineImpulseListener impulseListener;
         [SerializeField] private Vector3 followDamping = new Vector3(0.06f, 0.08f, 0.06f);
 
+        [Header("Camera Collision")]
+        [Tooltip("Layers que la caméra doit considérer comme des obstacles. Le layer Player doit être exclu.")]
+        [SerializeField] private LayerMask collisionMask = ~(1 << 6);
+        [SerializeField, Range(0.01f, 1f)] private float collisionRadius = 0.2f;
+        [SerializeField, Min(0f)] private float collisionDampingIn = 0f;
+        [SerializeField, Min(0f)] private float collisionDampingOut = 0.2f;
+
         [Header("Damage Camera Shake")]
         [SerializeField, Min(0f)] private float minimumShakeStrength = 0.35f;
         [SerializeField, Min(0f)] private float maximumShakeStrength = 1.2f;
+        [SerializeField, Min(0.05f)] private float shakeDuration = 0.18f;
         [SerializeField, Min(1f)] private float damageForMaximumShake = 35f;
         [SerializeField, Range(0f, 2f)] private float shakeListenerGain = 1f;
 
@@ -343,8 +351,75 @@ namespace ProfessionalTPS
                 }
             }
 
-            impulseListener.Gain =
-                shakeListenerGain;
+            ConfigureImpulse();
+        }
+
+        private void ConfigureImpulse()
+        {
+            if (damageImpulseSource != null)
+            {
+                CinemachineImpulseDefinition definition =
+                    damageImpulseSource.ImpulseDefinition;
+
+                if (definition == null)
+                {
+                    definition =
+                        new CinemachineImpulseDefinition();
+
+                    damageImpulseSource.ImpulseDefinition =
+                        definition;
+                }
+
+                definition.ImpulseChannel =
+                    1;
+
+                definition.ImpulseShape =
+                    CinemachineImpulseDefinition
+                        .ImpulseShapes
+                        .Explosion;
+
+                definition.ImpulseDuration =
+                    Mathf.Max(
+                        0.05f,
+                        shakeDuration
+                    );
+
+                definition.ImpulseType =
+                    CinemachineImpulseDefinition
+                        .ImpulseTypes
+                        .Uniform;
+
+                // Cinemachine vérifie cette valeur même en mode Uniform.
+                definition.DissipationDistance =
+                    100f;
+
+                definition.DissipationRate =
+                    0.25f;
+
+                definition.PropagationSpeed =
+                    343f;
+
+                damageImpulseSource.DefaultVelocity =
+                    Vector3.down;
+            }
+
+            if (impulseListener != null)
+            {
+                impulseListener.ApplyAfter =
+                    CinemachineCore.Stage.Noise;
+
+                impulseListener.ChannelMask =
+                    1;
+
+                impulseListener.Gain =
+                    shakeListenerGain;
+
+                impulseListener.Use2DDistance =
+                    false;
+
+                impulseListener.UseCameraSpace =
+                    true;
+            }
         }
 
         private void ApplyCinemachineSettings()
@@ -386,6 +461,41 @@ namespace ProfessionalTPS
                     ? 1f
                     : 0f;
 
+            CinemachineThirdPersonFollow
+                .ObstacleSettings obstacles =
+                    thirdPersonFollow
+                        .AvoidObstacles;
+
+            obstacles.Enabled =
+                true;
+
+            obstacles.CollisionFilter =
+                collisionMask;
+
+            obstacles.IgnoreTag =
+                string.Empty;
+
+            obstacles.CameraRadius =
+                Mathf.Max(
+                    0.01f,
+                    collisionRadius
+                );
+
+            obstacles.DampingIntoCollision =
+                Mathf.Max(
+                    0f,
+                    collisionDampingIn
+                );
+
+            obstacles.DampingFromCollision =
+                Mathf.Max(
+                    0f,
+                    collisionDampingOut
+                );
+
+            thirdPersonFollow.AvoidObstacles =
+                obstacles;
+
             LensSettings lens =
                 cinemachineCamera.Lens;
 
@@ -399,11 +509,7 @@ namespace ProfessionalTPS
             cinemachineCamera.Lens =
                 lens;
 
-            if (impulseListener != null)
-            {
-                impulseListener.Gain =
-                    shakeListenerGain;
-            }
+            ConfigureImpulse();
         }
 
         private void SubscribeHealth()
@@ -477,7 +583,7 @@ namespace ProfessionalTPS
                 ).normalized;
 
             damageImpulseSource
-                .GenerateImpulse(
+                .GenerateImpulseWithVelocity(
                     direction *
                     strength
                 );
