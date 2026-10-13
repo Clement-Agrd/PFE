@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Test
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: Test
-  detectionRange: 15
+  detectionRange: 4
   towerType: 0
   targetCondition1: 1
   targetCondition2: 0

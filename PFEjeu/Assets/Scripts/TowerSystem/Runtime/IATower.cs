@@ -47,17 +47,18 @@ public class IATower : MonoBehaviour
     // Selectionne la cible en fonction du Target priority du SOTower
     private void SelectTarget(Collider[]target)
     {
+        // Selection la cible
         if (Array.IndexOf(target, currentTarget) == -1)
         {
-            currentTarget = target.Length > 0 ? target[0] : null;
+            currentTarget = null;
         }
         
         switch (towerData.TargetPriority)
         {
             case EnumTargetPriority.TargetPriority.None:
                 
-                // Cible simple : le premier trouvé. (Pour cibler le plus proche/le plus
-                // avancé sur le chemin, il faudrait trier "targets" ici.)
+                // Cible simple : le premier trouvé.
+                if (currentTarget == null)
                 currentTarget = target.Length > 0 ? target[0] : null;
                 Debug.Log(currentTarget != null
                     ? "IATower : cible trouvée - " + currentTarget.name
@@ -67,18 +68,23 @@ public class IATower : MonoBehaviour
             case EnumTargetPriority.TargetPriority.HighDefPhy:
                 
                 Debug.Log("Cible la plus grande defense");
+
+                currentTarget = target[0];
                 
-                float HighDefense = GetEnemyStat(currentTarget, StatType.DefensePhysic);
-
-                for (int i = 0; i < target.Length; i++)
+                if (currentTarget == null &&  target.Length > 0)
                 {
-                    Collider enemy = target[i];
-                    float enemyDef = GetEnemyStat(enemy, StatType.DefensePhysic);
-
-                    if (HighDefense < enemyDef)
+                    float HighDefense = GetEnemyStat(currentTarget, StatType.DefensePhysic);
+                    
+                    for (int i = 1; i < target.Length; i++)
                     {
-                        currentTarget = enemy;
-                        HighDefense = enemyDef;
+                        Collider enemy = target[i];
+                        float enemyDef = GetEnemyStat(enemy, StatType.DefensePhysic);
+
+                        if (HighDefense < enemyDef)
+                        {
+                            HighDefense = enemyDef;
+                            currentTarget = enemy;
+                        }
                     }
                 }
                 break;
@@ -92,3 +98,4 @@ public class IATower : MonoBehaviour
         Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
     }
 }
+
