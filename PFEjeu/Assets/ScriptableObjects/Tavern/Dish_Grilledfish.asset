@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16ac1bb48971a024aa161fa661d53bc3, type: 3}
+  m_Name: Dish_Grilledfish
+  m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernDishDefinition
+  dishName: "Poisson grill\xE9"
+  description: +6% Vitesse d'attaque
+  icon: {fileID: 21300000, guid: e14753ba2a2bbf64083f7c5eb7b91635, type: 3}
+  cost: 9
+  duration: 45
+  item: {fileID: 11400000, guid: 0a95712f647621b409caaedb5936992a, type: 2}
+  statEffects:
+  - type: 7
+    value: 0.06
+    modifierType: 1
+  healPercentPerSecond: 0

@@ -133,6 +133,7 @@ namespace Core.Village
 
             ItemStack stack = slotIndex >= 0 && slotIndex < inv.Capacity ? inv.GetSlot(slotIndex) : null;
             if (!IsUpgradable(stack)) { reason = "Objet non démontable."; return false; }
+            if (inv.IsReserved(slotIndex)) { reason = "Objet de base : non démontable."; return false; }
             if (GetDismantleRefund(stack).Count == 0) { reason = "Rien à récupérer."; return false; }
             return true;
         }

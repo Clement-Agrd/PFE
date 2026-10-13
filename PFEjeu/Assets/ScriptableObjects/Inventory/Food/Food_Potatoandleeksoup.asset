@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db75b0bb15a5ce94dbd7226d512b686c, type: 3}
+  m_Name: Food_Potatoandleeksoup
+  m_EditorClassIdentifier: Assembly-CSharp::Core.InventorySystem.ItemDefinition
+  <Id>k__BackingField: food_potatoandleeksoup
+  <DisplayName>k__BackingField: Soupe pommes de terre-poireaux
+  <Icon>k__BackingField: {fileID: 21300000, guid: c15c7bc36903ecc4cb3d3615bd9caf2d, type: 3}
+  <MaxStackSize>k__BackingField: 20
+  category: 3
+  armorSlot: 0
+  <WorldPrefab>k__BackingField: {fileID: 0}
+  interactionVerb: Ramasser
+  healAmount: 0
+  statEffects: []
+  regenPercentPerSecond: 3.5
+  regenDuration: 30
+  description: "R\xE9g\xE9n\xE9ration 3,5%/s"

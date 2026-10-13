@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 using Core;
 
 namespace Core.InventorySystem.UI
@@ -13,17 +14,20 @@ namespace Core.InventorySystem.UI
         [SerializeField] private GameObject panel;
         [SerializeField] private Transform slotsParent;
         [SerializeField] private InventorySlotUI slotPrefab;
+        [Tooltip("Conteneur des cases réservées des armes de base, affiché à côté de la grille. Optionnel.")]
+        [SerializeField] private Transform baseSlotsParent;
 
         [Header("Raccourci (optionnel)")]
         [Tooltip("Décoche si ce panneau est piloté uniquement de l'extérieur (ex. la vue village), sans touche dédiée.")]
         [SerializeField] private bool useToggleKey = true;
-        [SerializeField] private KeyCode toggleKey = KeyCode.Tab;
+        [SerializeField] private InputAction toggleAction = new("ToggleInventory", InputActionType.Button, "<Keyboard>/tab");
         [Tooltip("Fige le temps quand ouvert (à désactiver pour un inventaire affiché EN PLUS d'une autre vue, comme la vue village).")]
         [SerializeField] private bool pauseTimeWhenOpen = true;
 
         private Inventory _inventory;
         private InventorySlotUI[] _slots;
         private bool _isOpen = false;
+        private int _openedFrame = -1;
 
         public Inventory Inventory => _inventory;
         public bool IsOpen => _isOpen;
@@ -42,6 +46,10 @@ namespace Core.InventorySystem.UI
             SetOpen(false);
         }
 
+        private void OnEnable() => toggleAction.Enable();
+
+        private void OnDisable() => toggleAction.Disable();
+
         private void OnDestroy()
         {
             if (_inventory == null) return;
@@ -51,12 +59,18 @@ namespace Core.InventorySystem.UI
 
         private void Update()
         {
-            if (useToggleKey && Input.GetKeyDown(toggleKey))
+            if (!useToggleKey) return;
+
+            if (toggleAction.WasPressedThisFrame())
                 SetOpen(!_isOpen);
+            else if (_isOpen && UiCloseKeys.Pressed(_openedFrame))
+                SetOpen(false);
         }
 
         public void SetOpen(bool open)
         {
+            if (open && !_isOpen) _openedFrame = Time.frameCount;
+            if (!open) ItemDescriptionPanelUI.Instance?.Hide();
             _isOpen = open;
             if (panel != null) panel.SetActive(_isOpen);
 
@@ -84,16 +98,28 @@ namespace Core.InventorySystem.UI
             }
 
             foreach (Transform child in slotsParent) Destroy(child.gameObject);
+            if (baseSlotsParent != null)
+                foreach (Transform child in baseSlotsParent) Destroy(child.gameObject);
 
             Canvas mainCanvas = GetComponentInParent<Canvas>();
 
             _slots = new InventorySlotUI[_inventory.Capacity];
             for (int i = 0; i < _inventory.Capacity; i++)
             {
-                _slots[i] = Instantiate(slotPrefab, slotsParent);
+                bool reserved = _inventory.IsReserved(i);
+                // Les armures de base sont déjà montrées par les ArmorSlotUI : pas de doublon ici.
+                if (reserved && _inventory.GetSlot(i)?.Definition.Category == ItemCategory.Armor) continue;
+                Transform parent = reserved ? baseSlotsParent : slotsParent;
+                if (parent == null) continue;
+
+                _slots[i] = Instantiate(slotPrefab, parent);
                 _slots[i].Init(this, i, mainCanvas);
             }
         }
+
+        /// <summary>Consomme une unité de la case si c'est un consommable (clic droit).</summary>
+        public bool TryConsume(int slotIndex)
+            => ConsumableUser.For(inventoryHolder)?.Consume(slotIndex) ?? false;
 
         public bool IsPointerInsidePanel(Vector2 screenPosition)
         {
@@ -104,6 +130,8 @@ namespace Core.InventorySystem.UI
 
         public void DropSlotItem(int slotIndex)
         {
+            if (_inventory.IsReserved(slotIndex)) { RefreshSlot(slotIndex); return; }
+
             ItemStack stack = _inventory.GetSlot(slotIndex);
             if (stack == null || stack.IsEmpty) return;
 
@@ -125,12 +153,12 @@ namespace Core.InventorySystem.UI
         {
             if (_slots == null) return;
             for (int i = 0; i < _slots.Length; i++)
-                _slots[i].SetSlot(_inventory.GetSlot(i));
+                if (_slots[i] != null) _slots[i].SetSlot(_inventory.GetSlot(i));
         }
 
         public void RefreshSlot(int index)
         {
-            if (_slots == null || index < 0 || index >= _slots.Length) return;
+            if (_slots == null || index < 0 || index >= _slots.Length || _slots[index] == null) return;
             _slots[index].SetSlot(_inventory.GetSlot(index));
         }
     }

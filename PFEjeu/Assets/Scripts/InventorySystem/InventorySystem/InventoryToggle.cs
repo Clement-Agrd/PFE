@@ -1,55 +1,28 @@
 using UnityEngine;
-using Core;
 
 namespace Core.InventorySystem.UI
 {
+    /// <summary>
+    /// Façade de l'inventaire pour les systèmes qui veulent l'ouvrir/fermer ou connaître son état
+    /// (minimap...). Toute la logique (touches, pause, curseur) vit dans InventoryUI : avoir deux
+    /// propriétaires de pause sur le même panneau figeait le jeu quand l'un le fermait sans l'autre.
+    /// </summary>
     public class InventoryToggle : MonoBehaviour
     {
-        [Header("Références UI")]
-        [SerializeField] private GameObject inventoryCanvas;
-        [SerializeField] private KeyCode toggleKey = KeyCode.I;
+        [Tooltip("Laisser vide pour le retrouver automatiquement dans la scène.")]
+        [SerializeField] private InventoryUI inventoryUI;
 
-        private bool _isOpen;
-
-        public bool IsOpen => _isOpen;
-
-        private void Start()
-        {
-            // S'assure que le jeu démarre non masqué et non pausé
-            SetInventoryState(false);
-        }
-
-        private void Update()
-        {
-            // Update continue de s'exécuter même quand Time.timeScale = 0
-            if (Input.GetKeyDown(toggleKey))
-            {
-                SetInventoryState(!_isOpen);
-            }
-        }
+        public bool IsOpen => Resolve() != null && inventoryUI.IsOpen;
 
         public void SetInventoryState(bool open)
         {
-            _isOpen = open;
+            if (Resolve() != null) inventoryUI.SetOpen(open);
+        }
 
-            // 1. Affichage de l'UI
-            if (inventoryCanvas != null)
-            {
-                inventoryCanvas.SetActive(_isOpen);
-            }
-
-            // 2. Pause + curseur, via l'autorité partagée (composent avec les autres
-            // panneaux : la vue village, l'exploration...)
-            if (_isOpen)
-            {
-                GameFreeze.RequestPause(this);
-                GameFreeze.RequestCursorUnlock(this);
-            }
-            else
-            {
-                GameFreeze.ReleasePause(this);
-                GameFreeze.ReleaseCursorUnlock(this);
-            }
+        private InventoryUI Resolve()
+        {
+            if (inventoryUI == null) inventoryUI = FindFirstObjectByType<InventoryUI>();
+            return inventoryUI;
         }
     }
 }

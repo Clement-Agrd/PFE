@@ -5,6 +5,7 @@ using UnityEngine;
 using Core.ShopSystem;
 using Core.StatsSystem;
 using Core.HealthSystem;
+using Core.InventorySystem;
 
 namespace Core.TavernSystem
 {
@@ -25,6 +26,18 @@ namespace Core.TavernSystem
         public IReadOnlyList<TavernDishDefinition> Menu => menu != null ? menu.Dishes : Array.Empty<TavernDishDefinition>();
         public Wallet Wallet => wallet;
 
+        [Tooltip("Inventaire du joueur qui reçoit les plats achetés. Vide = celui du GameObject du Wallet.")]
+        [SerializeField] private InventoryHolder playerInventory;
+
+        private Inventory PlayerInventory
+        {
+            get
+            {
+                if (playerInventory == null && wallet != null) playerInventory = wallet.GetComponent<InventoryHolder>();
+                return playerInventory != null ? playerInventory.Inventory : null;
+            }
+        }
+
         public event Action<TavernDishDefinition> OnOrdered;
         public event Action<string> OnOrderFailed;
 
@@ -32,8 +45,21 @@ namespace Core.TavernSystem
         public bool Order(TavernDishDefinition dish)
         {
             if (dish == null) { Fail("Plat invalide."); return false; }
-            if (playerStats == null) { Fail("Aucune statistique à améliorer."); return false; }
             if (wallet == null || !wallet.CanAfford(dish.Cost)) { Fail("Pas assez d'or."); return false; }
+
+            if (dish.Item != null)
+            {
+                // Le plat atterrit dans l'inventaire : le joueur le consommera quand il veut.
+                Inventory inv = PlayerInventory;
+                if (inv == null) { Fail("Aucun inventaire."); return false; }
+                if (inv.Add(dish.Item, 1) > 0) { Fail("Inventaire plein."); return false; }
+
+                wallet.Spend(dish.Cost);
+                OnOrdered?.Invoke(dish);
+                return true;
+            }
+
+            if (playerStats == null) { Fail("Aucune statistique à améliorer."); return false; }
 
             wallet.Spend(dish.Cost);
             StartCoroutine(RunDish(dish));

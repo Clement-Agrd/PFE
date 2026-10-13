@@ -9,6 +9,11 @@ namespace Core.InventorySystem
 
         public int Capacity => _slots.Length;
 
+        /// <summary>Cases réservées (0..ReservedCount-1) : objets de base, améliorables mais ni achetables, ni déplaçables, ni jetables.</summary>
+        public int ReservedCount { get; private set; }
+
+        public bool IsReserved(int index) => index >= 0 && index < ReservedCount;
+
         public event Action OnChanged;
         public event Action<int> OnSlotChanged;
 
@@ -22,6 +27,15 @@ namespace Core.InventorySystem
 
         public ItemStack GetSlot(int index) => _slots[index];
 
+        /// <summary>Place les objets de base dans les premières cases, qui deviennent réservées.</summary>
+        public void ReserveSlots(System.Collections.Generic.IReadOnlyList<ItemDefinition> baseItems)
+        {
+            ReservedCount = Mathf.Min(baseItems.Count, _slots.Length);
+            for (int i = 0; i < ReservedCount; i++)
+                if (baseItems[i] != null) _slots[i] = new ItemStack(baseItems[i], 1);
+            OnChanged?.Invoke();
+        }
+
         #region Ajout / Retrait
 
         public int Add(ItemDefinition definition, int amount)
@@ -32,7 +46,7 @@ namespace Core.InventorySystem
 
             if (definition.IsStackable)
             {
-                for (int i = 0; i < _slots.Length && remaining > 0; i++)
+                for (int i = ReservedCount; i < _slots.Length && remaining > 0; i++)
                 {
                     ItemStack slot = _slots[i];
                     if (slot != null && slot.Matches(definition) && slot.UpgradeLevel == 0 && !slot.IsFull)
@@ -44,7 +58,7 @@ namespace Core.InventorySystem
                 }
             }
 
-            for (int i = 0; i < _slots.Length && remaining > 0; i++)
+            for (int i = ReservedCount; i < _slots.Length && remaining > 0; i++)
             {
                 if (_slots[i] == null)
                 {
@@ -66,7 +80,7 @@ namespace Core.InventorySystem
 
             int removed = 0;
 
-            for (int i = _slots.Length - 1; i >= 0 && removed < amount; i--)
+            for (int i = _slots.Length - 1; i >= ReservedCount && removed < amount; i--)
             {
                 ItemStack slot = _slots[i];
                 if (slot == null || !slot.Matches(definition)) continue;
@@ -85,7 +99,7 @@ namespace Core.InventorySystem
         /// <summary>Retire des objets d'une case précise (utilisé pour le Drop au sol).</summary>
         public int RemoveAt(int index, int amount = -1)
         {
-            if (index < 0 || index >= _slots.Length) return 0;
+            if (index < 0 || index >= _slots.Length || IsReserved(index)) return 0;
             ItemStack slot = _slots[index];
             if (slot == null || slot.IsEmpty) return 0;
 
@@ -122,7 +136,7 @@ namespace Core.InventorySystem
                 return index;
             }
 
-            int free = Array.IndexOf(_slots, null);
+            int free = Array.IndexOf(_slots, null, ReservedCount);
             if (free < 0) return -1;
 
             slot.Remove(1);
@@ -140,6 +154,7 @@ namespace Core.InventorySystem
         public void SwapSlots(int indexA, int indexB)
         {
             if (indexA == indexB || indexA < 0 || indexA >= _slots.Length || indexB < 0 || indexB >= _slots.Length) return;
+            if (IsReserved(indexA) || IsReserved(indexB)) return;
 
             ItemStack slotA = _slots[indexA];
             ItemStack slotB = _slots[indexB];
@@ -191,7 +206,7 @@ namespace Core.InventorySystem
 
         public bool HasFreeSlot()
         {
-            for (int i = 0; i < _slots.Length; i++)
+            for (int i = ReservedCount; i < _slots.Length; i++)
                 if (_slots[i] == null) return true;
             return false;
         }

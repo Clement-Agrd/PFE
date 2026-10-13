@@ -14,6 +14,8 @@ namespace Core.LootSystem
     {
         [SerializeField] private List<LootEntry> entries = new();
 
+        public IReadOnlyList<LootEntry> Entries => entries;
+
         [Header("Tirages pondérés")]
         [Tooltip("Nombre de tirages dans le pool des entrées non garanties.")]
         [SerializeField, Min(0)] private int rolls = 1;

@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernDishDefinition
   dishName: Fromage & Charcuterie
   description: "+2 D\xE9g\xE2ts"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: abc144d43bffa84469993646bd25c82b, type: 3}
   cost: 10
   duration: 30
+  item: {fileID: 11400000, guid: 5e4ac6952e413f843a163dc36872595a, type: 2}
   statEffects:
   - type: 2
     value: 2

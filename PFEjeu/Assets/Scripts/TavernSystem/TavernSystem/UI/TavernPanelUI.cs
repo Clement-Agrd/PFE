@@ -44,6 +44,13 @@ namespace Core.TavernSystem.UI
 
         private void Start() => HideImmediate();
 
+        private int _openedFrame = -1;
+
+        private void Update()
+        {
+            if (IsShown && UiCloseKeys.Pressed(_openedFrame)) Hide();
+        }
+
         public void Show(Tavern tavern)
         {
             if (tavern == null) return;
@@ -58,6 +65,7 @@ namespace Core.TavernSystem.UI
 
             if (!wasOpen)
             {
+                _openedFrame = Time.frameCount;
                 GameFreeze.RequestPause(this);
                 GameFreeze.RequestCursorUnlock(this);
                 PlayOpenAnimation();

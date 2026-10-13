@@ -77,36 +77,6 @@ namespace Core.InventorySystem.UI
             }
         }
 
-        private void Consume(int index)
-        {
-            ItemStack stack = _inventory.GetSlot(index);
-            if (stack == null || stack.IsEmpty || stack.Definition == null) return;
-
-            ItemDefinition definition = stack.Definition;
-
-            if (definition.HealAmount > 0 && playerHealth != null)
-                playerHealth.Heal(definition.HealAmount);
-
-            if (playerStats != null && definition.StatEffects.Count > 0)
-                StartCoroutine(RunEffects(definition));
-
-            _inventory.RemoveAt(index, 1);
-        }
-
-        private IEnumerator RunEffects(ItemDefinition definition)
-        {
-            object source = new object();
-            float maxDuration = 0f;
-
-            foreach (ConsumableStatEffect effect in definition.StatEffects)
-            {
-                playerStats.AddModifier(effect.type, effect.value, effect.modifierType, source);
-                if (effect.duration > maxDuration) maxDuration = effect.duration;
-            }
-
-            yield return new WaitForSeconds(maxDuration);
-
-            playerStats.RemoveModifiersFromSource(source);
-        }
+        private void Consume(int index) => ConsumableUser.For(inventoryHolder)?.Consume(index);
     }
 }

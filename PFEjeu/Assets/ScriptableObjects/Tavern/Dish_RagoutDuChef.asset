@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernDishDefinition
   dishName: "Rago\xFBt du chef"
   description: "+15% PV, +5% D\xE9g\xE2ts"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 58ed88d4beaf5c34aa97d24645d66175, type: 3}
   cost: 20
   duration: 30
+  item: {fileID: 11400000, guid: 443819edbc0c9444696052cd519923a8, type: 2}
   statEffects:
   - type: 0
     value: 0.15

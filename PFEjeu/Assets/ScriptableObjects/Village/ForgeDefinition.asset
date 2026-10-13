@@ -116,33 +116,33 @@ MonoBehaviour:
       amount: 3
   dismantleRefundPercent: 0.5
   shop:
-  - item: {fileID: 11400000, guid: ea62114f9fffdaa4ba8178d3a257484b, type: 2}
-    cost:
-    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
-      amount: 8
-    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
-      amount: 4
-  - item: {fileID: 11400000, guid: fe16c17d491b5d3418685125c447adda, type: 2}
-    cost:
-    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
-      amount: 16
-    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
-      amount: 6
-  - item: {fileID: 11400000, guid: ef6b8dd722200854a99f7da8f6dc54df, type: 2}
-    cost:
-    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
-      amount: 12
-    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
-      amount: 4
-  - item: {fileID: 11400000, guid: 8f53c38a99dd8354ca0198dccc1062bc, type: 2}
-    cost:
-    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
-      amount: 8
-    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
-      amount: 4
   - item: {fileID: 11400000, guid: c3a96bb4e879a304f80c16370a9728de, type: 2}
     cost:
     - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
       amount: 6
     - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
       amount: 3
+  - item: {fileID: 11400000, guid: f554a2121eb79794ea7f468a13ee70db, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 4
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 4
+  - item: {fileID: 11400000, guid: 79511c77699dab94ba1605548d09ba9d, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 6
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 2
+  - item: {fileID: 11400000, guid: 8195def825003574cb8c1e1a65d406a5, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      amount: 6
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 3
+  - item: {fileID: 11400000, guid: 6a7a395605ebfcf43989949667a79c2f, type: 2}
+    cost:
+    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      amount: 6
+    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      amount: 2

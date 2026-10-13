@@ -5,7 +5,8 @@ using TMPro;
 
 namespace Core.InventorySystem.UI
 {
-    public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler
+    public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler,
+        IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
     {
         [Header("Composants Enfants")]
         [SerializeField] private Image iconImage;
@@ -39,14 +40,36 @@ namespace Core.InventorySystem.UI
 
             if (amountText != null)
             {
-                bool showAmount = hasItem && stack.Quantity > 1;
-                amountText.text = showAmount ? stack.Quantity.ToString() : "";
+                // Niveau d'amélioration ("+3") prioritaire sur la quantité.
+                bool upgraded = hasItem && stack.UpgradeLevel > 0;
+                bool showAmount = upgraded || (hasItem && stack.Quantity > 1);
+                amountText.text = upgraded ? $"+{stack.UpgradeLevel}" : (showAmount ? stack.Quantity.ToString() : "");
                 amountText.enabled = showAmount;
             }
         }
 
+        public void OnPointerEnter(PointerEventData eventData)
+        {
+            if (_ownerUI == null || _ownerUI.Inventory == null || DraggedSlot != null) return;
+            ItemDescriptionPanelUI panel = ItemDescriptionPanelUI.Instance;
+            if (panel != null) panel.Show(_ownerUI.Inventory.GetSlot(_slotIndex));
+        }
+
+        public void OnPointerExit(PointerEventData eventData) => ItemDescriptionPanelUI.Instance?.Hide();
+
+        /// <summary>Clic droit sur un consommable : le consomme (1 unité).</summary>
+        public void OnPointerClick(PointerEventData eventData)
+        {
+            if (eventData.button != PointerEventData.InputButton.Right || _ownerUI == null) return;
+            if (_ownerUI.TryConsume(_slotIndex) && _ownerUI.Inventory.GetSlot(_slotIndex) == null)
+                ItemDescriptionPanelUI.Instance?.Hide();
+            else
+                OnPointerEnter(eventData); // rafraîchit la bulle (quantité restante)
+        }
+
         public void OnBeginDrag(PointerEventData eventData)
         {
+            ItemDescriptionPanelUI.Instance?.Hide();
             if (_ownerUI == null || _ownerUI.Inventory == null) return;
 
             ItemStack stack = _ownerUI.Inventory.GetSlot(_slotIndex);
