@@ -1,5 +1,4 @@
 using System;
-using Core;
 using UnityEngine;
 using UnityEngine.AI;
 
@@ -17,6 +16,10 @@ namespace Core.BarracksSystem
         [SerializeField] private LayerMask groundMask = ~((1 << 6) | (1 << 2));
         [SerializeField, Min(0.1f)] private float maxRayDistance = 250f;
         [SerializeField, Min(0.1f)] private float navMeshSampleRadius = 2f;
+
+        [Header("Interaction Range")]
+        [Tooltip("Le placement s'annule si le joueur s'éloigne plus que cette distance de la caserne.")]
+        [SerializeField, Min(0.5f)] private float maxInteractorDistance = 3.75f;
 
         [Header("Controls")]
         [SerializeField] private int confirmMouseButton = 0;
@@ -58,6 +61,12 @@ namespace Core.BarracksSystem
         private void Update()
         {
             if (!IsPlacing) return;
+
+            if (!IsInteractorStillInRange())
+            {
+                CancelPlacement();
+                return;
+            }
 
             UpdatePreview();
 
@@ -101,7 +110,8 @@ namespace Core.BarracksSystem
             if (_previewInstance != null)
                 _previewInstance.SetActive(true);
 
-            GameFreeze.RequestCursorUnlock(this);
+            // On garde la caméra TPS normale : curseur verrouillé et visée
+            // depuis le centre de l'écran.
             UpdatePreview();
         }
 
@@ -113,7 +123,6 @@ namespace Core.BarracksSystem
             if (_previewInstance != null)
                 _previewInstance.SetActive(false);
 
-            GameFreeze.ReleaseCursorUnlock(this);
             _interactor = null;
 
             if (_activePlacement == this)
@@ -143,6 +152,24 @@ namespace Core.BarracksSystem
             }
         }
 
+        private bool IsInteractorStillInRange()
+        {
+            if (_interactor == null || barracks == null)
+                return false;
+
+            Vector3 playerPosition = _interactor.transform.position;
+            Vector3 barracksPosition = barracks.transform.position;
+
+            playerPosition.y = 0f;
+            barracksPosition.y = 0f;
+
+            float range = Mathf.Max(0.5f, maxInteractorDistance);
+
+            return (playerPosition - barracksPosition).sqrMagnitude <=
+                   range * range;
+        }
+
+
         private void ResolveCamera()
         {
             if (placementCamera != null) return;
@@ -163,7 +190,11 @@ namespace Core.BarracksSystem
                 return;
             }
 
-            Ray ray = placementCamera.ScreenPointToRay(Input.mousePosition);
+            Vector2 screenCenter = new Vector2(
+                placementCamera.pixelWidth * 0.5f,
+                placementCamera.pixelHeight * 0.5f);
+
+            Ray ray = placementCamera.ScreenPointToRay(screenCenter);
 
             int hitCount = Physics.RaycastNonAlloc(
                 ray,
