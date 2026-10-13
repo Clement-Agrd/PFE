@@ -13,9 +13,14 @@ MonoBehaviour:
   m_Name: Test
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: Test
-  detectionRange: 15
+  detectionRange: 4
+  towerType: 0
+  targetCondition1: 1
+  targetCondition2: 0
+  targetDistance: 0
   projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
+  shootMode: 0
   minLevel: 1
   maxLevel: 3
   towerStats:
@@ -36,7 +41,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 5
+      baseValue: 2
   - level: 2
     stats:
     - type: 0

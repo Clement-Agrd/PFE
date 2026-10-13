@@ -1,0 +1,103 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8740322642456599338
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5629462222188447357}
+  - component: {fileID: 4144290575829226179}
+  - component: {fileID: 8220032235991510549}
+  - component: {fileID: 9113911517627355642}
+  m_Layer: 0
+  m_Name: TowerSystem
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5629462222188447357
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8740322642456599338}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.12, y: 0, z: -2.84}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4144290575829226179
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8740322642456599338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2ff5ad68d81b34daecdf7a1495ddd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tower
+  towerData: {fileID: 11400000, guid: d531276bf8165564fa33574690a4baf7, type: 2}
+  heroData: {fileID: 0}
+  currentLevel: 0
+  modelParent: {fileID: 5629462222188447357}
+  firePoint: {fileID: 0}
+  poolManager: {fileID: 0}
+  iaTower: {fileID: 9113911517627355642}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!114 &8220032235991510549
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8740322642456599338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b30f0a7f66f42558d0d76d81b074357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.StatsSystem.EntityStats
+  baseStats:
+  - type: 0
+    baseValue: 100
+  - type: 1
+    baseValue: 100
+  - type: 2
+    baseValue: 50
+  - type: 3
+    baseValue: 10
+  - type: 4
+    baseValue: 0
+  - type: 5
+    baseValue: 0
+  - type: 6
+    baseValue: 5.5
+  - type: 7
+    baseValue: 1
+--- !u!114 &9113911517627355642
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8740322642456599338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70e955991314fe047a7dd65a4bf34848, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IATower
+  towerData: {fileID: 11400000, guid: d531276bf8165564fa33574690a4baf7, type: 2}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8

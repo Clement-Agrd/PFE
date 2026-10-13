@@ -17,6 +17,9 @@ public class Tower : MonoBehaviour
     // La fiche de données de cette tour (portée, cadence de tir, dégâts, modèles par niveau...).
     // Voir SOTower.cs pour le détail des champs.
     [SerializeField] private SOTower towerData;
+    
+    // Donné du héro qui va modifier la tour
+    [SerializeField] private SoHero heroData;
 
     [Header("Level")]
     // Le niveau actuel de la tour. Initialisé à towerData.MinLevel au démarrage.
@@ -39,6 +42,9 @@ public class Tower : MonoBehaviour
     // le bénéfice du pooling).
     [SerializeField] private PoolManager poolManager;
 
+    [Header("IA")]
+    [SerializeField] private IATower iaTower;
+    
     // Temps écoulé depuis le dernier tir.
     private float shootTimer;
 
@@ -48,9 +54,6 @@ public class Tower : MonoBehaviour
 
     // Les layers physiques considérés comme des ennemis détectables.
     [SerializeField] private LayerMask enemyLayer;
-
-    // L'ennemi actuellement visé (le plus proche trouvé lors de la dernière détection).
-    private Collider currentTarget;
     
     private EntityStats stats;
 
@@ -58,27 +61,11 @@ public class Tower : MonoBehaviour
 
     private void Update()
     {
-        // On ne cherche une cible que toutes les 0.1s (pas chaque frame) :
-        // largement suffisant pour du gameplay, et bien moins coûteux en performance.
-        timer += Time.deltaTime;
-        if (timer < 0.1f) return;
-        timer = 0f;
-
-        // Cherche tous les colliders ennemis dans le rayon de détection de la tour.
-        Collider[] targets = Physics.OverlapSphere(
-            transform.position,
-            towerData.DetectionRange,
-            enemyLayer);
-
-        // Cible simple : le premier trouvé. (Pour cibler le plus proche/le plus
-        // avancé sur le chemin, il faudrait trier "targets" ici.)
-        currentTarget = targets.Length > 0 ? targets[0] : null;
-
-        if (currentTarget == null) return;
+        if (iaTower.CurrentTarget == null) return;
 
         // Le compteur de cadence avance par pas de 0.1s (le rythme de ce bloc),
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
-        shootTimer += 0.1f;
+        shootTimer += Time.deltaTime;
 
         
         float attackSpeed = stats.GetStat(StatType.AttackSpeed);
@@ -89,14 +76,7 @@ public class Tower : MonoBehaviour
             shootTimer = 0f;
         }
     }
-
-    // Dessine la portée de détection dans l'éditeur (visible quand la tour est sélectionnée).
-    private void OnDrawGizmosSelected()
-    {
-        if (towerData == null) return;
-        Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
-    }
-
+    
     /// <summary>
     /// Fait apparaître un projectile via le pool et lui donne sa cible + son
     /// type de dégâts. Toute la logique de vol/impact vit ensuite dans
@@ -104,7 +84,10 @@ public class Tower : MonoBehaviour
     /// </summary>
     private void Shoot()
     {
-        if (currentTarget == null) return;
+        if (iaTower == null) return;
+        if (stats == null) return;
+        if (towerData == null) return;
+        if (iaTower.CurrentTarget == null) return;
         if (towerData.ProjectilePrefab == null) return;
         if (firePoint == null) return; // le modèle du niveau actuel n'a pas de FirePoint valide
 
@@ -134,7 +117,7 @@ public class Tower : MonoBehaviour
         
         int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
         
-        projectile.SetTarget(currentTarget.transform, towerData.DamageType, finalDamage);
+        projectile.SetTarget(iaTower.CurrentTarget.transform, towerData.DamageType, finalDamage);
     }
 
     //--------Niveau--------//

@@ -8,10 +8,30 @@ using StatType = Core.StatsSystem.EnumStats.StatTypes;
 [CreateAssetMenu(fileName = "SOTower", menuName = "Scriptable Objects/SOTower")]
 public class SOTower : ScriptableObject
 {
+    public enum TypeTower
+    {
+        Physical,
+        Magic,
+    }
+    
     [Header("Base Information")]
     [SerializeField] private string towerName;
     [SerializeField] private float detectionRange;
     public float DetectionRange => detectionRange;
+    
+    [SerializeField] private TypeTower towerType;
+    public TypeTower TowerType => towerType;
+    
+    [Header("IA")]
+    [SerializeField] private EnumTargetPriority.TargetPriority targetCondition1;
+    public EnumTargetPriority.TargetPriority TargetPriority => targetCondition1;
+    
+    [SerializeField] private EnumTargetPriority.TargetPriority targetCondition2;
+    public EnumTargetPriority.TargetPriority TargetPriority2 => targetCondition2;
+    
+    [SerializeField] private EnumTargetDistance.TargetDistance targetDistance;
+    public EnumTargetDistance.TargetDistance TargetDistance => targetDistance;
+    
     
     [Header("Projectile")]
     [SerializeField] private GameObject projectilePrefab;
@@ -19,7 +39,9 @@ public class SOTower : ScriptableObject
     
     [SerializeField] private DamageType damageType;
     public DamageType DamageType => damageType;
-    
+
+    [SerializeField] private EnumShootType.ShootMode shootMode;
+    public EnumShootType.ShootMode ShootMode => shootMode;
     
     [Header("Level Information")]
     [SerializeField] private int minLevel;
