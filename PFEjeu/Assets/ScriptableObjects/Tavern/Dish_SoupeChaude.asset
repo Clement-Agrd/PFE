@@ -14,8 +14,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernDishDefinition
   dishName: Soupe chaude
   description: "R\xE9g\xE9n\xE9ration de vie sur la dur\xE9e"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: 17939543966b29349877729d71146483, type: 3}
   cost: 8
   duration: 30
+  item: {fileID: 11400000, guid: 4d207f932396b2f42955f382d02bdbbc, type: 2}
   statEffects: []
   healPercentPerSecond: 5

@@ -14,9 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernDishDefinition
   dishName: Hydromel
   description: "+10% R\xE9sistance aux d\xE9g\xE2ts"
-  icon: {fileID: 0}
+  icon: {fileID: 21300000, guid: efc692fc6f6d2dd4b8a8b62eb377ac8a, type: 3}
   cost: 18
   duration: 30
+  item: {fileID: 11400000, guid: 736316ec748fa434484f26ccd78b9322, type: 2}
   statEffects:
   - type: 4
     value: 0.1

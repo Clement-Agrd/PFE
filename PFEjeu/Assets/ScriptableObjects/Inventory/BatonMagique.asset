@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.InventorySystem.ItemDefinition
   <Id>k__BackingField: baton_magique
   <DisplayName>k__BackingField: "B\xE2ton de magie"
-  <Icon>k__BackingField: {fileID: 0}
+  <Icon>k__BackingField: {fileID: 21300000, guid: a4b5f62f33b3e004e8aace652e009615, type: 3}
   <MaxStackSize>k__BackingField: 1
   category: 1
   armorSlot: 0

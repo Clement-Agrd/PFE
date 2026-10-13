@@ -15,6 +15,8 @@ namespace Core.TowerDefense
         [SerializeField] private string displayName;
         [Tooltip("Portrait affiché dans l'aperçu de spawn (au-dessus des zones).")]
         [SerializeField] private Sprite icon;
+        [Tooltip("Texte du bestiaire (fiche de l'ennemi).")]
+        [TextArea(2, 5)] [SerializeField] private string description;
 
         [Header("Combat")]
         [SerializeField, Min(1)] private int maxHealth = 30;
@@ -27,6 +29,7 @@ namespace Core.TowerDefense
 
         public string DisplayName => displayName;
         public Sprite Icon => icon;
+        public string Description => description;
         public int MaxHealth => maxHealth;
         public float Speed => speed;
         public int BaseDamage => baseDamage;

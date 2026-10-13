@@ -107,8 +107,8 @@ namespace ProfessionalTPS
 
             if (input.LookIsPointerDelta)
             {
-                _yaw += look.x * mouseSensitivity;
-                _pitch -= look.y * mouseSensitivity;
+                _yaw += look.x * mouseSensitivity * Core.GameSettings.MouseSensitivity;
+                _pitch -= look.y * mouseSensitivity * Core.GameSettings.MouseSensitivity * (Core.GameSettings.InvertY ? -1f : 1f);
             }
             else
             {

@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: db75b0bb15a5ce94dbd7226d512b686c, type: 3}
+  m_Name: Food_Roastedvenisonwithcarrotsandmashedpotatoes
+  m_EditorClassIdentifier: Assembly-CSharp::Core.InventorySystem.ItemDefinition
+  <Id>k__BackingField: food_roastedvenisonwithcarrotsandmashedpotatoes
+  <DisplayName>k__BackingField: "Chevreuil r\xF4ti, carottes et pur\xE9e"
+  <Icon>k__BackingField: {fileID: 21300000, guid: dd34a825e11fc744eb5148baf34f12cb, type: 3}
+  <MaxStackSize>k__BackingField: 20
+  category: 3
+  armorSlot: 0
+  <WorldPrefab>k__BackingField: {fileID: 0}
+  interactionVerb: Ramasser
+  healAmount: 0
+  statEffects:
+  - type: 2
+    value: 0.15
+    modifierType: 1
+    duration: 60
+  - type: 0
+    value: 0.1
+    modifierType: 1
+    duration: 60
+  - type: 6
+    value: 0.03
+    modifierType: 1
+    duration: 60
+  regenPercentPerSecond: 0
+  regenDuration: 0
+  description: "+15% D\xE9g\xE2ts physiques, +10% PV max, +3% Vitesse"

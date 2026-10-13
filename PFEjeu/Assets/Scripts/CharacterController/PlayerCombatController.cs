@@ -285,6 +285,36 @@ namespace ProfessionalTPS
             TrySwitch(pickaxe);
         }
 
+        private CombatModule ModuleFor(
+            CombatMode mode)
+        {
+            return mode switch
+            {
+                CombatMode.Melee => melee,
+                CombatMode.Bow => bow,
+                CombatMode.Magic => magic,
+                CombatMode.Axe => axe,
+                CombatMode.Pickaxe => pickaxe,
+                _ => null
+            };
+        }
+
+        /// <summary>Ce mode de combat est-il équipé sur le joueur ?</summary>
+        public bool HasMode(
+            CombatMode mode)
+        {
+            return ModuleFor(mode) != null;
+        }
+
+        /// <summary>Change de mode de combat (ignoré si une action est en cours).</summary>
+        public void SelectMode(
+            CombatMode mode)
+        {
+            TrySwitch(
+                ModuleFor(mode)
+            );
+        }
+
         private void TrySwitch(
             CombatModule target)
         {

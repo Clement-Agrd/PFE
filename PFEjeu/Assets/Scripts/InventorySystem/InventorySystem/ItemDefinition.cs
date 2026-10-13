@@ -29,6 +29,18 @@ namespace Core.InventorySystem
         [Tooltip("Effets de stats temporaires appliqués à la consommation (optionnel).")]
         [SerializeField] private List<ConsumableStatEffect> statEffects = new();
 
+        [Tooltip("Régénération de vie passive : % des PV max soignés par seconde pendant la durée ci-dessous. 0 = aucune.")]
+        [SerializeField, Min(0f)] private float regenPercentPerSecond;
+        [Tooltip("Durée de la régénération, en secondes.")]
+        [SerializeField, Min(0f)] private float regenDuration;
+
+        [Header("Description")]
+        [TextArea] [SerializeField] private string description;
+
+        public string Description => description;
+        public float RegenPercentPerSecond => regenPercentPerSecond;
+        public float RegenDuration => regenDuration;
+        public bool IsConsumable => category == ItemCategory.Consumable;
         public ItemCategory Category => category;
         public ArmorSlotType ArmorSlot => armorSlot;
         public string InteractionVerb => string.IsNullOrEmpty(interactionVerb) ? "Ramasser" : interactionVerb;

@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16ac1bb48971a024aa161fa661d53bc3, type: 3}
+  m_Name: Dish_Shrimpandricepilafwithsaffron
+  m_EditorClassIdentifier: Assembly-CSharp::Core.TavernSystem.TavernDishDefinition
+  dishName: Pilaf de crevettes au safran
+  description: +8% Vitesse, +12% Endurance
+  icon: {fileID: 21300000, guid: 1c548c9d14acefd48949fc5c7642daed, type: 3}
+  cost: 16
+  duration: 60
+  item: {fileID: 11400000, guid: 99e07593ac8428e45886d8b937d9aad9, type: 2}
+  statEffects:
+  - type: 6
+    value: 0.08
+    modifierType: 1
+  - type: 1
+    value: 0.12
+    modifierType: 1
+  healPercentPerSecond: 0

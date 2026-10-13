@@ -10,8 +10,16 @@ namespace Core.InventorySystem.UI
     /// aperçu qui se met à jour en direct). Se branche sur le même Inventory
     /// que la grille générale, sans dupliquer le stockage.
     /// </summary>
-    public sealed class ArmorSlotUI : MonoBehaviour
+    public sealed class ArmorSlotUI : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler
     {
+        private ItemStack _shown;
+
+        public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData eventData)
+            => ItemDescriptionPanelUI.Instance?.Show(_shown);
+
+        public void OnPointerExit(UnityEngine.EventSystems.PointerEventData eventData)
+            => ItemDescriptionPanelUI.Instance?.Hide();
+
         [SerializeField] private InventoryHolder inventoryHolder;
         [Tooltip("Emplacement géré par cette case. None = première armure trouvée, quel que soit son emplacement.")]
         [SerializeField] private ArmorSlotType slotType = ArmorSlotType.None;
@@ -47,6 +55,7 @@ namespace Core.InventorySystem.UI
                     found = stack;
             }
 
+            _shown = found;
             bool hasItem = found != null;
 
             if (icon != null)

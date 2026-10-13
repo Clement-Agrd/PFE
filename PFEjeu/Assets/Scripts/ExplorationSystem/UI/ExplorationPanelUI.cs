@@ -78,8 +78,16 @@ namespace Core.Village.Exploration.UI
             if (panel != null && panel.activeSelf) Refresh();
         }
 
+        private int _openedFrame = -1;
+
+        private void Update()
+        {
+            if (IsShown && UiCloseKeys.Pressed(_openedFrame)) Hide();
+        }
+
         public void Show()
         {
+            if (!IsShown) _openedFrame = Time.frameCount;
             if (panel != null) panel.SetActive(true);
 
             bool alreadyInVillageView = villageView != null && villageView.IsInVillageView;

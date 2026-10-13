@@ -79,6 +79,9 @@ namespace Core.TowerDefense
         [SerializeField]
         private bool logStateChanges;
 
+        /// <summary>Levée à chaque ennemi tué par le joueur (bestiaire, stats...).</summary>
+        public static event System.Action<EnemyDefinition> Killed;
+
         public event System.Action<IWaveEnemy>
             Defeated;
 
@@ -601,6 +604,9 @@ namespace Core.TowerDefense
                 return;
 
             _finished = true;
+
+            if (definition != null)
+                Killed?.Invoke(definition);
 
             ChangeState(
                 _finishedState,

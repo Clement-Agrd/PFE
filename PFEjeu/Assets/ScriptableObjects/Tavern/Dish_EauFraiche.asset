@@ -17,5 +17,6 @@ MonoBehaviour:
   icon: {fileID: 0}
   cost: 3
   duration: 30
+  item: {fileID: 11400000, guid: 7d490b104ffdadc4f98a1c95d249ce70, type: 2}
   statEffects: []
   healPercentPerSecond: 1.5

@@ -17,6 +17,7 @@ MonoBehaviour:
   icon: {fileID: 0}
   cost: 5
   duration: 30
+  item: {fileID: 11400000, guid: 6a7e6c3b49aa4d547b8c27333cec4daf, type: 2}
   statEffects:
   - type: 0
     value: 0.1

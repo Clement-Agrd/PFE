@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Core.StatsSystem;
+using Core.InventorySystem;
 
 namespace Core.TavernSystem
 {
@@ -31,6 +32,11 @@ namespace Core.TavernSystem
         [Tooltip("Durée du buff, en secondes.")]
         [SerializeField, Min(0.1f)] private float duration = 30f;
 
+        [Header("Inventaire")]
+        [Tooltip("Objet consommable donné à l'achat (avec ses effets). Vide = ancien comportement : " +
+                 "effets appliqués immédiatement à la commande.")]
+        [SerializeField] private ItemDefinition item;
+
         [Header("Effets de stats (pendant Duration)")]
         [SerializeField] private List<TavernStatEffect> statEffects = new();
 
@@ -41,6 +47,7 @@ namespace Core.TavernSystem
         public string DishName => dishName;
         public string Description => description;
         public Sprite Icon => icon;
+        public ItemDefinition Item => item;
         public int Cost => cost;
         public float Duration => duration;
         public IReadOnlyList<TavernStatEffect> StatEffects => statEffects;

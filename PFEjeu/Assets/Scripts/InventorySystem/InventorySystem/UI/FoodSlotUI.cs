@@ -6,8 +6,16 @@ using TMPro;
 namespace Core.InventorySystem.UI
 {
     /// <summary>Une case de la barre de nourriture : icône, quantité, clic pour consommer.</summary>
-    public sealed class FoodSlotUI : MonoBehaviour
+    public sealed class FoodSlotUI : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler
     {
+        private ItemStack _shown;
+
+        public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData eventData)
+            => ItemDescriptionPanelUI.Instance?.Show(_shown);
+
+        public void OnPointerExit(UnityEngine.EventSystems.PointerEventData eventData)
+            => ItemDescriptionPanelUI.Instance?.Hide();
+
         [SerializeField] private Image icon;
         [SerializeField] private TMP_Text amountText;
         [SerializeField] private Button consumeButton;
@@ -22,6 +30,7 @@ namespace Core.InventorySystem.UI
         public void Set(ItemStack stack, Action onClicked)
         {
             _onClicked = onClicked;
+            _shown = stack;
 
             bool hasItem = stack != null && !stack.IsEmpty && stack.Definition != null;
 

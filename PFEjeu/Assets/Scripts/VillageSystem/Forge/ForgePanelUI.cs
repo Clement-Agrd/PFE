@@ -3,6 +3,7 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
+using Core;
 using Core.InventorySystem;
 using Core.StatsSystem;
 
@@ -73,6 +74,7 @@ namespace Core.Village.UI
         private Tab _tab = Tab.Upgrade;
         private int _selected = -1;
         private bool _open;
+        private int _openedFrame = -1;
         private bool _ownsFreeze;
         private string _pendingFeedback;
         private Color _pendingColor;
@@ -124,6 +126,11 @@ namespace Core.Village.UI
 
         private void Start() { if (panel != null) panel.SetActive(false); }
 
+        private void Update()
+        {
+            if (_open && UiCloseKeys.Pressed(_openedFrame)) Close();
+        }
+
         #region Ouverture / fermeture
 
         private void HandleBuildingClicked(Building building)
@@ -135,6 +142,7 @@ namespace Core.Village.UI
         {
             if (forge == null) return;
             _open = true;
+            _openedFrame = Time.frameCount;
             _tab = Tab.Upgrade;
             _selected = -1;
             _pendingFeedback = null;
