@@ -68,11 +68,11 @@ public class IATower : MonoBehaviour
             case EnumTargetPriority.TargetPriority.HighDefPhy:
                 
                 Debug.Log("Cible la plus grande defense");
-
-                currentTarget = target[0];
                 
                 if (currentTarget == null &&  target.Length > 0)
                 {
+                    currentTarget = target[0];
+                    
                     float HighDefense = GetEnemyStat(currentTarget, StatType.DefensePhysic);
                     
                     for (int i = 1; i < target.Length; i++)
