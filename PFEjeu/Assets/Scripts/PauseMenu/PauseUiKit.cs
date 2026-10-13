@@ -160,7 +160,8 @@ namespace Core.PauseMenu
         {
             var le = go.GetComponent<LayoutElement>() ?? go.AddComponent<LayoutElement>();
             if (width >= 0f) le.preferredWidth = width;
-            if (height >= 0f) { le.preferredHeight = height; le.minHeight = height; }
+            // flexibleHeight à 0 : sinon le HStack du conteneur (force-expand) impose son propre 1 et la ligne s'étire.
+            if (height >= 0f) { le.preferredHeight = height; le.minHeight = height; if (flexH < 0f) le.flexibleHeight = 0f; }
             if (flexW >= 0f) le.flexibleWidth = flexW;
             if (flexH >= 0f) le.flexibleHeight = flexH;
             return le;
@@ -224,6 +225,7 @@ namespace Core.PauseMenu
             text.rectTransform.offsetMin = new Vector2(36f, 0f);
             text.rectTransform.offsetMax = new Vector2(-16f, 0f);
             text.alignment = style == ButtonStyle.Tab ? TextAlignmentOptions.Center : TextAlignmentOptions.Left;
+            if (style == ButtonStyle.Tab) text.rectTransform.offsetMin = new Vector2(16f, 0f);
             text.textWrappingMode = TextWrappingModes.NoWrap;
 
             var pb = rt.gameObject.AddComponent<PauseButton>();
@@ -290,7 +292,8 @@ namespace Core.PauseMenu
 
             Image handle = NewImage("Handle", handleArea, Color.white, 17);
             handle.raycastTarget = true;
-            handle.rectTransform.sizeDelta = new Vector2(34f, 34f);
+            // Le Slider étire la poignée sur toute la hauteur de la zone (42) : hauteur relative pour obtenir 34.
+            handle.rectTransform.sizeDelta = new Vector2(34f, -8f);
 
             var slider = root.gameObject.AddComponent<Slider>();
             slider.fillRect = fill.rectTransform;

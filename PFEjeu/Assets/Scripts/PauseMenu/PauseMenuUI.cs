@@ -258,7 +258,7 @@ namespace Core.PauseMenu
             AddMainButton(column, "Menu principal", () => Ask("Retourner au menu principal ?\nLa progression non sauvegardée sera perdue.", ReturnToMainMenu), ButtonStyle.Secondary);
             AddMainButton(column, "Quitter le jeu", () => Ask("Quitter le jeu ?", Quit), ButtonStyle.Danger);
 
-            TMP_Text hint = NewText("Hint", _mainView, "Échap  —  Reprendre", 24f, TextMuted, TextAlignmentOptions.BottomLeft);
+            TMP_Text hint = NewText("Hint", _mainView, "Échap : Reprendre", 24f, TextMuted, TextAlignmentOptions.BottomLeft);
             Anchor(hint.rectTransform, new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(190f, 48f), new Vector2(500f, 36f));
 
             TMP_Text version = NewText("Version", _mainView, "v" + Application.version, 22f, TextMuted, TextAlignmentOptions.BottomRight);

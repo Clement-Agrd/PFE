@@ -90,6 +90,7 @@ namespace Core.PauseMenu
             Layout(footer.gameObject, height: 64f);
             HStack(footer.gameObject, 16f, align: TextAnchor.MiddleRight);
             PauseButton back = NewButton(footer, "Retour", onBack, ButtonStyle.Primary, 28f);
+            back.Label.alignment = TextAlignmentOptions.Center;
             Layout(back.gameObject, 240f, 64f);
         }
 

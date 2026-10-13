@@ -67,8 +67,10 @@ namespace Core.PauseMenu
 
             PauseButton reset = NewButton(footer, "Réinitialiser", () => { GameSettings.ResetToDefaults(); RefreshAll(); },
                 ButtonStyle.Secondary, 26f);
+            reset.Label.alignment = TextAlignmentOptions.Center;
             Layout(reset.gameObject, 280f, 64f);
             PauseButton back = NewButton(footer, "Retour", onBack, ButtonStyle.Primary, 28f);
+            back.Label.alignment = TextAlignmentOptions.Center;
             Layout(back.gameObject, 240f, 64f);
 
             ShowPage(0);
@@ -236,6 +238,15 @@ namespace Core.PauseMenu
             ["Interact"] = "Interagir"
         };
 
+        private static string KeyLabel(string s) => s switch
+        {
+            "Delta" => "Souris",
+            "LMB" => "Clic gauche",
+            "RMB" => "Clic droit",
+            "MMB" => "Clic molette",
+            _ => s
+        };
+
         private void BuildControls(RectTransform page, InputActionAsset controls)
         {
             AddSection(page, "Personnage");
@@ -247,7 +258,7 @@ namespace Core.PauseMenu
                     for (int i = 0; i < action.bindings.Count; i++)
                     {
                         if (action.bindings[i].isPartOfComposite) continue;
-                        string s = action.GetBindingDisplayString(i);
+                        string s = KeyLabel(action.GetBindingDisplayString(i));
                         if (!string.IsNullOrWhiteSpace(s) && !keys.Contains(s)) keys.Add(s);
                     }
                     if (keys.Count == 0) continue;
@@ -260,7 +271,7 @@ namespace Core.PauseMenu
             AddControlRow(page, "Inventaire", new List<string> { "Tab" });
             AddControlRow(page, "Fermer une fenêtre", new List<string> { "E", "Échap" });
             AddControlRow(page, "Menu pause", new List<string> { "Échap" });
-            AddControlRow(page, "Changer de case de la barre rapide", new List<string> { "Molette", "1 – 9" });
+            AddControlRow(page, "Changer de case de la barre rapide", new List<string> { "Molette", "1 à 9" });
             AddControlRow(page, "Utiliser l'objet sélectionné", new List<string> { "F" });
             AddControlRow(page, "Roue des pièges", new List<string> { "Clic molette" });
             AddControlRow(page, "Consommer depuis l'inventaire", new List<string> { "Clic droit" });
