@@ -17,13 +17,13 @@ MonoBehaviour:
   spawns:
   - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
     count: 1
-    zoneId: Ouest
+    zoneId: 1
     burstSize: 1
     burstInterval: 1
     startDelay: 1
   - prefab: {fileID: 1436972150820126028, guid: 6ce647c99ccba2d41a3ef95761032a52, type: 3}
     count: 5
-    zoneId: Ouest
+    zoneId: 1
     burstSize: 1
-    burstInterval: 1
+    burstInterval: 3
     startDelay: 2
