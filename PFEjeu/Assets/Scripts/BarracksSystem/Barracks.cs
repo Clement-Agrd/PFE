@@ -24,6 +24,9 @@ namespace Core.BarracksSystem
         [Header("Level")]
         [SerializeField, Min(1)] private int currentLevel = 1;
 
+        [Header("Héros")]
+        [SerializeField] private heros assignedHero;
+
         [Header("Model")]
         [SerializeField] private Transform modelParent;
         [SerializeField] private Transform spawnPoint;
@@ -41,6 +44,10 @@ namespace Core.BarracksSystem
         private readonly List<SoldierSlot> _slots = new();
         private GameObject _currentModel;
         private bool _flagSubscribed;
+        private heros _subscribedHero;
+        private bool _started;
+
+        public event Action StatsChanged;
 
         public override string Prompt =>
             flagPlacement != null && flagPlacement.IsPlacing
@@ -49,6 +56,14 @@ namespace Core.BarracksSystem
 
         public SOBarracks Data => barracksData;
         public int CurrentLevel => currentLevel;
+        public heros AssignedHero => assignedHero;
+        public TypeCaserne BarracksType => assignedHero == null ? TypeCaserne.Standard : assignedHero.Classe switch
+        {
+            ClasseHeros.Tank => TypeCaserne.Tank,
+            ClasseHeros.Degats => TypeCaserne.Degats,
+            ClasseHeros.Invocateur => TypeCaserne.Invocateur,
+            _ => TypeCaserne.Standard
+        };
 
         public int AliveSoldierCount
         {
@@ -65,8 +80,7 @@ namespace Core.BarracksSystem
         {
             get
             {
-                SOBarracks.BarracksLevelStats stats = GetCurrentLevelStats();
-                return stats != null ? stats.soldierCount : 0;
+                return barracksData != null ? barracksData.GetSoldierCount(currentLevel, assignedHero) : 0;
             }
         }
 
@@ -74,8 +88,7 @@ namespace Core.BarracksSystem
         {
             get
             {
-                SOBarracks.BarracksLevelStats stats = GetCurrentLevelStats();
-                return stats != null ? stats.respawnTime : 0f;
+                return barracksData != null ? barracksData.GetRespawnTime(currentLevel, assignedHero) : 0f;
             }
         }
 
@@ -97,7 +110,12 @@ namespace Core.BarracksSystem
             ConfigureFlagPlacement();
         }
 
-        private void OnEnable() => SubscribeFlag();
+        private void OnEnable()
+        {
+            SubscribeFlag();
+            SubscribeHero();
+            if (_started && isActiveAndEnabled) RefreshHeroStats();
+        }
 
         private void Start()
         {
@@ -111,15 +129,22 @@ namespace Core.BarracksSystem
             ConfigureFlagPlacement();
             EnsureInitialFlag();
             EnsureSlotCount();
+            _started = true;
 
             if (spawnOnStart)
                 SpawnAllMissingSoldiers();
         }
 
-        private void OnDisable() => UnsubscribeFlag();
+        private void OnDisable()
+        {
+            UnsubscribeFlag();
+            UnsubscribeHero();
+        }
 
         private void OnDestroy()
         {
+            UnsubscribeHero();
+            if (assignedHero != null) assignedHero.Release(this);
             for (int i = 0; i < _slots.Count; i++)
                 if (_slots[i].soldier != null)
                     _slots[i].soldier.DespawnWithoutRespawn();
@@ -144,7 +169,7 @@ namespace Core.BarracksSystem
             return isActiveAndEnabled &&
                    barracksData != null &&
                    flagPlacement != null &&
-                   (confirmationUI == null || !confirmationUI.IsOpen);
+                   (confirmationUI == null || (!confirmationUI.IsOpen && !GameFreeze.IsCursorUnlocked));
         }
 
         public override void Interact(GameObject interactor)
@@ -164,11 +189,14 @@ namespace Core.BarracksSystem
         }
 
         public void LevelUp()
+            => SetLevel(currentLevel + 1);
+
+        public void SetLevel(int level)
         {
             if (barracksData == null) return;
 
             int newLevel = Mathf.Clamp(
-                currentLevel + 1,
+                level,
                 barracksData.MinLevel,
                 barracksData.MaxLevel);
 
@@ -181,6 +209,50 @@ namespace Core.BarracksSystem
             ApplyStatsToAliveSoldiers();
             SpawnAllMissingSoldiers();
             RefreshCampPositions();
+            StatsChanged?.Invoke();
+        }
+
+        public bool AssignHero(heros hero)
+        {
+            if (assignedHero == hero) return true;
+            if (hero != null && !hero.TryClaim(this)) return false;
+            UnsubscribeHero();
+            if (assignedHero != null) assignedHero.Release(this);
+            assignedHero = hero;
+            if (isActiveAndEnabled) SubscribeHero();
+            if (_started && isActiveAndEnabled) RefreshHeroStats();
+            return true;
+        }
+
+        private void SubscribeHero()
+        {
+            if (assignedHero == null || _subscribedHero == assignedHero) return;
+            if (!assignedHero.TryClaim(this))
+            {
+                assignedHero = null;
+                return;
+            }
+            _subscribedHero = assignedHero;
+            _subscribedHero.Changed += RefreshHeroStats;
+        }
+
+        private void UnsubscribeHero()
+        {
+            if (_subscribedHero != null) _subscribedHero.Changed -= RefreshHeroStats;
+            _subscribedHero = null;
+        }
+
+        private void RefreshHeroStats()
+        {
+            if (barracksData == null) return;
+            int previousCount = _slots.Count;
+            EnsureSlotCount();
+            ApplyStatsToAliveSoldiers();
+            // Only new capacity creates troops. Existing empty slots keep their
+            // respawn timer, including when heroes are released during teardown.
+            for (int i = previousCount; i < _slots.Count; i++) SpawnSoldier(i);
+            RefreshCampPositions();
+            StatsChanged?.Invoke();
         }
 
         public void NotifySoldierDied(BarracksSoldier soldier, int slotIndex)
@@ -260,6 +332,7 @@ namespace Core.BarracksSystem
             {
                 SoldierSlot slot = _slots[i];
                 if (slot.soldier != null) continue;
+                if (slot.waitingRespawn && Time.time < slot.respawnAt) continue;
 
                 slot.waitingRespawn = false;
                 SpawnSoldier(i);
@@ -304,7 +377,7 @@ namespace Core.BarracksSystem
                 soldierObject.GetComponent<EntityStats>() ??
                 soldierObject.AddComponent<EntityStats>();
 
-            barracksData.ApplySoldierStatsTo(stats, currentLevel);
+            barracksData.ApplySoldierStatsTo(stats, currentLevel, assignedHero);
 
             SoldierSlot slot = _slots[slotIndex];
             slot.soldier = soldier;
@@ -322,7 +395,7 @@ namespace Core.BarracksSystem
                 BarracksSoldier soldier = _slots[i].soldier;
                 if (soldier == null || soldier.Stats == null) continue;
 
-                barracksData.ApplySoldierStatsTo(soldier.Stats, currentLevel);
+                barracksData.ApplySoldierStatsTo(soldier.Stats, currentLevel, assignedHero);
             }
         }
 

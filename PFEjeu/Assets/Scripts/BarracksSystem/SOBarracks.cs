@@ -11,6 +11,33 @@ namespace Core.BarracksSystem
     public sealed class SOBarracks : ScriptableObject
     {
         [Serializable]
+        public sealed class HeroSpecialization
+        {
+            [Min(0.01f)] public float lifeMultiplier = 1f;
+            public float lifePerHeroLevel;
+            [Min(0.01f)] public float defenseMultiplier = 1f;
+            public float defensePerHeroLevel;
+            [Min(0.01f)] public float damageMultiplier = 1f;
+            public float damagePerHeroLevel;
+            [Min(0f)] public float bonusSoldierFraction;
+            [Min(0f)] public float bonusSoldierFractionPerHeroLevel;
+            [Min(0.1f)] public float respawnMultiplier = 1f;
+            [Min(0f)] public float respawnReductionPerHeroLevel = 0.04f;
+
+            public float StatMultiplier(StatType type, int heroLevel)
+            {
+                int steps = Mathf.Clamp(heroLevel, 1, 5) - 1;
+                return type switch
+                {
+                    StatType.Life => Mathf.Max(0.01f, lifeMultiplier + steps * lifePerHeroLevel),
+                    StatType.DefensePhysic or StatType.DefenseMagic => Mathf.Max(0.01f, defenseMultiplier + steps * defensePerHeroLevel),
+                    StatType.PhysicDamage or StatType.MagicDamage => Mathf.Max(0.01f, damageMultiplier + steps * damagePerHeroLevel),
+                    _ => 1f
+                };
+            }
+        }
+
+        [Serializable]
         public struct SoldierStatEntry
         {
             public StatType type;
@@ -46,6 +73,28 @@ namespace Core.BarracksSystem
         [SerializeField, Min(1)] private int maxLevel = 3;
         [SerializeField] private List<BarracksLevelStats> barracksStats = new();
 
+        [Header("Spécialisation — bonus du niveau 1, puis progression par niveau de héros")]
+        [SerializeField] private HeroSpecialization tank = new()
+        {
+            lifeMultiplier = 1.35f, lifePerHeroLevel = 0.1f,
+            defenseMultiplier = 1.35f, defensePerHeroLevel = 0.1f,
+            damageMultiplier = 0.8f, damagePerHeroLevel = 0.025f
+        };
+        [SerializeField] private HeroSpecialization degats = new()
+        {
+            lifeMultiplier = 0.8f, lifePerHeroLevel = 0.025f,
+            defenseMultiplier = 0.8f, defensePerHeroLevel = 0.025f,
+            damageMultiplier = 1.35f, damagePerHeroLevel = 0.1f
+        };
+        [SerializeField] private HeroSpecialization invocateur = new()
+        {
+            lifeMultiplier = 0.9f, lifePerHeroLevel = 0.0125f,
+            defenseMultiplier = 0.9f, defensePerHeroLevel = 0.0125f,
+            damageMultiplier = 0.9f, damagePerHeroLevel = 0.0125f,
+            bonusSoldierFraction = 0.25f, bonusSoldierFractionPerHeroLevel = 0.125f,
+            respawnMultiplier = 0.95f
+        };
+
         [Header("Models")]
         [Tooltip("Optionnel : un modèle par niveau, comme SOTower.")]
         public GameObject[] models;
@@ -68,7 +117,50 @@ namespace Core.BarracksSystem
                 : null;
         }
 
-        public void ApplySoldierStatsTo(EntityStats target, int level)
+        public HeroSpecialization GetSpecialization(ClasseHeros classe) => classe switch
+        {
+            ClasseHeros.Tank => tank,
+            ClasseHeros.Degats => degats,
+            ClasseHeros.Invocateur => invocateur,
+            _ => null
+        };
+
+        public int GetSoldierCount(int level, heros hero = null)
+        {
+            var stats = GetLevelStats(level);
+            if (stats == null) return 0;
+            var specialization = hero != null ? GetSpecialization(hero.Classe) : null;
+            if (specialization == null) return stats.soldierCount;
+            float fraction = specialization.bonusSoldierFraction + (hero.Level - 1) * specialization.bonusSoldierFractionPerHeroLevel;
+            return stats.soldierCount + Mathf.CeilToInt(stats.soldierCount * Mathf.Max(0f, fraction));
+        }
+
+        public float GetRespawnTime(int level, heros hero = null)
+        {
+            var stats = GetLevelStats(level);
+            if (stats == null) return 0f;
+            var specialization = hero != null ? GetSpecialization(hero.Classe) : null;
+            if (specialization == null) return stats.respawnTime;
+            return Mathf.Max(0.1f, stats.respawnTime * Mathf.Max(0.1f,
+                specialization.respawnMultiplier - (hero.Level - 1) * specialization.respawnReductionPerHeroLevel));
+        }
+
+        public float GetSoldierStat(int level, StatType type, heros hero = null)
+        {
+            var stats = GetLevelStats(level);
+            if (stats == null) return 0f;
+            for (int i = 0; i < stats.soldierStats.Count; i++)
+            {
+                var entry = stats.soldierStats[i];
+                if (entry.type == type) return entry.baseValue * GetHeroStatMultiplier(type, hero);
+            }
+            return 0f;
+        }
+
+        private float GetHeroStatMultiplier(StatType type, heros hero)
+            => hero != null ? GetSpecialization(hero.Classe)?.StatMultiplier(type, hero.Level) ?? 1f : 1f;
+
+        public void ApplySoldierStatsTo(EntityStats target, int level, heros hero = null)
         {
             if (target == null) return;
 
@@ -82,7 +174,7 @@ namespace Core.BarracksSystem
             for (int i = 0; i < levelStats.soldierStats.Count; i++)
             {
                 SoldierStatEntry entry = levelStats.soldierStats[i];
-                target.SetOrAddBaseStat(entry.type, entry.baseValue);
+                target.SetOrAddBaseStat(entry.type, entry.baseValue * GetHeroStatMultiplier(entry.type, hero));
             }
         }
 

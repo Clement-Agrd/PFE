@@ -71,6 +71,12 @@ namespace Core.Village.UI
         private Building _current;
         private Inventory _watchedInventory;
         private float _successUntil;
+        private bool _ownsFreeze;
+        private Core.BarracksSystem.Barracks _previewBarracks;
+        private Core.BarracksSystem.BarracksStatsPreview _statsPreview;
+        private Vector2 _panelAnchorMin, _panelAnchorMax, _panelPivot, _panelPosition;
+
+        public bool IsOpen => _current != null;
 
         private readonly List<CostRowUI> _costRows = new();
         private readonly List<ProductionRowUI> _productionRows = new();
@@ -78,6 +84,11 @@ namespace Core.Village.UI
 
         private void Awake()
         {
+            if (panel != null && panel.transform is RectTransform rect)
+            {
+                _panelAnchorMin = rect.anchorMin; _panelAnchorMax = rect.anchorMax;
+                _panelPivot = rect.pivot; _panelPosition = rect.anchoredPosition;
+            }
             if (upgradeButton != null) upgradeButton.onClick.AddListener(HandleUpgradeClicked);
             if (closeButton != null) closeButton.onClick.AddListener(Hide);
             if (levelPipTemplate != null) levelPipTemplate.gameObject.SetActive(false);
@@ -110,11 +121,39 @@ namespace Core.Village.UI
                 villageManager.OnUpgradeFailed -= HandleUpgradeFailed;
             }
             WatchInventory(null);
+            HideImmediate();
         }
 
         private void Start() => HideImmediate();
 
+        private void OnDestroy()
+        {
+            if (_statsPreview != null && _statsPreview.Root != null) Destroy(_statsPreview.Root.gameObject);
+        }
+
         #region Ouverture / fermeture
+
+        public void ShowStandalone(Building building)
+        {
+            if (building == null || building.Definition == null) return;
+            _ownsFreeze = true;
+            GameFreeze.RequestPause(this);
+            GameFreeze.RequestCursorUnlock(this);
+            Show(building);
+        }
+
+        private void Update()
+        {
+            if (_ownsFreeze && IsOpen && Input.GetKeyDown(KeyCode.Escape)) Hide();
+        }
+
+        private void ReleaseFreeze()
+        {
+            if (!_ownsFreeze) return;
+            _ownsFreeze = false;
+            GameFreeze.ReleasePause(this);
+            GameFreeze.ReleaseCursorUnlock(this);
+        }
 
         public void Show(Building building)
         {
@@ -122,6 +161,7 @@ namespace Core.Village.UI
 
             bool wasOpen = _current != null;
             _current = building;
+            SetPreviewBuilding(building.GetComponent<Core.BarracksSystem.Barracks>());
             _successUntil = 0f;
             WatchInventory(villageManager != null ? villageManager.HdvInventory : null);
 
@@ -135,6 +175,8 @@ namespace Core.Village.UI
         {
             if (_current == null) return;
             _current = null;
+            SetPreviewBuilding(null, false);
+            ReleaseFreeze();
             WatchInventory(null);
             CancelInvoke(nameof(Refresh));
 
@@ -155,6 +197,8 @@ namespace Core.Village.UI
         private void HideImmediate()
         {
             _current = null;
+            SetPreviewBuilding(null);
+            ReleaseFreeze();
             WatchInventory(null);
             if (panel != null) panel.SetActive(false);
         }
@@ -232,6 +276,50 @@ namespace Core.Village.UI
 
         #region Affichage
 
+        private void SetPreviewBuilding(Core.BarracksSystem.Barracks barracks, bool restoreLayout = true)
+        {
+            if (_previewBarracks != barracks)
+            {
+                if (_previewBarracks != null) _previewBarracks.StatsChanged -= RefreshBarracksPreview;
+                _previewBarracks = barracks;
+                if (_previewBarracks != null) _previewBarracks.StatsChanged += RefreshBarracksPreview;
+            }
+            if (panel == null || panel.transform is not RectTransform rect) return;
+            if (barracks != null)
+            {
+                if (_statsPreview == null)
+                {
+                    _statsPreview = new Core.BarracksSystem.BarracksStatsPreview(panel.transform.parent, "UpgradeStatsPreview");
+                    _statsPreview.Root.sizeDelta = new Vector2(730, 740);
+                }
+                _statsPreview.Root.gameObject.SetActive(true);
+                rect.anchorMin = _panelAnchorMin; rect.anchorMax = _panelAnchorMax;
+                rect.pivot = _panelPivot; rect.anchoredPosition = _panelPosition;
+                _statsPreview.Root.anchorMin = _statsPreview.Root.anchorMax = new Vector2(1f, .5f);
+                _statsPreview.Root.pivot = new Vector2(1f, .5f);
+                _statsPreview.Root.anchoredPosition = _panelPosition + new Vector2(-rect.rect.width - 32f, 0f);
+            }
+            else
+            {
+                if (_statsPreview != null) _statsPreview.Root.gameObject.SetActive(false);
+                if (restoreLayout)
+                {
+                    rect.anchorMin = _panelAnchorMin; rect.anchorMax = _panelAnchorMax;
+                    rect.pivot = _panelPivot; rect.anchoredPosition = _panelPosition;
+                }
+            }
+        }
+
+        private void RefreshBarracksPreview()
+        {
+            if (_previewBarracks == null || _statsPreview == null || _current == null) return;
+            bool maximum = _current.GetNextLevelData() == null;
+            int current = _previewBarracks.CurrentLevel;
+            int next = maximum ? current : current + 1;
+            _statsPreview.Refresh(_previewBarracks, next, _previewBarracks.AssignedHero,
+                maximum ? $"Niveau {current} · Niveau maximum atteint" : $"Amélioration : niveau {current} → {next}\nHéros actuel conservé");
+        }
+
         private void Refresh()
         {
             if (_current == null || _current.Definition == null) return;
@@ -242,6 +330,7 @@ namespace Core.Village.UI
             BuildingLevelData currentData = def.GetLevelData(level);
             BuildingLevelData next = _current.GetNextLevelData();
             bool isMax = next == null;
+            RefreshBarracksPreview();
 
             if (iconImage != null)
             {

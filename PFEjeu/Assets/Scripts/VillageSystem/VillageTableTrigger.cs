@@ -11,7 +11,7 @@ namespace Core.Village
     /// la caméra parte, pour qu'on sente que l'input a bien été pris.
     /// </summary>
     [RequireComponent(typeof(Collider))]
-    public sealed class VillageTableTrigger : MonoBehaviour
+    public sealed class VillageTableTrigger : Core.InteractionSystem.InteractableBase
     {
         [SerializeField] private VillageViewController villageView;
         [SerializeField] private VillageInputReader input;
@@ -34,6 +34,16 @@ namespace Core.Village
         private Vector3 _baseScale;
         private Vector3 _promptScale;
         private TMP_Text _promptText;
+
+        public override string Prompt => "Accéder à la table";
+
+        public override bool CanInteract(GameObject interactor)
+            => isActiveAndEnabled && villageView != null && !villageView.IsInVillageView && !_entering && !GameFreeze.IsCursorUnlocked;
+
+        public override void Interact(GameObject interactor)
+        {
+            if (CanInteract(interactor)) Press();
+        }
 
         private void Awake()
         {

@@ -23,6 +23,11 @@ namespace Core.InventorySystem.UI
         [SerializeField] private GameObject mapContent;
         [SerializeField] private Button mapTabButton;
 
+        [Header("Héros (optionnel)")]
+        [SerializeField] private GameObject heroesContent;
+        [SerializeField] private Button heroesTabButton;
+        [SerializeField] private Core.BarracksSystem.HeroInventoryUI heroInventory;
+
         [Header("Couleurs")]
         [SerializeField] private Color activeTabColor = new(0.95f, 0.78f, 0.35f);
         [SerializeField] private Color inactiveTabColor = new(0.3f, 0.32f, 0.36f);
@@ -35,6 +40,7 @@ namespace Core.InventorySystem.UI
             if (inventoryTabButton != null) inventoryTabButton.onClick.AddListener(ShowInventoryTab);
             if (villageTabButton != null) villageTabButton.onClick.AddListener(ShowVillageTab);
             if (mapTabButton != null) mapTabButton.onClick.AddListener(ShowMapTab);
+            if (heroesTabButton != null) heroesTabButton.onClick.AddListener(ShowHeroesTab);
         }
 
         private void OnEnable() => ShowInventoryTab();
@@ -47,9 +53,11 @@ namespace Core.InventorySystem.UI
             if (inventoryContent != null) inventoryContent.SetActive(true);
             if (villageContent != null) villageContent.SetActive(false);
             if (mapContent != null) mapContent.SetActive(false);
+            if (heroesContent != null) heroesContent.SetActive(false);
             SetTabVisual(inventoryTabButton, true);
             SetTabVisual(villageTabButton, false);
             SetTabVisual(mapTabButton, false);
+            SetTabVisual(heroesTabButton, false);
         }
 
         public void ShowVillageTab()
@@ -57,9 +65,11 @@ namespace Core.InventorySystem.UI
             if (inventoryContent != null) inventoryContent.SetActive(false);
             if (villageContent != null) villageContent.SetActive(true);
             if (mapContent != null) mapContent.SetActive(false);
+            if (heroesContent != null) heroesContent.SetActive(false);
             SetTabVisual(inventoryTabButton, false);
             SetTabVisual(villageTabButton, true);
             SetTabVisual(mapTabButton, false);
+            SetTabVisual(heroesTabButton, false);
             villageOverviewPanel?.Refresh();
         }
 
@@ -68,9 +78,24 @@ namespace Core.InventorySystem.UI
             if (inventoryContent != null) inventoryContent.SetActive(false);
             if (villageContent != null) villageContent.SetActive(false);
             if (mapContent != null) mapContent.SetActive(true);
+            if (heroesContent != null) heroesContent.SetActive(false);
             SetTabVisual(inventoryTabButton, false);
             SetTabVisual(villageTabButton, false);
             SetTabVisual(mapTabButton, true);
+            SetTabVisual(heroesTabButton, false);
+        }
+
+        public void ShowHeroesTab()
+        {
+            if (inventoryContent != null) inventoryContent.SetActive(false);
+            if (villageContent != null) villageContent.SetActive(false);
+            if (mapContent != null) mapContent.SetActive(false);
+            if (heroesContent != null) heroesContent.SetActive(true);
+            SetTabVisual(inventoryTabButton, false);
+            SetTabVisual(villageTabButton, false);
+            SetTabVisual(mapTabButton, false);
+            SetTabVisual(heroesTabButton, true);
+            heroInventory?.Refresh();
         }
 
         private void SetTabVisual(Button button, bool active)

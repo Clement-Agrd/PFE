@@ -82,4 +82,37 @@ MonoBehaviour:
       baseValue: 4
     - type: 7
       baseValue: 1.1
+  tank:
+    lifeMultiplier: 1.35
+    lifePerHeroLevel: 0.1
+    defenseMultiplier: 1.35
+    defensePerHeroLevel: 0.1
+    damageMultiplier: 0.8
+    damagePerHeroLevel: 0.025
+    bonusSoldierFraction: 0
+    bonusSoldierFractionPerHeroLevel: 0
+    respawnMultiplier: 1
+    respawnReductionPerHeroLevel: 0.04
+  degats:
+    lifeMultiplier: 0.8
+    lifePerHeroLevel: 0.025
+    defenseMultiplier: 0.8
+    defensePerHeroLevel: 0.025
+    damageMultiplier: 1.35
+    damagePerHeroLevel: 0.1
+    bonusSoldierFraction: 0
+    bonusSoldierFractionPerHeroLevel: 0
+    respawnMultiplier: 1
+    respawnReductionPerHeroLevel: 0.04
+  invocateur:
+    lifeMultiplier: 0.9
+    lifePerHeroLevel: 0.0125
+    defenseMultiplier: 0.9
+    defensePerHeroLevel: 0.0125
+    damageMultiplier: 0.9
+    damagePerHeroLevel: 0.0125
+    bonusSoldierFraction: 0.25
+    bonusSoldierFractionPerHeroLevel: 0.125
+    respawnMultiplier: 0.95
+    respawnReductionPerHeroLevel: 0.04
   models: []

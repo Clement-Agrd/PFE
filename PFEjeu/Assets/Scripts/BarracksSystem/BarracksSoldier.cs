@@ -62,6 +62,7 @@ namespace Core.BarracksSystem
         private Vector3 _campPosition;
 
         public int SlotIndex => _slotIndex;
+        public Barracks Owner => _owner;
         public EntityStats Stats => _stats;
         public Health Health => _health;
 
@@ -143,6 +144,7 @@ namespace Core.BarracksSystem
             if (_health != null)
                 _health.OnDeath -= HandleDeath;
 
+            gameObject.SetActive(false);
             Destroy(gameObject);
         }
 

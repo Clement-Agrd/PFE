@@ -28,6 +28,8 @@ namespace Core.Village
         [SerializeField] private MonoBehaviour thirdPersonCamera;
         [SerializeField] private MonoBehaviour thirdPersonMotor;
         [SerializeField] private MonoBehaviour playerCombatController;
+        [Tooltip("Autre contrôleur de la caméra à suspendre pendant la vue village (par exemple CinemachineBrain).")]
+        [SerializeField] private MonoBehaviour cameraDriver;
 
         [Header("Sélection de bâtiment")]
         [SerializeField] private LayerMask buildingLayer = ~0;
@@ -44,6 +46,7 @@ namespace Core.Village
         private Vector3 _savedPosition;
         private Quaternion _savedRotation;
         private bool _isTransitioning;
+        private bool _cameraWasEnabled, _motorWasEnabled, _combatWasEnabled, _driverWasEnabled;
 
         private void OnEnable()
         {
@@ -126,9 +129,17 @@ namespace Core.Village
 
         private void SetPlayerControlEnabled(bool enabled)
         {
-            if (thirdPersonCamera != null) thirdPersonCamera.enabled = enabled;
-            if (thirdPersonMotor != null) thirdPersonMotor.enabled = enabled;
-            if (playerCombatController != null) playerCombatController.enabled = enabled;
+            if (!enabled)
+            {
+                _cameraWasEnabled = thirdPersonCamera != null && thirdPersonCamera.enabled;
+                _motorWasEnabled = thirdPersonMotor != null && thirdPersonMotor.enabled;
+                _combatWasEnabled = playerCombatController != null && playerCombatController.enabled;
+                _driverWasEnabled = cameraDriver != null && cameraDriver.enabled;
+            }
+            if (thirdPersonCamera != null) thirdPersonCamera.enabled = enabled && _cameraWasEnabled;
+            if (thirdPersonMotor != null) thirdPersonMotor.enabled = enabled && _motorWasEnabled;
+            if (playerCombatController != null) playerCombatController.enabled = enabled && _combatWasEnabled;
+            if (cameraDriver != null) cameraDriver.enabled = enabled && _driverWasEnabled;
         }
 
         private void TrySelectBuilding()
