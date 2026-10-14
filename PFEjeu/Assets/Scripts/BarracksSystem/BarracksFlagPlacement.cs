@@ -17,10 +17,6 @@ namespace Core.BarracksSystem
         [SerializeField, Min(0.1f)] private float maxRayDistance = 250f;
         [SerializeField, Min(0.1f)] private float navMeshSampleRadius = 2f;
 
-        [Header("Interaction Range")]
-        [Tooltip("Le placement s'annule si le joueur s'éloigne plus que cette distance de la caserne.")]
-        [SerializeField, Min(0.5f)] private float maxInteractorDistance = 3.75f;
-
         [Header("Controls")]
         [SerializeField] private int confirmMouseButton = 0;
         [SerializeField] private int cancelMouseButton = 1;
@@ -154,7 +150,7 @@ namespace Core.BarracksSystem
 
         private bool IsInteractorStillInRange()
         {
-            if (_interactor == null || barracks == null)
+            if (_interactor == null || barracks == null || _data == null)
                 return false;
 
             Vector3 playerPosition = _interactor.transform.position;
@@ -163,7 +159,10 @@ namespace Core.BarracksSystem
             playerPosition.y = 0f;
             barracksPosition.y = 0f;
 
-            float range = Mathf.Max(0.5f, maxInteractorDistance);
+            // Après le début de l'interaction, on autorise le déplacement
+            // dans toute la portée de placement de la caserne.
+            // La petite portée de l'Interactor sert seulement à démarrer.
+            float range = Mathf.Max(0.1f, _data.FlagPlacementRange);
 
             return (playerPosition - barracksPosition).sqrMagnitude <=
                    range * range;
