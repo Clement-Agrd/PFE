@@ -31,6 +31,9 @@ namespace Core.BarracksSystem
         [Header("Flag")]
         [SerializeField] private BarracksFlagPlacement flagPlacement;
 
+        [Header("Confirmation")]
+        [SerializeField] private BarracksConfirmationUI confirmationUI;
+
         [Header("Spawn")]
         [SerializeField, Min(0.1f)] private float spawnNavMeshSampleRadius = 3f;
         [SerializeField] private bool spawnOnStart = true;
@@ -140,7 +143,8 @@ namespace Core.BarracksSystem
         {
             return isActiveAndEnabled &&
                    barracksData != null &&
-                   flagPlacement != null;
+                   flagPlacement != null &&
+                   (confirmationUI == null || !confirmationUI.IsOpen);
         }
 
         public override void Interact(GameObject interactor)
@@ -153,7 +157,10 @@ namespace Core.BarracksSystem
                 return;
             }
 
-            flagPlacement.BeginPlacement(interactor);
+            if (confirmationUI != null)
+                confirmationUI.Show(this, flagPlacement, interactor);
+            else
+                flagPlacement.BeginPlacement(interactor);
         }
 
         public void LevelUp()
