@@ -30,6 +30,19 @@ namespace Core
             _pauseRequesters.Clear();
             _cursorUnlockRequesters.Clear();
             Time.timeScale = 1f;
+
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded -= OnSceneUnloaded;
+            UnityEngine.SceneManagement.SceneManager.sceneUnloaded += OnSceneUnloaded;
+        }
+
+        // Les objets détruits au changement de scène (ex: ThirdPersonCamera.OnDisable
+        // demande un unlock du curseur) ne relâchent jamais leur requête : retour au
+        // menu puis Play laissait le curseur "débloqué" et la caméra figée.
+        private static void OnSceneUnloaded(UnityEngine.SceneManagement.Scene scene)
+        {
+            _pauseRequesters.Clear();
+            _cursorUnlockRequesters.Clear();
+            Time.timeScale = 1f;
         }
 
         public static void RequestPause(object owner)
