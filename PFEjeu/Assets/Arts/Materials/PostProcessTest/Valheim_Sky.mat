@@ -26,13 +26,13 @@ Material:
     m_TexEnvs: []
     m_Ints: []
     m_Floats:
-    - _AtmosphereThickness: 0.95
-    - _Exposure: 0.7
+    - _AtmosphereThickness: 1.2
+    - _Exposure: 1
     - _SunDisk: 2
-    - _SunSize: 0.015
+    - _SunSize: 0.06
     - _SunSizeConvergence: 14
     m_Colors:
     - _GroundColor: {r: 0.42, g: 0.44, b: 0.46, a: 1}
-    - _SkyTint: {r: 0.5, g: 0.6, b: 0.78, a: 1}
+    - _SkyTint: {r: 0.6, g: 0.62, b: 0.85, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1
