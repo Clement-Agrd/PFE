@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Core.StatsSystem;
+using NUnit.Framework;
 using StatType = Core.StatsSystem.EnumStats.StatTypes;
 
 public class IATower : MonoBehaviour
@@ -67,7 +68,7 @@ public class IATower : MonoBehaviour
             
             case EnumTargetPriority.TargetPriority.HighDefPhy:
                 
-                Debug.Log("Cible la plus grande defense");
+                Debug.Log("Cible la plus grande defense physique");
                 
                 if (currentTarget == null &&  target.Length > 0)
                 {
@@ -84,6 +85,30 @@ public class IATower : MonoBehaviour
                         {
                             HighDefense = enemyDef;
                             currentTarget = enemy;
+                        }
+                    }
+                }
+                break;
+            
+            case EnumTargetPriority.TargetPriority.HighDefMag:
+                
+                Debug.Log("Cible la plus grande defense magic");
+
+                if (currentTarget == null && target.Length > 0)
+                {
+                    currentTarget = target[0];
+                    
+                    float HighDefMag = GetEnemyStat(currentTarget, StatType.DefenseMagic);
+
+                    for (int i = 1; i < target.Length; i++)
+                    {
+                        Collider ennemy = target[i];
+                        float DefMag = GetEnemyStat(ennemy, StatType.DefenseMagic);
+
+                        if (HighDefMag < DefMag)
+                        {
+                            HighDefMag = DefMag;
+                            currentTarget = ennemy;
                         }
                     }
                 }
