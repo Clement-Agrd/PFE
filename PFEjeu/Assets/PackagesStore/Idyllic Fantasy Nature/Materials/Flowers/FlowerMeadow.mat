@@ -115,7 +115,7 @@ Material:
     - _BOOLEAN_1: 0
     - _Bend: 0
     - _Bend_Range: 1
-    - _Bend_Strength: 0.7
+    - _Bend_Strength: 0.245
     - _Blend: 0
     - _BlendHeight: 0
     - _BlendModePreserveSpecular: 0
@@ -134,6 +134,7 @@ Material:
     - _DetailAlbedoMapScale: 1
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
+    - _DstBlendAlpha: 0
     - _Enable_Top_Color: 0
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
@@ -156,21 +157,22 @@ Material:
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
-    - _Start_Bend_Range: 0.4
+    - _SrcBlendAlpha: 1
+    - _Start_Bend_Range: 0.508
     - _Start_To_Bend_Range: 1
     - _Start_to_bend_range: 1
     - _Surface: 0
     - _Value: 0.89
     - _WIND_OVERLAY: 0
-    - _Wave_Scale: 0.5
+    - _Wave_Scale: 1
     - _WindDensity: 0
     - _WindSpeed: 0
     - _WindSpeed2: 0
     - _WindStrength: 0
     - _Wind_Direction: 0
-    - _Wind_Speed: 0.14
-    - _Wind_Strength: 0.25
-    - _Wind_Variation: 1
+    - _Wind_Speed: 2.4
+    - _Wind_Strength: 0.2
+    - _Wind_Variation: 0
     - _WorkflowMode: 0
     - _ZTest: 4
     - _ZWrite: 1
@@ -181,7 +183,7 @@ Material:
     - _Bottom_Color: {r: 1, g: 1, b: 1, a: 0}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
-    - _Player_Position: {r: 169.991, g: 19.29449, b: 166.09459, a: 0}
+    - _Player_Position: {r: 11.936338, g: 0.00000012130374, b: 26.102024, a: 0}
     - _SpecColor: {r: 0.2, g: 0.2, b: 0.2, a: 1}
     - _TopColor: {r: 1, g: 1, b: 1, a: 0}
     - _Top_Color: {r: 1, g: 1, b: 1, a: 0}
