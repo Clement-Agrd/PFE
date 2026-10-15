@@ -178,26 +178,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &7330000000000000001
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1602151265126596277}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d7a53bcf1e2f47e8920c0d41db2ce085, type: 3}
-  m_Name:
-  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerBowAimPitch
-  combat: {fileID: 5696852118197156800}
-  animator: {fileID: 376257089780706330}
-  chest: {fileID: 0}
-  pitchMultiplier: 1
-  maxUpAngle: 65
-  maxDownAngle: 55
-  pitchOffset: 0
-  followSpeed: 12
 --- !u!4 &6049880369452092882
 Transform:
   m_ObjectHideFlags: 0
@@ -596,7 +576,7 @@ MonoBehaviour:
   - type: 0
     baseValue: 100
   - type: 1
-    baseValue: 100
+    baseValue: 20000
   - type: 2
     baseValue: 10
   - type: 3
@@ -1011,6 +991,26 @@ MonoBehaviour:
   bottomMargin: 36
   slotColor: {r: 0.08, g: 0.09, b: 0.12, a: 0.72}
   selectedColor: {r: 0.95, g: 0.78, b: 0.35, a: 1}
+--- !u!114 &7330000000000000001
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602151265126596277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d7a53bcf1e2f47e8920c0d41db2ce085, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerBowAimPitch
+  combat: {fileID: 5696852118197156800}
+  animator: {fileID: 376257089780706330}
+  chest: {fileID: 0}
+  pitchMultiplier: 1
+  maxUpAngle: 65
+  maxDownAngle: 55
+  pitchOffset: 0
+  followSpeed: 12
 --- !u!1 &2951270355617714034
 GameObject:
   m_ObjectHideFlags: 0
