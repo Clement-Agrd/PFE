@@ -77,6 +77,18 @@ namespace Core.Village.Exploration
             if (waveSpawner != null) waveSpawner.OnAllWavesCompleted -= AdvanceCycle;
         }
 
+        /// <summary>Rend un héros disponible indisponible pendant N cycles (événements du village). Retourne le héros touché.</summary>
+        public HeroDefinition ExhaustRandomHero(int cycles)
+        {
+            List<HeroDefinition> candidates = heroRoster.Where(IsHeroAvailable).ToList();
+            if (candidates.Count == 0) return null;
+
+            HeroDefinition hero = candidates[UnityEngine.Random.Range(0, candidates.Count)];
+            _woundedTicksRemaining[hero] = Mathf.Max(1, cycles);
+            OnStateChanged?.Invoke();
+            return hero;
+        }
+
         public bool IsHeroAvailable(HeroDefinition hero)
         {
             if (hero == null) return false;

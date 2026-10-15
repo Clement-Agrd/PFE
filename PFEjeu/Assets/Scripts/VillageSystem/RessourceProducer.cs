@@ -35,6 +35,12 @@ namespace Core.Village
 
         private void Update()
         {
+            if (!_building.IsAvailable) return;
+            ProduceTick();
+        }
+
+        private void ProduceTick()
+        {
             BuildingLevelData data = _building.Definition != null
                 ? _building.Definition.GetLevelData(_building.CurrentLevel)
                 : null;

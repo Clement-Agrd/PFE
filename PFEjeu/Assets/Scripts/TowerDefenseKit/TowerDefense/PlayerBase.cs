@@ -32,6 +32,14 @@ namespace Core.TowerDefense
                 OnDestroyed?.Invoke();
         }
 
+        /// <summary>Répare (ou abîme si négatif) la base sans la détruire.</summary>
+        public void Repair(int amount)
+        {
+            if (!IsAlive) return;
+            Health = Mathf.Clamp(Health + amount, 1, maxHealth);
+            OnHealthChanged?.Invoke(Health, maxHealth);
+        }
+
         public void ResetBase()
         {
             Health = maxHealth;

@@ -15,7 +15,18 @@ namespace Core.Village
         public int CurrentLevel => currentLevel;
         public bool IsMaxLevel => definition != null && currentLevel >= definition.MaxLevel;
 
+        /// <summary>Jours restants pendant lesquels le bâtiment est hors service (événements du village).</summary>
+        public int UnavailableDays { get; private set; }
+        public bool IsAvailable => UnavailableDays <= 0;
+
         public event Action<int> OnLevelChanged;
+
+        public void MakeUnavailable(int days) => UnavailableDays = Mathf.Max(UnavailableDays, days);
+
+        public void TickUnavailable()
+        {
+            if (UnavailableDays > 0) UnavailableDays--;
+        }
 
         private void Start() => ApplyVisual();
 

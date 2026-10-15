@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e29ebab6caa9d434d86f6b33571f5c43, type: 3}
+  m_Name: MineEffondree
+  m_EditorClassIdentifier: Assembly-CSharp::Core.VillageEvents.VillageEventDefinition
+  title: La Mine s'effondre
+  flavorText: "Les galeries ont trembl\xE9 avec chaque assaut. Un \xE9tai a l\xE2ch\xE9, et les mineurs attendent votre ordre."
+  conditions:
+    minTownHallLevel: 0
+    wallsBelowPercent: 0
+    stockItem: {fileID: 0}
+    stockBelow: 0
+    requiredBuildings:
+    - {fileID: 11400000, guid: f2a8ab1a515ce884f838f8bed49a02f7, type: 2}
+    requiredBuildingMinLevel: 2
+    minNight: 0
+    maxNight: 0
+    minCorruptionTier: 0
+  weight: 1
+  cooldownNights: 4
+  unique: 0
+  choices:
+  - label: "\xC9tayer \xE0 la h\xE2te"
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      building: {fileID: 0}
+      amount: -30
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Creuser plus profond
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
+      building: {fileID: 0}
+      amount: 25
+    - type: 7
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Fermer la galerie
+    isFreeOption: 1
+    effects:
+    - type: 2
+      item: {fileID: 0}
+      building: {fileID: 11400000, guid: f2a8ab1a515ce884f838f8bed49a02f7, type: 2}
+      amount: 2
+    followUp: {fileID: 0}
+    followUpDelayNights: 2

@@ -1,0 +1,67 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e29ebab6caa9d434d86f6b33571f5c43, type: 3}
+  m_Name: DisetteFerme
+  m_EditorClassIdentifier: Assembly-CSharp::Core.VillageEvents.VillageEventDefinition
+  title: "Disette \xE0 la Ferme"
+  flavorText: Les greniers sonnent creux. Les enfants mangent moins que les guerriers, et tout le monde le voit.
+  conditions:
+    minTownHallLevel: 0
+    wallsBelowPercent: 0
+    stockItem: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+    stockBelow: 60
+    requiredBuildings:
+    - {fileID: 11400000, guid: 6f22d0b1ed3e68d4f8e8ae238d23cb3e, type: 2}
+    - {fileID: 11400000, guid: db9a2b72a2adf524a9859f5f65bcd701, type: 2}
+    requiredBuildingMinLevel: 0
+    minNight: 0
+    maxNight: 0
+    minCorruptionTier: 0
+  weight: 1
+  cooldownNights: 3
+  unique: 0
+  choices:
+  - label: Rationner les habitants
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+      building: {fileID: 0}
+      amount: 30
+    - type: 2
+      item: {fileID: 0}
+      building: {fileID: 11400000, guid: db9a2b72a2adf524a9859f5f65bcd701, type: 2}
+      amount: 1
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Battue de chasse
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+      building: {fileID: 0}
+      amount: 40
+    - type: 4
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Ne rien changer
+    isFreeOption: 1
+    effects:
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 10
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
