@@ -418,7 +418,7 @@ namespace ProfessionalTPS
                 Owner != null &&
                 Owner.CurrentMode ==
                     CombatMode.Bow &&
-                Owner.IsAiming &&
+                IsDrawing &&
                 !_released;
 
             if (!shouldShow)
