@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 200224f2bda35314783a089bdcaac1c3
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 352952
+  packageName: RealBlend - Mesh Painting & Creation
+  packageVersion: 1.3.1
+  assetPath: Assets/RealBlend/MeshBoolean/Runtime/RealBlend.MeshBoolean.Runtime.asmdef
+  uploadId: 997576

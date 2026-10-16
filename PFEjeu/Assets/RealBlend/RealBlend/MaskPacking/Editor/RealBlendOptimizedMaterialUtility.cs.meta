@@ -1,0 +1,18 @@
+fileFormatVersion: 2
+guid: 4411edb55ca4430eb0bed119d8a017b3
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 352952
+  packageName: RealBlend - Mesh Painting & Creation
+  packageVersion: 1.3.1
+  assetPath: Assets/RealBlend/MaskPacking/Editor/RealBlendOptimizedMaterialUtility.cs
+  uploadId: 997576

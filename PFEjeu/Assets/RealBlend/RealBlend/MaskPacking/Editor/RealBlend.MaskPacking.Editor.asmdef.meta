@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: c13a01e59fff4c9418eb3103ece64bb8
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 352952
+  packageName: RealBlend - Mesh Painting & Creation
+  packageVersion: 1.3.1
+  assetPath: Assets/RealBlend/MaskPacking/Editor/RealBlend.MaskPacking.Editor.asmdef
+  uploadId: 997576
