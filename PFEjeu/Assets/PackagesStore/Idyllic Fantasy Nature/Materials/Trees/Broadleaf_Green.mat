@@ -135,6 +135,7 @@ Material:
     - _DetailNormalMapScale: 1
     - _DstBlend: 0
     - _DstBlendAlpha: 0
+    - _Emissive_power: 0.5
     - _Enable_Top_Color: 1
     - _EnvironmentReflections: 1
     - _GlossMapScale: 0
