@@ -18,12 +18,26 @@ public class TowerProjectil : MonoBehaviour
     private Transform target;
     // Le type de dégâts à infliger (utilisé par le Health de la cible pour les résistances).
     private DamageType damageType;
+    
+    private EnumProjectilSetting.projectileMovement projectileMovement;
 
+    [Header("projectil classic data")]
     [Min(0f)]
     [SerializeField] private float speed = 10f;
 
     [Tooltip("Distance à laquelle le projectile considère avoir touché sa cible.")]
     [SerializeField] private float hitDistance = 1f;
+    
+    [Header("projectil en cloche datat")]
+    [SerializeField] private float arcHeight = 2f;
+    [Min(0.01f)][SerializeField] private float travelDuration = 2f;
+    private Vector3 startPosition;
+    private Vector3 targetPosition;
+    private float elapsedTime;
+    
+    
+    
+    // position
 
     private int damage;
 
@@ -52,42 +66,79 @@ public class TowerProjectil : MonoBehaviour
     }
 
     /// <summary>Appelé par Tower juste après avoir spawné ce projectile.</summary>
-    public void SetTarget(Transform newTarget, DamageType newDamageType, int newDamage)
+    public void SetTarget(
+        Transform newTarget, 
+        DamageType newDamageType, 
+        int newDamage, 
+        EnumProjectilSetting.projectileMovement movement,
+        Vector3 impactPosition)
     {
         target = newTarget;
         damageType = newDamageType;
         damage = newDamage;
+        projectileMovement = movement;
+        
+        startPosition = transform.position;
+        targetPosition = impactPosition;
+        elapsedTime = 0f;
     }
 
     private void Update()
     {
         // Déjà despawné cette frame (ou une frame précédente) : plus rien à faire.
         if (_hasDespawned) return;
-
-        // La cible a disparu (morte et retournée à son pool, désactivée...) :
-        // on ne reste pas planté à viser du vide, on disparaît proprement.
-        if (target == null || !target.gameObject.activeInHierarchy)
+        
+        switch (projectileMovement)
         {
-            Despawn();
-            return;
+            case EnumProjectilSetting.projectileMovement.Direct :
+                
+                // La cible a disparu (morte et retournée à son pool, désactivée...) :
+                // on ne reste pas planté à viser du vide, on disparaît proprement.
+                if (target == null || !target.gameObject.activeInHierarchy)
+                {
+                    Despawn();
+                    return;
+                }
+
+                // La distance que le projectile va parcourir CETTE frame.
+                float step = speed * Time.deltaTime;
+                float distance = Vector3.Distance(transform.position, target.position);
+
+                // Le seuil d'impact effectif est le plus grand entre hitDistance (réglage
+                // manuel) et step (le pas de cette frame). Ça garantit qu'un projectile
+                // rapide ne peut jamais dépasser sa cible sans que l'impact soit détecté.
+                float effectiveHitDistance = Mathf.Max(hitDistance, step);
+
+                if (distance <= effectiveHitDistance)
+                {
+                    HitTarget();
+                    return;
+                }
+
+                transform.position = Vector3.MoveTowards(transform.position, target.position, step);
+                
+                break;
+            
+            case EnumProjectilSetting.projectileMovement.Arcing :
+                
+                elapsedTime += Time.deltaTime;
+                float t = Mathf.Clamp01(elapsedTime / travelDuration);
+                Vector3 currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
+                float height = 4f * arcHeight * t * (1f - t);
+                
+                Vector3 arcPosition = new Vector3(currentPosition.x, currentPosition.y + height, currentPosition.z);
+
+                transform.position = arcPosition;
+
+                if (elapsedTime >= travelDuration)
+                {
+                    HitTarget();
+                    return;
+                }
+                
+                break;
         }
-
-        // La distance que le projectile va parcourir CETTE frame.
-        float step = speed * Time.deltaTime;
-        float distance = Vector3.Distance(transform.position, target.position);
-
-        // Le seuil d'impact effectif est le plus grand entre hitDistance (réglage
-        // manuel) et step (le pas de cette frame). Ça garantit qu'un projectile
-        // rapide ne peut jamais dépasser sa cible sans que l'impact soit détecté.
-        float effectiveHitDistance = Mathf.Max(hitDistance, step);
-
-        if (distance <= effectiveHitDistance)
-        {
-            HitTarget();
-            return;
-        }
-
-        transform.position = Vector3.MoveTowards(transform.position, target.position, step);
+       
     }
 
     /// <summary>Inflige les dégâts à la cible (si elle a un Health), puis despawn.</summary>

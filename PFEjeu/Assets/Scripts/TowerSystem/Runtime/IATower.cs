@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using Core.StatsSystem;
 using NUnit.Framework;
@@ -6,14 +7,29 @@ using StatType = Core.StatsSystem.EnumStats.StatTypes;
 
 public class IATower : MonoBehaviour
 {
-    [Header("Data")]
-    [SerializeField] private SOTower towerData;
+    [Header("System")]
+    [SerializeField] private Tower tower;
     
     // Ciblage variable
     [SerializeField] private LayerMask enemyLayer;
     private float timer;
+    
+    // Cilbe
     private Collider currentTarget;
     public Collider CurrentTarget => currentTarget ;
+    
+    private List<Collider> allTargets = new List<Collider>();
+    public List<Collider> AllTargets => allTargets;
+    
+    private void Awake()
+    {
+        tower = GetComponent<Tower>();
+        if (tower == null)
+        {
+            Debug.LogError("IATower : aucun composant Tower trouvé sur ce GameObject.", this);
+            return;
+        }
+    }
     
     // Update is called once per frame
     void Update()
@@ -27,7 +43,7 @@ public class IATower : MonoBehaviour
         // Cherche tous les colliders ennemis dans le rayon de détection de la tour.
         Collider[] targets = Physics.OverlapSphere(
             transform.position,
-            towerData.DetectionRange,
+            tower.TowerData.DetectionRange,
             enemyLayer);
         
         SelectTarget(targets);
@@ -48,13 +64,15 @@ public class IATower : MonoBehaviour
     // Selectionne la cible en fonction du Target priority du SOTower
     private void SelectTarget(Collider[]target)
     {
-        // Selection la cible
+        // vide la selection
         if (Array.IndexOf(target, currentTarget) == -1)
         {
             currentTarget = null;
         }
         
-        switch (towerData.TargetPriority)
+        allTargets.RemoveAll(enemy => Array.IndexOf(target, enemy) == -1);
+        
+        switch (tower.TowerData.TargetPriority)
         {
             case EnumTargetPriority.TargetPriority.None:
                 
@@ -113,14 +131,18 @@ public class IATower : MonoBehaviour
                     }
                 }
                 break;
+            
+            case EnumTargetPriority.TargetPriority.All:
+                
+                for (int i = 0; i < target.Length; i++)
+                {
+                    if (!allTargets.Contains(target[i]))
+                    {
+                        allTargets.Add(target[i]);
+                    }
+                }
+                break;
         }
     }
-    
-    // Dessine la portée de détection dans l'éditeur (visible quand la tour est sélectionnée).
-    private void OnDrawGizmosSelected()
-    {
-        if (towerData == null) return;
-        Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
-    }
-}
+ }
 

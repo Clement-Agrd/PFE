@@ -17,6 +17,7 @@ public class Tower : MonoBehaviour
     // La fiche de données de cette tour (portée, cadence de tir, dégâts, modèles par niveau...).
     // Voir SOTower.cs pour le détail des champs.
     [SerializeField] private SOTower towerData;
+    public SOTower TowerData => towerData ;
     
     // Donné du héro qui va modifier la tour
     [SerializeField] private SoHero heroData;
@@ -46,6 +47,8 @@ public class Tower : MonoBehaviour
     // Tout les system de la tour
     [Header("System")]
     [SerializeField] private IATower iaTower;
+    public IATower IATower => iaTower;
+    
     [SerializeField] private TowerShoot towerShoot;
     
     // Temps écoulé depuis le dernier tir.
@@ -157,5 +160,12 @@ public class Tower : MonoBehaviour
         // Le point de tir DOIT être un enfant du modèle nommé exactement "FirePoint",
         // sinon les tirs échoueront silencieusement (firePoint restera null).
         firePoint = currentModel.transform.Find("FirePoint");
+    }
+    
+    // Dessine la portée de détection dans l'éditeur (visible quand la tour est sélectionnée).
+    private void OnDrawGizmosSelected()
+    {
+        if (towerData == null) return;
+        Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
     }
 }

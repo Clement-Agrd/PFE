@@ -2,6 +2,7 @@ using System;
 using Core.StatsSystem;
 using System.Collections.Generic;
 using Core.HealthSystem;
+using Core.PoolingSystem.Examples;
 using UnityEngine;
 using StatType = Core.StatsSystem.EnumStats.StatTypes;
 
@@ -34,14 +35,22 @@ public class SOTower : ScriptableObject
     
     
     [Header("Projectile")]
+    [SerializeField] private EnumProjectilSetting.projectilType projectileType;
+    public EnumProjectilSetting.projectilType ProjectileType => projectileType;
+    
+    [SerializeField] private EnumProjectilSetting.projectileMovement projectileMovement;
+    public EnumProjectilSetting.projectileMovement ProjectileMovement => projectileMovement;
+    
+    [SerializeField] private EnumShootType.ShootMode shootMode;
+    public EnumShootType.ShootMode ShootMode => shootMode;
+
+    
     [SerializeField] private GameObject projectilePrefab;
     public GameObject ProjectilePrefab => projectilePrefab;
     
     [SerializeField] private DamageType damageType;
     public DamageType DamageType => damageType;
 
-    [SerializeField] private EnumShootType.ShootMode shootMode;
-    public EnumShootType.ShootMode ShootMode => shootMode;
     
     [Header("Level Information")]
     [SerializeField] private int minLevel;

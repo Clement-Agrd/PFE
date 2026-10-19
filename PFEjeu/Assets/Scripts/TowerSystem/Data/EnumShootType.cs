@@ -5,6 +5,7 @@ public class EnumShootType
     public enum ShootMode
     {
         Classic,
-        Zone,
+        Slow,
+        RainArrow,
     }
 }
