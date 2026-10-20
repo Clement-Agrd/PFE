@@ -140,5 +140,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectil
   speed: 10
   hitDistance: 0.3
-  maxLifetime: 5
-  damage: 10
+  arcHeight: 10
+  travelDuration: 2

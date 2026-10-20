@@ -18,6 +18,8 @@ public class TowerProjectil : MonoBehaviour
     private Transform target;
     // Le type de dégâts à infliger (utilisé par le Health de la cible pour les résistances).
     private DamageType damageType;
+
+    private bool dealsDamage = true;
     
     private EnumProjectilSetting.projectileMovement projectileMovement;
 
@@ -71,7 +73,8 @@ public class TowerProjectil : MonoBehaviour
         DamageType newDamageType, 
         int newDamage, 
         EnumProjectilSetting.projectileMovement movement,
-        Vector3 impactPosition)
+        Vector3 impactPosition,
+        bool damageEnable)
     {
         target = newTarget;
         damageType = newDamageType;
@@ -81,6 +84,7 @@ public class TowerProjectil : MonoBehaviour
         startPosition = transform.position;
         targetPosition = impactPosition;
         elapsedTime = 0f;
+        dealsDamage = damageEnable;
     }
 
     private void Update()
@@ -125,7 +129,7 @@ public class TowerProjectil : MonoBehaviour
                 float t = Mathf.Clamp01(elapsedTime / travelDuration);
                 Vector3 currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
                 float height = 4f * arcHeight * t * (1f - t);
-                
+                Debug.Log($"Arc Height : {arcHeight} | Hauteur calculée : {height}");
                 Vector3 arcPosition = new Vector3(currentPosition.x, currentPosition.y + height, currentPosition.z);
 
                 transform.position = arcPosition;
@@ -133,7 +137,6 @@ public class TowerProjectil : MonoBehaviour
                 if (elapsedTime >= travelDuration)
                 {
                     HitTarget();
-                    return;
                 }
                 
                 break;
@@ -144,7 +147,7 @@ public class TowerProjectil : MonoBehaviour
     /// <summary>Inflige les dégâts à la cible (si elle a un Health), puis despawn.</summary>
     private void HitTarget()
     {
-        if (target != null && target.TryGetComponent(out Health health))
+        if (dealsDamage && target != null && target.TryGetComponent(out Health health))
             health.TakeDamage(new DamageInfo(damage, damageType));
 
         Despawn();

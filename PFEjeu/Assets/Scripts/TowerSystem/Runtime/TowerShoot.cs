@@ -15,6 +15,8 @@ public class TowerShoot : MonoBehaviour
     
     [Header("Data")]
     [SerializeField] private float slowPower = - 0.30f;
+    [SerializeField] private float zoneImpact = - 3f;
+    [SerializeField] private int arrowCount = 10;
 
     public Transform firePoint => tower.FirePoint;
 
@@ -76,10 +78,7 @@ public class TowerShoot : MonoBehaviour
         if (tower.TowerData.ProjectilePrefab == null) return;
         if (firePoint == null) return; // le modèle du niveau actuel n'a pas de FirePoint valide
 
-        GameObject arrow = PoolManager.Instance.Spawn(tower.TowerData.ProjectilePrefab, firePoint.position, firePoint.rotation);
-        if (arrow == null) return;
-
-        if (!arrow.TryGetComponent(out TowerProjectil projectile)) return;
+        
 
         // Donne au projectile sa cible et le type de dégâts à infliger
         // (le type sert aux résistances éventuelles côté Health de la cible).
@@ -88,12 +87,11 @@ public class TowerShoot : MonoBehaviour
         
         int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
         
-        projectile.SetTarget(
-            tower.IATower.CurrentTarget.transform, 
-            tower.TowerData.DamageType, 
-            finalDamage, 
-            tower.TowerData.ProjectileMovement,
-            tower.IATower.CurrentTarget.transform.position);
+        SpawnArrow(
+            tower.IATower.CurrentTarget.transform,
+            tower.IATower.CurrentTarget.transform.position,
+            finalDamage,
+            true);
     }
 
     public void Slow()
@@ -122,6 +120,61 @@ public class TowerShoot : MonoBehaviour
 
     public void RainArrow()
     {
+        if (tower == null) return;
+        if (tower.IATower == null) return;
+        if (tower.TowerData == null) return;
+        if (stats == null) return;
+        if (tower.IATower.CurrentTarget == null) return;
         
+        Vector3 impactPosition = tower.IATower.CurrentTarget.transform.position;
+        
+        StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
+        
+        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
+
+        Collider[] enemiesInZone = Physics.OverlapSphere(impactPosition, zoneImpact, tower.IATower.EnemyLayer);
+
+        for (int i = 0; i < enemiesInZone.Length; i++)
+        {
+            if (enemiesInZone[i] == null)
+            {
+                continue;
+            }
+
+            if (enemiesInZone[i].TryGetComponent(out Health health))
+            {
+                health.TakeDamage(new DamageInfo(finalDamage, tower.TowerData.DamageType));
+            }
+        }
+        
+        for (int i = 0; i < arrowCount; i++)
+        {
+            SpawnArrow(
+                null,
+                impactPosition,
+                finalDamage,
+                false
+            );
+        }
+    }
+
+    private void SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
+    {
+        GameObject arrow = PoolManager.Instance.Spawn(
+            tower.TowerData.ProjectilePrefab, 
+            firePoint.position, 
+            firePoint.rotation);
+        
+        if (arrow == null) return;
+
+        if (!arrow.TryGetComponent(out TowerProjectil projectile)) return;
+        
+        projectile.SetTarget(
+            tower.IATower.CurrentTarget.transform, 
+            tower.TowerData.DamageType, 
+            finalDamage, 
+            tower.TowerData.ProjectileMovement,
+            tower.IATower.CurrentTarget.transform.position,
+            damageEnable);
     }
 }

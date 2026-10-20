@@ -12,6 +12,7 @@ public class IATower : MonoBehaviour
     
     // Ciblage variable
     [SerializeField] private LayerMask enemyLayer;
+    public LayerMask EnemyLayer => enemyLayer;
     private float timer;
     
     // Cilbe
