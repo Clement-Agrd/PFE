@@ -1,0 +1,65 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d870e6badb52e74293b9a14cb6863e9, type: 3}
+  m_Name: SceneJeux_Wave_01
+  m_EditorClassIdentifier: Assembly-CSharp::Core.WaveSystem.WaveDefinition
+  waveName: 'Vague 1 petite '
+  startDelay: 1
+  spawns:
+  - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
+    count: 1
+    zoneId: Route_01
+    burstSize: 1
+    burstInterval: 1
+    startDelay: 1
+  - prefab: {fileID: 1436972150820126028, guid: 6ce647c99ccba2d41a3ef95761032a52, type: 3}
+    count: 5
+    zoneId: Route_01
+    burstSize: 1
+    burstInterval: 3
+    startDelay: 2
+  - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
+    count: 1
+    zoneId: Route_02
+    burstSize: 1
+    burstInterval: 1
+    startDelay: 1
+  - prefab: {fileID: 1436972150820126028, guid: 6ce647c99ccba2d41a3ef95761032a52, type: 3}
+    count: 5
+    zoneId: Route_02
+    burstSize: 1
+    burstInterval: 3
+    startDelay: 2
+  - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
+    count: 1
+    zoneId: Route_03
+    burstSize: 1
+    burstInterval: 1
+    startDelay: 1
+  - prefab: {fileID: 1436972150820126028, guid: 6ce647c99ccba2d41a3ef95761032a52, type: 3}
+    count: 5
+    zoneId: Route_03
+    burstSize: 1
+    burstInterval: 3
+    startDelay: 2
+  - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
+    count: 1
+    zoneId: Route_04
+    burstSize: 1
+    burstInterval: 1
+    startDelay: 1
+  - prefab: {fileID: 1436972150820126028, guid: 6ce647c99ccba2d41a3ef95761032a52, type: 3}
+    count: 5
+    zoneId: Route_04
+    burstSize: 1
+    burstInterval: 3
+    startDelay: 2
