@@ -67,7 +67,7 @@ public class Tower : MonoBehaviour
 
     private void Update()
     {
-        if (iaTower.CurrentTarget == null) return;
+        if (!HasTarget()) return;
 
         // Le compteur de cadence avance par pas de 0.1s (le rythme de ce bloc),
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
@@ -167,5 +167,12 @@ public class Tower : MonoBehaviour
     {
         if (towerData == null) return;
         Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
+    }
+    
+    private bool HasTarget()
+    {
+        if (towerData.ShootMode == EnumShootType.ShootMode.Slow)
+            return iaTower.AllTargets.Count > 0;
+        return iaTower.CurrentTarget != null;
     }
 }

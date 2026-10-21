@@ -14,8 +14,8 @@ public class TowerShoot : MonoBehaviour
     [SerializeField] private PoolManager poolManager;
     
     [Header("Data")]
-    [SerializeField] private float slowPower = - 0.30f;
-    [SerializeField] private float zoneImpact = - 3f;
+    [SerializeField] private float slowPower = -0.30f;
+    [SerializeField] private float zoneImpact = 3f;
     [SerializeField] private int arrowCount = 10;
 
     public Transform firePoint => tower.FirePoint;
@@ -32,6 +32,7 @@ public class TowerShoot : MonoBehaviour
 
     public void Shoot()
     {
+        Debug.Log("Shoot appelé");
         switch (tower.TowerData.ShootMode)
         {
             case EnumShootType.ShootMode.Classic :
@@ -99,15 +100,23 @@ public class TowerShoot : MonoBehaviour
         if (tower.IATower == null) return;
         if (tower.TowerData == null) return;
 
+        Debug.Log($"Slow appelé, cibles : {tower.IATower.AllTargets.Count}");
+        
         for (int i = 0; i < tower.IATower.AllTargets.Count; i++)
         {
             Collider enemy = tower.IATower.AllTargets[i];
 
             if (enemy == null) continue;
+            
 
             EntityStats enemyStats = enemy.GetComponent<EntityStats>();
-
-            if (enemyStats == null) continue;
+            
+            
+            if (enemyStats == null)
+            {
+                Debug.LogWarning($"Pas d'EntityStats sur {enemy.name}", enemy);     // 2, à la place du continue seul
+                continue;
+            }
 
             enemyStats.AddModifier(
                 StatType.Speed,
@@ -115,6 +124,7 @@ public class TowerShoot : MonoBehaviour
                 StatModifierType.PercentAdditive,
                 this
             );
+            Debug.Log($"Speed de {enemy.name} : {enemyStats.GetStat(StatType.Speed)}");
         }
     }
 
@@ -131,21 +141,6 @@ public class TowerShoot : MonoBehaviour
         StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
         
         int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
-
-        Collider[] enemiesInZone = Physics.OverlapSphere(impactPosition, zoneImpact, tower.IATower.EnemyLayer);
-
-        for (int i = 0; i < enemiesInZone.Length; i++)
-        {
-            if (enemiesInZone[i] == null)
-            {
-                continue;
-            }
-
-            if (enemiesInZone[i].TryGetComponent(out Health health))
-            {
-                health.TakeDamage(new DamageInfo(finalDamage, tower.TowerData.DamageType));
-            }
-        }
         
         for (int i = 0; i < arrowCount; i++)
         {
