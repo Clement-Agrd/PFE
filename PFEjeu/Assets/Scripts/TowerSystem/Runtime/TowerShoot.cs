@@ -144,8 +144,8 @@ public class TowerShoot : MonoBehaviour
         
         for (int i = 0; i < arrowCount; i++)
         {
-            Vector3 randomOffset = UnityEngine.Random.insideUnitSphere * zoneImpact;
-            randomOffset.y = 0f;
+            Vector2 offset = UnityEngine.Random.insideUnitCircle * zoneImpact;
+            Vector3 randomOffset = new Vector3(offset.x, 0f, offset.y);
 
             Vector3 arrowImpactPosition = impactPosition + randomOffset;
             SpawnArrow(
@@ -157,6 +157,10 @@ public class TowerShoot : MonoBehaviour
         }
     }
 
+    public void FireBall()
+    {
+        
+    }
     
     
     // Action spécial
