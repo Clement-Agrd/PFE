@@ -149,15 +149,22 @@ public class TowerShoot : MonoBehaviour
         
         for (int i = 0; i < arrowCount; i++)
         {
+            Vector3 randomOffset = UnityEngine.Random.insideUnitSphere * zoneImpact;
+            randomOffset.y = 0f;
+
+            Vector3 arrowImpactPosition = impactPosition + randomOffset;
             SpawnArrow(
                 null,
-                impactPosition,
+                arrowImpactPosition,
                 finalDamage,
                 false
             );
         }
     }
 
+    
+    
+    // Action spécial
     private void SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
     {
         GameObject arrow = PoolManager.Instance.Spawn(
@@ -168,13 +175,41 @@ public class TowerShoot : MonoBehaviour
         if (arrow == null) return;
 
         if (!arrow.TryGetComponent(out TowerProjectil projectile)) return;
-        
+
         projectile.SetTarget(
-            tower.IATower.CurrentTarget.transform, 
-            tower.TowerData.DamageType, 
-            finalDamage, 
+            target,
+            tower.TowerData.DamageType,
+            finalDamage,
             tower.TowerData.ProjectileMovement,
-            tower.IATower.CurrentTarget.transform.position,
+            impactPosition,
             damageEnable);
+    }
+    
+    private void ApplyAreaDamage(
+        Vector3 impactPosition,
+        float radius,
+        int finalDamage)
+    {
+        if (tower == null) return;
+        if (tower.IATower == null) return;
+        if (tower.TowerData == null) return;
+
+        Collider[] enemiesInZone = Physics.OverlapSphere(
+            impactPosition,
+            radius,
+            tower.IATower.EnemyLayer
+        );
+
+        for (int i = 0; i < enemiesInZone.Length; i++)
+        {
+            if (enemiesInZone[i] == null) continue;
+
+            if (enemiesInZone[i].TryGetComponent(out Health health))
+            {
+                health.TakeDamage(
+                    new DamageInfo(finalDamage, tower.TowerData.DamageType)
+                );
+            }
+        }
     }
 }
