@@ -473,14 +473,14 @@ namespace Core.TowerDefense
                 }
 
 
-                if (_stats != null &&
-                    _stats.HasStat(
-                        StatType.Speed))
+                if (_stats != null)
                 {
-                    _stats.SetBaseStat(
-                        StatType.Speed,
-                        definition.Speed
+                    definition.ApplyTo(
+                        _stats
                     );
+
+
+
                 }
             }
             else

@@ -1,0 +1,19 @@
+{
+  "name": "com.maxence.auto-rig-animator",
+  "version": "0.6.0",
+  "displayName": "Auto Rig Animator",
+  "description": "Rig a raw mesh by clicking a handful of landmarks on it, then build a Humanoid-compatible skeleton and apply premade animations instantly. Phase 5a (this version): input validation, automatic rollback on failure/cancellation, and a cancelable progress bar for large meshes.",
+  "unity": "2021.3",
+  "license": "MIT",
+  "author": {
+    "name": "Maxence Lemaitre"
+  },
+  "keywords": [
+    "rigging",
+    "auto-rig",
+    "animation",
+    "editor",
+    "humanoid",
+    "skinning"
+  ]
+}

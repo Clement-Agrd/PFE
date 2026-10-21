@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9d870e6badb52e74293b9a14cb6863e9, type: 3}
+  m_Name: Wave_TowerTest_Boucle
+  m_EditorClassIdentifier: Assembly-CSharp::Core.WaveSystem.WaveDefinition
+  waveName: Test tour - ennemi en boucle
+  startDelay: 0.5
+  spawns:
+  - prefab: {fileID: 2454647618617984211, guid: 426627adf3b26a5459830c8aa84ebdd6, type: 3}
+    count: 1
+    zoneId: TT_Loop
+    burstSize: 1
+    burstInterval: 1
+    startDelay: 0

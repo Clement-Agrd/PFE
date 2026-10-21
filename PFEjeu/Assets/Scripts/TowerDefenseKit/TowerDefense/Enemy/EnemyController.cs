@@ -400,13 +400,10 @@ namespace Core.TowerDefense
                     );
                 }
 
-                if (_stats != null &&
-                    _stats.HasStat(
-                        StatType.Speed))
+                if (_stats != null)
                 {
-                    _stats.SetBaseStat(
-                        StatType.Speed,
-                        definition.Speed
+                    definition.ApplyTo(
+                        _stats
                     );
                 }
 
@@ -583,7 +580,23 @@ namespace Core.TowerDefense
             }
         }
 
-        internal void FinishPath()
+        /// <summary>Retire l'ennemi sans récompense (banc de test, reset).</summary>
+        public void Dismiss()
+        {
+            if (_finished)
+                return;
+
+            _finished = true;
+
+            ChangeState(
+                _finishedState,
+                true
+            );
+
+            Defeat();
+        }
+
+                internal void FinishPath()
         {
             if (_finished)
                 return;

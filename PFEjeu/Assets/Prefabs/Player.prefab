@@ -481,7 +481,7 @@ MonoBehaviour:
   magicDamageScaling: 1
   damageType: {fileID: 11400000, guid: 32ce24f6e882d4a46b70e7ae451132ad, type: 2}
   castOrigin: {fileID: 1145915676543690880}
-  projectilePrefab: {fileID: 4025266684344492649, guid: afc5324e8615516408e5c04a5b5446b5, type: 3}
+  projectilePrefab: {fileID: 2463500353957729727, guid: 59c1648da5c6f6c4faf26d9305b22b23, type: 3}
   projectileSpeed: 24
   projectileGravity: 0
   projectileLifetime: 7

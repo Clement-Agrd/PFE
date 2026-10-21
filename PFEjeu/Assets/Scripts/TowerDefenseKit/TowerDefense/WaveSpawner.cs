@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEngine.AI;
 
 using Core.PoolingSystem;
+using Core.TowerDefense;
 
 namespace Core.WaveSystem
 {
@@ -72,6 +73,12 @@ namespace Core.WaveSystem
         private bool _isWaveActive;
 
 
+        private bool _customWave;
+
+        private readonly List<GameObject> _spawned =
+            new();
+
+
         // ============================================================
         // PUBLIC
         // ============================================================
@@ -101,6 +108,11 @@ namespace Core.WaveSystem
         public bool CanStartWave =>
             !_isWaveActive &&
             HasMoreWaves;
+
+
+        /// <summary>Vrai si une vague personnalisée peut démarrer (aucune en cours).</summary>
+        public bool CanStartCustomWave =>
+            !_isWaveActive;
 
 
         public int NextWaveNumber =>
@@ -225,6 +237,99 @@ namespace Core.WaveSystem
         }
 
 
+        /// <summary>
+        /// Lance une vague composée à la volée (banc de test des tours),
+        /// sans passer par le WaveSet. Retourne false si une vague est en cours.
+        /// </summary>
+        public bool StartCustomWave(
+            IReadOnlyList<SpawnEntry> entries)
+        {
+            if (_isWaveActive ||
+                entries == null ||
+                entries.Count == 0)
+            {
+                return false;
+            }
+
+
+            StartCoroutine(
+                RunCustomWave(entries)
+            );
+
+            return true;
+        }
+
+
+        /// <summary>
+        /// Stoppe la vague en cours et retire tous les ennemis encore vivants.
+        /// </summary>
+        public void DismissAll()
+        {
+            StopAllCoroutines();
+
+            List<GameObject> alive =
+                new List<GameObject>(_spawned);
+
+            foreach (GameObject enemy in alive)
+            {
+                if (enemy == null ||
+                    !enemy.activeInHierarchy)
+                {
+                    continue;
+                }
+
+                if (enemy.TryGetComponent(
+                        out EnemyController controller))
+                {
+                    controller.Dismiss();
+                }
+            }
+
+            _spawned.Clear();
+
+            _aliveCount = 0;
+            _isWaveActive = false;
+            _customWave = false;
+        }
+
+
+        private IEnumerator RunCustomWave(
+            IReadOnlyList<SpawnEntry> entries)
+        {
+            _isWaveActive = true;
+            _customWave = true;
+
+            OnWaveStarted?.Invoke(0);
+
+            List<Coroutine> running =
+                new List<Coroutine>();
+
+            foreach (SpawnEntry entry in entries)
+            {
+                running.Add(
+                    StartCoroutine(
+                        RunEntry(entry)
+                    )
+                );
+            }
+
+            foreach (Coroutine coroutine in running)
+            {
+                yield return coroutine;
+            }
+
+            while (_aliveCount > 0)
+            {
+                yield return null;
+            }
+
+            OnWaveCompleted?.Invoke(0);
+
+            _isWaveActive = false;
+            _customWave = false;
+        }
+
+
         private IEnumerator RunWave()
         {
             _isWaveActive =
@@ -338,10 +443,13 @@ namespace Core.WaveSystem
                 yield break;
 
 
+            // Pas de montée en difficulté pour une vague personnalisée.
             float scale =
-                1f +
-                _loop *
-                waveSet.CountScalePerLoop;
+                _customWave || waveSet == null
+                    ? 1f
+                    : 1f +
+                      _loop *
+                      waveSet.CountScalePerLoop;
 
 
             int totalCount =
@@ -539,6 +647,11 @@ namespace Core.WaveSystem
             // Comme ça, si l'ennemi est immédiatement
             // retiré pour une raison quelconque,
             // le compteur reste correct.
+            _spawned.Add(
+                instance
+            );
+
+
             _aliveCount++;
 
 
@@ -564,6 +677,13 @@ namespace Core.WaveSystem
             {
                 enemy.Defeated -=
                     HandleDefeated;
+
+                if (enemy is Component component)
+                {
+                    _spawned.Remove(
+                        component.gameObject
+                    );
+                }
             }
 
 

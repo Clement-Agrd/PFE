@@ -22,6 +22,14 @@ namespace Core.TowerDefense
         private SplineContainer splineContainer;
 
 
+        [Tooltip(
+            "Si coché, l'ennemi repart du début en arrivant au bout " +
+            "au lieu d'être vaincu (circuit fermé)."
+        )]
+        [SerializeField]
+        private bool loop;
+
+
         [Header("Sampling")]
 
         [Tooltip(
@@ -84,6 +92,10 @@ namespace Core.TowerDefense
         public bool IsValid =>
             splineContainer != null &&
             Count >= 2;
+
+
+        public bool Loop =>
+            loop;
 
 
         public float PathHalfWidth =>

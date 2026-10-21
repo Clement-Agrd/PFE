@@ -181,6 +181,19 @@ namespace Core.TowerDefense
                 distance <=
                 endReachDistance)
             {
+                if (_path.Loop)
+                {
+                    _pathIndex = 0;
+
+                    SetDestinationSafe(
+                        GetNavigationWaypoint(
+                            _pathIndex
+                        )
+                    );
+
+                    return;
+                }
+
                 MarkReachedEnd();
                 return;
             }
