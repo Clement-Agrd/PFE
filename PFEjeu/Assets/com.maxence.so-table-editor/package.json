@@ -1,0 +1,26 @@
+{
+  "name": "com.maxence.so-table-editor",
+  "version": "0.1.0",
+  "displayName": "SO Table Editor",
+  "description": "Edit every ScriptableObject of a given type in one spreadsheet-like window: sort, filter (hp>50 rank=boss), multi-row editing and CSV export. Built for game designers balancing enemies, weapons, towers or items.",
+  "unity": "2021.3",
+  "license": "MIT",
+  "author": {
+    "name": "Maxence Lemaitre"
+  },
+  "keywords": [
+    "scriptableobject",
+    "editor",
+    "table",
+    "spreadsheet",
+    "balancing",
+    "game design"
+  ],
+  "samples": [
+    {
+      "displayName": "Enemy Example",
+      "description": "An EnemyData ScriptableObject (enum, nested struct, color, prefab, list) to try the table right away.",
+      "path": "Samples~/EnemyExample"
+    }
+  ]
+}
