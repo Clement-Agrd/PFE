@@ -91,7 +91,9 @@ public class TowerProjectil : MonoBehaviour
     {
         // Déjà despawné cette frame (ou une frame précédente) : plus rien à faire.
         if (_hasDespawned) return;
-        
+
+        Vector3 previousPosition = transform.position;
+
         switch (projectileMovement)
         {
             case EnumProjectilSetting.projectileMovement.Direct :
@@ -141,7 +143,11 @@ public class TowerProjectil : MonoBehaviour
                 
                 break;
         }
-       
+
+        // Oriente la flèche (axe +Z) dans le sens du déplacement, pour suivre la trajectoire en cloche.
+        Vector3 moveDirection = transform.position - previousPosition;
+        if (!_hasDespawned && moveDirection.sqrMagnitude > 1e-8f)
+            transform.rotation = Quaternion.LookRotation(moveDirection);
     }
 
     /// <summary>Inflige les dégâts à la cible (si elle a un Health), puis despawn.</summary>
