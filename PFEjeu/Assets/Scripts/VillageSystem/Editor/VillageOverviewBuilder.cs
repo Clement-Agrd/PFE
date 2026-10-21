@@ -19,9 +19,9 @@ namespace Core.Village.EditorTools
     /// </summary>
     public static class VillageOverviewBuilder
     {
-        private const string ChipPath = "Assets/Prefabs/VillageResourceChip.prefab";
-        private const string RowPath = "Assets/Prefabs/BuildingSummaryRow.prefab";
-        private const string ExpeditionRowPath = "Assets/Prefabs/ExpeditionStatusRow.prefab";
+        private const string ChipPath = "Assets/Prefabs/UI/Village/VillageResourceChip.prefab";
+        private const string RowPath = "Assets/Prefabs/UI/Village/BuildingSummaryRow.prefab";
+        private const string ExpeditionRowPath = "Assets/Prefabs/UI/Village/ExpeditionStatusRow.prefab";
         private const int UILayer = 5;
 
         private static readonly Color CardBg = new(1f, 1f, 1f, 0.06f);

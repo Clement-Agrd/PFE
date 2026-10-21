@@ -19,7 +19,7 @@ namespace Core.InventorySystem.EditorTools
     public static class EquipmentRowBuilder
     {
         private const string RowName = "EquipmentRow";
-        private const string FoodSlotPrefabPath = "Assets/Prefabs/FoodSlot.prefab";
+        private const string FoodSlotPrefabPath = "Assets/Prefabs/UI/Inventory/FoodSlot.prefab";
         private const int UILayer = 5;
 
         // La hauteur du panneau AVANT toute exécution de ce builder (constatée dans la scène).

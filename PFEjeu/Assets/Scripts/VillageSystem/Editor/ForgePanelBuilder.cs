@@ -24,8 +24,8 @@ namespace Core.Village.EditorTools
         private const string PanelName = "ForgePanel";
         private const string DefinitionPath = "Assets/ScriptableObjects/Village/ForgeDefinition.asset";
         private const string ItemsFolder = "Assets/ScriptableObjects/Inventory";
-        private const string CostRowPath = "Assets/Prefabs/ForgeCostRow.prefab";
-        private const string ItemRowPath = "Assets/Prefabs/ForgeItemRow.prefab";
+        private const string CostRowPath = "Assets/Prefabs/UI/Village/ForgeCostRow.prefab";
+        private const string ItemRowPath = "Assets/Prefabs/UI/Village/ForgeItemRow.prefab";
         private const string IconsFolder = "Assets/Arts/2D/ArmorSlots";
         private const int UILayer = 5;
 

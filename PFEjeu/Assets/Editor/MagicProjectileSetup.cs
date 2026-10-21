@@ -3,15 +3,15 @@ using UnityEditor;
 using UnityEngine;
 using ProfessionalTPS;
 
-// Construit Assets/Prefabs/MagicProjectile.prefab (+ MagicProjectileImpact.prefab)
+// Construit Assets/Prefabs/Projectiles/MagicProjectile.prefab (+ MagicProjectileImpact.prefab)
 // à partir du modèle Assets/Arts/3D/magic_projectile.fbx.
 // Menu : Tools/Magic Projectile/Build Prefab
 public static class MagicProjectileSetup
 {
     const string ModelPath = "Assets/Arts/3D/magic_projectile.fbx";
     const string MaterialDir = "Assets/Materials/MagicProjectile";
-    const string PrefabPath = "Assets/Prefabs/MagicProjectile.prefab";
-    const string ImpactPrefabPath = "Assets/Prefabs/MagicProjectileImpact.prefab";
+    const string PrefabPath = "Assets/Prefabs/Projectiles/MagicProjectile.prefab";
+    const string ImpactPrefabPath = "Assets/Prefabs/Projectiles/MagicProjectileImpact.prefab";
 
     // Après import le modèle pointe déjà vers +Z (traîne vers -Z) : pas de correction.
     static readonly Quaternion ModelToForward = Quaternion.Euler(0f, 0f, 0f);
@@ -30,7 +30,7 @@ public static class MagicProjectileSetup
         }
 
         Directory.CreateDirectory(MaterialDir);
-        Directory.CreateDirectory("Assets/Prefabs");
+        Directory.CreateDirectory("Assets/Prefabs/Projectiles");
 
         Texture2D gradient = CreateGradientTexture();
 

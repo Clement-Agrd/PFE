@@ -20,10 +20,10 @@ namespace Core.TowerDefense
     public static class EnemyPrefabFactory
     {
         private const string ClassicPath =
-            "Assets/Prefabs/Enemy_Classic.prefab";
+            "Assets/Prefabs/Enemies/Enemy_Classic.prefab";
 
         private const string ComboPath =
-            "Assets/Prefabs/Enemy_Combo.prefab";
+            "Assets/Prefabs/Enemies/Enemy_Combo.prefab";
 
         [MenuItem(
             "Tools/PFE/Enemies/Create Modular Test Enemies"

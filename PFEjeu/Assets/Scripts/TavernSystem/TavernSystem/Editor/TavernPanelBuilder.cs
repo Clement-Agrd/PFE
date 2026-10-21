@@ -17,7 +17,7 @@ namespace Core.TavernSystem.EditorTools
     public static class TavernPanelBuilder
     {
         private const string PanelName = "TavernPanel";
-        private const string RowPrefabPath = "Assets/Prefabs/TavernDishRow.prefab";
+        private const string RowPrefabPath = "Assets/Prefabs/UI/Village/TavernDishRow.prefab";
         private const int UILayer = 5;
 
         // Palette (identique à BuildingPanelBuilder pour rester cohérent visuellement)

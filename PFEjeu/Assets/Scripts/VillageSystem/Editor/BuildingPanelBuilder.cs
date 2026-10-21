@@ -16,8 +16,8 @@ namespace Core.Village.EditorTools
     public static class BuildingPanelBuilder
     {
         private const string PanelName = "BuildingPanel";
-        private const string CostRowPath = "Assets/Prefabs/BuildingCostRow.prefab";
-        private const string ProductionRowPath = "Assets/Prefabs/BuildingProductionRow.prefab";
+        private const string CostRowPath = "Assets/Prefabs/UI/Village/BuildingCostRow.prefab";
+        private const string ProductionRowPath = "Assets/Prefabs/UI/Village/BuildingProductionRow.prefab";
         private const int UILayer = 5;
 
         // Palette
