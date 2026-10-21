@@ -23,6 +23,9 @@ namespace Core.TavernSystem.UI
         [SerializeField] private Transform rowsParent;
         [SerializeField] private TavernDishRowUI rowPrefab;
         [SerializeField] private Button closeButton;
+        [SerializeField] private Button upgradeButton;
+        [SerializeField] private Core.Village.UI.BuildingPanelUI upgradePanel;
+        [SerializeField] private Core.Village.VillageViewController villageView;
 
         [Header("Couleurs")]
         [SerializeField] private Color okColor = new(0.45f, 0.85f, 0.45f);
@@ -40,8 +43,30 @@ namespace Core.TavernSystem.UI
         private void Awake()
         {
             if (closeButton != null) closeButton.onClick.AddListener(Hide);
+            if (upgradeButton != null) upgradeButton.onClick.AddListener(OpenUpgrade);
         }
 
+        private void OnEnable()
+        {
+            if (villageView == null) return;
+            villageView.OnBuildingClicked += HandleBuildingClicked;
+            villageView.OnExitedVillageView += Hide;
+        }
+        private void OnDisable()
+        {
+            if (villageView != null)
+            {
+                villageView.OnBuildingClicked -= HandleBuildingClicked;
+                villageView.OnExitedVillageView -= Hide;
+            }
+            HideImmediate();
+        }
+        private void HandleBuildingClicked(Core.Village.Building building)
+        {
+            if (building == null) return;
+            var tavern = building.GetComponent<Tavern>();
+            if (tavern != null) Show(tavern);
+        }
         private void Start() => HideImmediate();
 
         private int _openedFrame = -1;
@@ -59,6 +84,13 @@ namespace Core.TavernSystem.UI
             Unwatch();
             _current = tavern;
             Watch(_current);
+            if (upgradeButton != null)
+            {
+                var building = _current.GetComponent<Core.Village.Building>();
+                upgradeButton.gameObject.SetActive(building != null && building.Definition != null && upgradePanel != null);
+                var label = upgradeButton.GetComponentInChildren<TMP_Text>();
+                if (label != null && building != null) label.text = $"Améliorer · Niveau {building.CurrentLevel}";
+            }
 
             if (panel != null) panel.SetActive(true);
             Refresh();
@@ -70,6 +102,14 @@ namespace Core.TavernSystem.UI
                 GameFreeze.RequestCursorUnlock(this);
                 PlayOpenAnimation();
             }
+        }
+
+        public void OpenUpgrade()
+        {
+            if (_current == null || upgradePanel == null) return;
+            var building = _current.GetComponent<Core.Village.Building>();
+            HideImmediate();
+            upgradePanel.ShowStandalone(building);
         }
 
         public void Hide()

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using static Core.PauseMenu.PauseUiKit;
@@ -71,7 +72,8 @@ namespace Core.BarracksSystem
         public void Refresh()
         {
             if (_rowsParent == null) return;
-            int count = roster != null ? roster.Count : 0;
+            var heroes = roster != null ? roster.OrderedHeroes.ToArray() : System.Array.Empty<heros>();
+            int count = heroes.Length;
             _countLabel.text = $"{count} héros recruté{(count == 1 ? "" : "s")}";
             _emptyLabel.gameObject.SetActive(count == 0);
             while (_rows.Count < count)
@@ -95,13 +97,13 @@ namespace Core.BarracksSystem
                 var row = _rows[i];
                 row.Root.SetActive(i < count);
                 if (i >= count) continue;
-                var hero = roster.Heroes[i];
+                var hero = heroes[i];
                 row.Identity.text = $"{hero.HeroName}\n{hero.ClasseName} · Niveau {hero.Level} / 5";
                 var barracks = hero.AssignedBarracks;
-                row.Assignment.text = barracks != null
+                row.Assignment.text = hero.IsOnExpedition ? $"{(hero.IsExpeditionPending ? "Départ en attente" : "En expédition")} : {hero.ExpeditionName}" : barracks != null
                     ? $"Affecté à : {barracks.name}\nCaserne niveau {barracks.CurrentLevel}"
                     : "Disponible · Aucune affectation";
-                row.Assignment.color = barracks != null ? Accent : Good;
+                row.Assignment.color = barracks != null || hero.IsOnExpedition ? Accent : Good;
             }
         }
     }

@@ -50,16 +50,13 @@ namespace Core.Village.UI
             {
                 foreach (var (hero, mission, cyclesRemaining) in manager.GetActiveMissions())
                 {
-                    Row(count++).Set(Title(hero, mission), $"{cyclesRemaining} cycle(s) restant(s)", activeColor);
+                    Row(count++).Set(Title(hero, mission), manager.CanCancelMission(hero) ? "Départ en attente · Annulable" : $"{cyclesRemaining} cycle(s) restant(s)", activeColor);
                     active++;
                 }
 
-                foreach (var (hero, mission, success) in manager.GetPendingRewards())
-                {
-                    Row(count++).Set(Title(hero, mission),
-                        success ? "De retour — butin à la prochaine défense" : "Blessé — butin perdu",
-                        success ? successColor : failColor);
-                }
+                foreach (var result in manager.RecentResults)
+                    Row(count++).Set($"{result.HeroName} → {result.Mission.DisplayName}", result.Status,
+                        result.Outcome == ExpeditionOutcome.Success ? successColor : failColor);
             }
 
             for (int i = 0; i < _rows.Count; i++) _rows[i].gameObject.SetActive(i < count);
@@ -68,14 +65,14 @@ namespace Core.Village.UI
             if (summaryLabel != null)
             {
                 summaryLabel.text = active > 0 ? $"{active} en cours"
-                    : count > 0 ? "Retour en attente"
+                    : count > 0 ? "Derniers résultats"
                     : "Aucune expédition";
                 summaryLabel.color = count == 0 ? idleColor : activeColor;
             }
         }
 
-        private static string Title(HeroDefinition hero, ExplorationMissionDefinition mission)
-            => $"{hero.DisplayName} ({hero.Class}) → {mission.DisplayName}";
+        private static string Title(Core.BarracksSystem.heros hero, ExplorationMissionDefinition mission)
+            => $"{hero.HeroName} ({hero.ClasseName}) → {mission.DisplayName}";
 
         private ExpeditionStatusRowUI Row(int index)
         {

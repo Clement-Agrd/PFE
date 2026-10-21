@@ -1,4 +1,5 @@
 using Core.PauseMenu;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -14,6 +15,7 @@ namespace Core.BarracksSystem
         private GameObject _canvas;
         private GameObject _actionsCard, _heroesCard;
         private TMP_Text _summaryLabel, _heroesSummary;
+        private heros[] _displayHeroes = System.Array.Empty<heros>();
         private readonly System.Collections.Generic.List<TMP_Text> _heroLabels = new();
         private readonly System.Collections.Generic.List<UnityEngine.UI.Button> _heroButtons = new();
         private TMP_Text _standardLabel;
@@ -128,8 +130,8 @@ namespace Core.BarracksSystem
             if (EventSystem.current == null || _standardChoice == null) return;
             GameObject selection = _standardChoice.gameObject;
             if (heroRoster != null && _previewHero != null)
-                for (int i = 0; i < heroRoster.Count && i < _heroButtons.Count; i++)
-                    if (heroRoster.Heroes[i] == _previewHero) { selection = _heroButtons[i].gameObject; break; }
+                for (int i = 0; i < _displayHeroes.Length && i < _heroButtons.Count; i++)
+                    if (_displayHeroes[i] == _previewHero) { selection = _heroButtons[i].gameObject; break; }
             EventSystem.current.SetSelectedGameObject(selection);
         }
 
@@ -166,14 +168,15 @@ namespace Core.BarracksSystem
             if (_summaryLabel != null) _summaryLabel.text = summary;
             if (_heroesSummary != null) _heroesSummary.text = name;
             if (_standardLabel != null) _standardLabel.text = "Sans héros\nCaserne standard";
-            int count = heroRoster != null ? heroRoster.Count : 0;
+            _displayHeroes = heroRoster != null ? heroRoster.OrderedHeroes.ToArray() : System.Array.Empty<heros>();
+            int count = _displayHeroes.Length;
             if (_emptyHeroesLabel != null) _emptyHeroesLabel.gameObject.SetActive(count == 0);
             while (_heroRows != null && _heroLabels.Count < count)
             {
                 int index = _heroLabels.Count;
                 var choice = NewButton(_heroRows, "Héros", () =>
                 {
-                    if (heroRoster != null && index < heroRoster.Count) SelectHero(heroRoster.Heroes[index]);
+                    if (index < _displayHeroes.Length) SelectHero(_displayHeroes[index]);
                 }, fontSize: 24);
                 choice.name = "AssignHeroButton" + index;
                 Layout(choice.gameObject, height: 80);
@@ -184,12 +187,12 @@ namespace Core.BarracksSystem
             {
                 _heroButtons[i].gameObject.SetActive(i < count);
                 if (i >= count) continue;
-                var candidate = heroRoster.Heroes[i];
-                bool available = candidate != null && candidate.isActiveAndEnabled &&
+                var candidate = _displayHeroes[i];
+                bool available = candidate != null && candidate.isActiveAndEnabled && (!candidate.IsOnExpedition || candidate.IsExpeditionPending) &&
                     (candidate.AssignedBarracks == null || candidate.AssignedBarracks == _owner);
                 _heroButtons[i].interactable = available;
                 _heroLabels[i].text = candidate != null
-                    ? $"{candidate.HeroName}\n{candidate.ClasseName} · Niveau {candidate.Level}" + (available ? "" : " · Indisponible")
+                    ? $"{candidate.HeroName}\n{candidate.ClasseName} · Niveau {candidate.Level}" + (candidate.IsExpeditionPending ? " · Expédition annulable" : candidate.IsOnExpedition ? " · En expédition" : candidate.AssignedBarracks != null ? " · Affecté à une caserne" : available ? "" : " · Indisponible")
                     : "Héros indisponible";
                 _heroButtons[i].GetComponent<Core.PauseMenu.PauseButton>().SetActive(candidate == _previewHero);
             }
@@ -202,13 +205,13 @@ namespace Core.BarracksSystem
             {
                 string target = _previewHero != null ? $"{_previewHero.HeroName} · Niveau {_previewHero.Level}" : "Sans héros · Caserne standard";
                 _heroPreview.Refresh(_owner, _owner.CurrentLevel, _previewHero, $"Caserne niveau {_owner.CurrentLevel}\nPrévisualisation : {target}");
-                bool valid = _previewHero == null || (_previewHero.isActiveAndEnabled &&
+                bool valid = _previewHero == null || (_previewHero.isActiveAndEnabled && (!_previewHero.IsOnExpedition || _previewHero.IsExpeditionPending) &&
                     (_previewHero.AssignedBarracks == null || _previewHero.AssignedBarracks == _owner));
                 _applyHeroButton.interactable = valid && _previewHero != _owner.AssignedHero;
                 _applyHeroGroup.alpha = _applyHeroButton.interactable ? 1f : .45f;
                 _applyHeroLabel.text = _previewHero == _owner.AssignedHero
                     ? _previewHero == null ? "Déjà sans héros" : "Déjà affecté"
-                    : _previewHero == null ? "Retirer le héros" : "Affecter ce héros";
+                    : _previewHero == null ? "Retirer le héros" : _previewHero.IsExpeditionPending ? "Annuler l’expédition et affecter" : "Affecter ce héros";
                 if (_standardChoice != null) _standardChoice.SetActive(_previewHero == null);
             }
         }
@@ -338,7 +341,7 @@ namespace Core.BarracksSystem
             _applyHeroButton = apply.GetComponent<UnityEngine.UI.Button>();
             _applyHeroLabel = apply.Label;
             _applyHeroGroup = apply.gameObject.AddComponent<CanvasGroup>();
-            Anchor((RectTransform)apply.transform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(390, -335), new Vector2(400, 60));
+            Anchor((RectTransform)apply.transform, new Vector2(.5f, .5f), new Vector2(.5f, .5f), new Vector2(390, -335), new Vector2(650, 60));
             string key = heroRoster != null ? heroRoster.DebugRecruitKey.ToString() : "F8";
             _emptyHeroesLabel = NewText("NoRecruitedHeroes", _heroRows, $"Aucun héros recruté.\n{key} : recrutement aléatoire (debug).", 24, TextMuted, TextAlignmentOptions.Center);
             Layout(_emptyHeroesLabel.gameObject, height: 110);

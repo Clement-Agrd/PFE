@@ -1,51 +1,59 @@
 using System.Collections.Generic;
 using System.Linq;
 using Core;
-using Core.InventorySystem;
+using Core.BarracksSystem;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Core.Village.Exploration.UI
 {
-    /// <summary>
-    /// Panneau du poste d'expédition : liste les missions disponibles (avec un
-    /// bouton par héros dispo pour les lancer) et les missions en cours / butins
-    /// en attente. Toutes les lignes sont générées par code (pas de prefab de
-    /// ligne à maintenir) — voir README de VillageSystem/Exploration.
-    /// Ouvrable soit en cliquant le bâtiment en vue village, soit via un trigger
-    /// [E] dans le monde (<see cref="ExplorationPostTrigger"/>).
-    /// </summary>
     public sealed class ExplorationPanelUI : MonoBehaviour
     {
-        [Header("Données")]
         [SerializeField] private ExplorationManager manager;
         [SerializeField] private VillageViewController villageView;
-        [Tooltip("Optionnel : si assigné, seul un clic sur CE bâtiment ouvre ce panneau en vue village.")]
         [SerializeField] private Building explorationBuilding;
-
-        [Header("UI")]
         [SerializeField] private GameObject panel;
         [SerializeField] private Button closeButton;
         [SerializeField] private Transform availableMissionsParent;
         [SerializeField] private Transform activeMissionsParent;
-
-        [Header("Style")]
+        [SerializeField, HideInInspector] private TMP_Dropdown heroDropdown;
+        [SerializeField] private Transform heroesParent;
+        [SerializeField] private TMP_Text heroesSummary;
+        [SerializeField] private Button forestTab;
+        [SerializeField] private Button mountainTab;
+        [SerializeField] private Button selectAllButton;
+        [SerializeField] private Button clearSelectionButton;
+        private readonly HashSet<heros> _selectedHeroes = new();
+        private readonly Dictionary<heros, Core.PauseMenu.PauseButton> _heroChoices = new();
+        private ExplorationZone _zone = ExplorationZone.Foret;
+        private bool _sending;
+        [SerializeField] private TMP_Text titleLabel;
+        [SerializeField] private Button upgradeButton;
+        [SerializeField] private Core.Village.UI.BuildingPanelUI upgradePanel;
         [SerializeField] private Color titleColor = Color.white;
-        [SerializeField] private Color mutedColor = new(1f, 1f, 1f, 0.65f);
-        [SerializeField] private Color availableColor = new(0.45f, 0.85f, 0.45f);
-        [SerializeField] private Color unavailableColor = new(0.5f, 0.5f, 0.5f);
-        [SerializeField] private Color failColor = new(0.95f, 0.4f, 0.35f);
-
+        [SerializeField] private Color mutedColor = new(1f, 1f, 1f, .65f);
+        [SerializeField] private Color availableColor = new(.45f, .85f, .45f);
+        [SerializeField] private Color unavailableColor = new(.5f, .5f, .5f);
+        [SerializeField] private Color failColor = new(.95f, .4f, .35f);
         private readonly List<GameObject> _spawnedRows = new();
-
+        private int _openedFrame = -1;
+        private string _feedback = "";
         public bool IsShown => panel != null && panel.activeSelf;
 
         private void Awake()
         {
             if (closeButton != null) closeButton.onClick.AddListener(Hide);
+            if (upgradeButton != null) upgradeButton.onClick.AddListener(OpenUpgrade);
+            if (forestTab != null) forestTab.onClick.AddListener(() => SelectZone(ExplorationZone.Foret));
+            if (mountainTab != null) mountainTab.onClick.AddListener(() => SelectZone(ExplorationZone.Montagne));
+            if (selectAllButton != null) selectAllButton.onClick.AddListener(() =>
+            {
+                foreach (var hero in manager.HeroRoster.Where(manager.IsHeroAvailable)) _selectedHeroes.Add(hero);
+                Refresh();
+            });
+            if (clearSelectionButton != null) clearSelectionButton.onClick.AddListener(() => { _selectedHeroes.Clear(); Refresh(); });
         }
-
         private void OnEnable()
         {
             if (villageView != null)
@@ -55,7 +63,6 @@ namespace Core.Village.Exploration.UI
             }
             if (manager != null) manager.OnStateChanged += HandleStateChanged;
         }
-
         private void OnDisable()
         {
             if (villageView != null)
@@ -64,121 +71,174 @@ namespace Core.Village.Exploration.UI
                 villageView.OnExitedVillageView -= Hide;
             }
             if (manager != null) manager.OnStateChanged -= HandleStateChanged;
+            GameFreeze.ReleasePause(this);
+            GameFreeze.ReleaseCursorUnlock(this);
         }
-
         private void Start() => HideImmediate();
-
         private void HandleBuildingClicked(Building building)
-        {
-            if (explorationBuilding != null && building == explorationBuilding) Show();
-        }
-
-        private void HandleStateChanged()
-        {
-            if (panel != null && panel.activeSelf) Refresh();
-        }
-
-        private int _openedFrame = -1;
-
-        private void Update()
-        {
-            if (IsShown && UiCloseKeys.Pressed(_openedFrame)) Hide();
-        }
-
+        { if (explorationBuilding != null && building == explorationBuilding) Show(); }
+        private void HandleStateChanged() { if (IsShown && !_sending) Refresh(); }
+        private void Update() { if (IsShown && UiCloseKeys.Pressed(_openedFrame)) Hide(); }
         public void Show()
         {
             if (!IsShown) _openedFrame = Time.frameCount;
             if (panel != null) panel.SetActive(true);
-
-            bool alreadyInVillageView = villageView != null && villageView.IsInVillageView;
-            if (!alreadyInVillageView)
-            {
-                GameFreeze.RequestPause(this);
-                GameFreeze.RequestCursorUnlock(this);
-            }
-
+            if (villageView == null || !villageView.IsInVillageView)
+            { GameFreeze.RequestPause(this); GameFreeze.RequestCursorUnlock(this); }
             Refresh();
         }
-
+        public void OpenUpgrade()
+        {
+            if (upgradePanel == null || explorationBuilding == null) return;
+            HideImmediate();
+            upgradePanel.ShowStandalone(explorationBuilding);
+        }
         public void Hide() => HideImmediate();
-
         private void HideImmediate()
         {
             if (panel != null) panel.SetActive(false);
-
-            // No-op if this panel never held a request (e.g. shown while already
-            // in village view), since the requester sets are keyed by owner.
-            GameFreeze.ReleasePause(this);
-            GameFreeze.ReleaseCursorUnlock(this);
+            GameFreeze.ReleasePause(this); GameFreeze.ReleaseCursorUnlock(this);
         }
-
+        private void SelectZone(ExplorationZone zone)
+        {
+            _zone = zone;
+            Refresh();
+            var scroll = availableMissionsParent.GetComponentInParent<UnityEngine.UI.ScrollRect>();
+            if (scroll != null) scroll.verticalNormalizedPosition = 1;
+        }
+        private void RefreshHeroes()
+        {
+            _selectedHeroes.RemoveWhere(h => !manager.IsHeroAvailable(h));
+            var heroes = manager.HeroRoster;
+            int available = heroes.Count(manager.IsHeroAvailable);
+            int unassigned = heroes.Count(h => !h.HasAssignment);
+            if (heroesSummary != null) heroesSummary.text = $"HÉROS · {unassigned} libre(s) · {heroes.Count - unassigned} affecté(s)\n{_selectedHeroes.Count} sélectionné(s)";
+            if (selectAllButton != null) selectAllButton.interactable = available > 0;
+            if (clearSelectionButton != null) clearSelectionButton.interactable = _selectedHeroes.Count > 0;
+            if (heroesParent == null) return;
+            foreach (var removed in _heroChoices.Keys.Where(h => h == null || !heroes.Contains(h)).ToArray())
+            {
+                if (_heroChoices[removed] != null) Destroy(_heroChoices[removed].gameObject);
+                _heroChoices.Remove(removed);
+            }
+            if (heroes.Count == 0)
+            {
+                var empty = CreateVerticalGroup(heroesParent, "NoAvailableHeroes", 8);
+                _spawnedRows.Add(empty);
+                CreateText(empty.transform, "Aucun héros recruté.\nF8 : recruter un héros (debug).", mutedColor, 23, FontStyles.Normal);
+            }
+            int index = 0;
+            foreach (var hero in heroes)
+            {
+                bool selectable = manager.IsHeroAvailable(hero);
+                bool cancellable = manager.CanCancelMission(hero);
+                if (!_heroChoices.TryGetValue(hero, out var choice) || choice == null)
+                {
+                    choice = Core.PauseMenu.PauseUiKit.NewButton(heroesParent, "", () => ClickHero(hero), fontSize: 22);
+                    choice.name = "SelectHero_" + hero.GetEntityId();
+                    Core.PauseMenu.PauseUiKit.Layout(choice.gameObject, height: 116);
+                    choice.Label.textWrappingMode = TextWrappingModes.Normal;
+                    choice.gameObject.AddComponent<CanvasGroup>();
+                    _heroChoices[hero] = choice;
+                }
+                choice.transform.SetSiblingIndex(index++);
+                string status = hero.IsOnExpedition
+                    ? (cancellable ? $"Départ en attente : {hero.ExpeditionName} · Cliquer pour annuler" : $"En expédition : {hero.ExpeditionName}")
+                    : hero.AssignedBarracks != null ? "Affecté à une caserne"
+                    : selectable ? "Disponible" : manager.GetHeroUnavailableReason(hero);
+                choice.Label.text = $"{hero.HeroName} · {hero.ClasseName} · Nv {hero.Level}\n{status}";
+                choice.SetActive(_selectedHeroes.Contains(hero));
+                choice.GetComponent<UnityEngine.UI.Button>().interactable = selectable || cancellable;
+                choice.GetComponent<CanvasGroup>().alpha = selectable || cancellable ? 1f : .5f;
+            }
+        }
+        private void ClickHero(heros hero)
+        {
+            if (manager.CanCancelMission(hero))
+            {
+                manager.TryCancelMission(hero);
+                _feedback = $"Expédition de {hero.HeroName} annulée.";
+            }
+            else if (manager.IsHeroAvailable(hero))
+            {
+                if (!_selectedHeroes.Add(hero)) _selectedHeroes.Remove(hero);
+                _feedback = "";
+            }
+            Refresh();
+        }
         private void Refresh()
         {
-            foreach (GameObject row in _spawnedRows) Destroy(row);
+            foreach (var row in _spawnedRows) { row.SetActive(false); Destroy(row); }
             _spawnedRows.Clear();
-
             if (manager == null) return;
-
-            foreach (ExplorationMissionDefinition mission in manager.AvailableMissions)
-                BuildAvailableRow(mission);
-
-            foreach (var (hero, mission, cyclesRemaining) in manager.GetActiveMissions())
-                BuildActiveRow($"{hero.DisplayName} ({hero.Class}) → {mission.DisplayName}",
-                    $"{cyclesRemaining} cycle(s) restant(s)", mutedColor);
-
-            foreach (var (hero, mission, success) in manager.GetPendingRewards())
-                BuildActiveRow($"{hero.DisplayName} ({hero.Class}) → {mission.DisplayName}",
-                    success ? "De retour — butin à la prochaine défense" : "Blessé — butin perdu",
-                    success ? availableColor : failColor);
+            RefreshHeroes();
+            if (forestTab != null) forestTab.GetComponent<UnityEngine.UI.Image>().color = _zone == ExplorationZone.Foret ? new Color(.43f,.35f,.14f,1) : new Color(.18f,.19f,.22f,1);
+            if (mountainTab != null) mountainTab.GetComponent<UnityEngine.UI.Image>().color = _zone == ExplorationZone.Montagne ? new Color(.43f,.35f,.14f,1) : new Color(.18f,.19f,.22f,1);
+            if (titleLabel != null) titleLabel.text = $"Centre d'expédition · Niveau {manager.BuildingLevel} / 3";
+            if (upgradeButton != null) upgradeButton.interactable = upgradePanel != null && explorationBuilding != null;
+            var warning = CreateVerticalGroup(availableMissionsParent, "DepartureWarning", 4);
+            _spawnedRows.Add(warning);
+            CreateText(warning.transform, "Affectations annulables jusqu’au début de la défense. Les héros partent à son lancement et reviennent à sa fin.", mutedColor, 20, FontStyles.Normal);
+            CreateText(warning.transform, $"Échec : {Mathf.RoundToInt(manager.FailedLootFactor * 100)} % du butin. Échec critique : perte définitive du héros.", failColor, 20, FontStyles.Bold);
+            if (_feedback.Length > 0) CreateText(warning.transform, _feedback, titleColor, 20, FontStyles.Italic);
+            foreach (var mission in manager.AllMissions) if (mission != null && mission.Zone == _zone) BuildAvailableRow(mission);
+            foreach (var (hero, mission, cycles) in manager.GetActiveMissions())
+                BuildActiveRow($"{hero.HeroName} · Nv {hero.Level} → {mission.DisplayName}", manager.CanCancelMission(hero) ? "Départ en attente · Annulable dans la liste de droite" : $"En expédition · {cycles} défense(s) restante(s)", mutedColor);
+            foreach (var result in manager.RecentResults)
+            {
+                string loot = result.Loot.Count > 0 ? " · " + string.Join(", ", result.Loot.Select(l => $"{l.amount} {l.item.DisplayName}")) : "";
+                string pending = result.PendingLoot.Count > 0 ? " · Stockage plein : butin en attente" : "";
+                BuildActiveRow($"{result.HeroName} → {result.Mission.DisplayName}", result.Status + loot + pending,
+                    result.Outcome == ExpeditionOutcome.Success ? availableColor : failColor);
+            }
         }
-
         private void BuildAvailableRow(ExplorationMissionDefinition mission)
         {
-            if (availableMissionsParent == null) return;
-
-            GameObject row = CreateVerticalGroup(availableMissionsParent, "Row_" + mission.DisplayName, 10f);
+            var row = CreateVerticalGroup(availableMissionsParent, "Mission_" + mission.Zone + "_" + mission.ZoneLevel, 8);
             _spawnedRows.Add(row);
-
-            var background = row.AddComponent<Image>();
-            background.color = new Color(1f, 1f, 1f, 0.05f);
+            row.AddComponent<Image>().color = new Color(1, 1, 1, .05f);
             row.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(24, 24, 18, 18);
-
-            CreateText(row.transform, $"{mission.DisplayName} — {mission.Zone} — {mission.DurationCycles} cycle(s) — Risque {mission.BaseRisk}",
-                titleColor, 26f, FontStyles.Bold);
-            CreateText(row.transform, "Récompenses potentielles :", new Color(0.95f, 0.78f, 0.35f), 19f, FontStyles.Bold);
-            CreateText(row.transform, DescribeLoot(mission), mutedColor, 19f, FontStyles.Normal);
-
-            GameObject heroRow = CreateHorizontalGroup(row.transform, "Heroes", 12f);
-
-            if (manager.HeroRoster.Count == 0)
+            bool unlocked = manager.IsMissionUnlocked(mission);
+            CreateText(row.transform, mission.DisplayName, unlocked ? titleColor : unavailableColor, 26, FontStyles.Bold);
+            CreateText(row.transform, DescribeLoot(mission), mutedColor, 19, FontStyles.Normal);
+            string reason = !unlocked ? $"Centre niveau {mission.ZoneLevel} requis"
+                : _selectedHeroes.Count == 0 ? "Sélectionne des héros à droite" : "";
+            foreach (var hero in manager.HeroRoster.Where(h => _selectedHeroes.Contains(h)))
             {
-                CreateText(heroRow.transform, "Aucun héros dans le roster.", mutedColor, 16f, FontStyles.Italic);
-                return;
+                var odds = manager.GetOdds(mission, hero);
+                CreateText(row.transform, $"{hero.HeroName} · Réussite {Mathf.RoundToInt(odds.Success * 100)} % · Échec {Mathf.RoundToInt(odds.Failure * 100)} % · Perte {Mathf.RoundToInt(odds.Critical * 100)} %",
+                    unlocked ? titleColor : mutedColor, 19, FontStyles.Normal);
             }
-
-            foreach (HeroDefinition hero in manager.HeroRoster)
+            var button = CreateButton(row.transform, reason.Length > 0 ? reason : $"Affecter {_selectedHeroes.Count} héros",
+                reason.Length > 0 ? unavailableColor : availableColor);
+            button.name = "Send_" + mission.Zone + "_" + mission.ZoneLevel;
+            button.GetComponent<UnityEngine.UI.LayoutElement>().preferredHeight = 54;
+            button.interactable = reason.Length == 0;
+            button.onClick.AddListener(() => SendSelected(mission));
+        }
+        private void SendSelected(ExplorationMissionDefinition mission)
+        {
+            var heroes = manager.HeroRoster.Where(h => _selectedHeroes.Contains(h)).ToArray();
+            int sent = 0;
+            string failure = "";
+            _sending = true;
+            try
             {
-                bool available = manager.IsHeroAvailable(hero);
-                Button button = CreateButton(heroRow.transform, $"{hero.DisplayName}\n({hero.Class})",
-                    available ? availableColor : unavailableColor);
-                button.interactable = available;
-                button.onClick.AddListener(() =>
-                {
-                    manager.TryStartMission(mission, hero, out _);
-                    Refresh();
-                });
+                foreach (var hero in heroes)
+                    if (manager.TryStartMission(mission, hero, out var reason)) sent++;
+                    else failure = reason;
             }
+            finally { _sending = false; }
+            _feedback = $"{sent} héros affecté(s) · Départ à la prochaine défense." + (failure.Length > 0 ? " " + failure : "");
+            Refresh();
         }
 
-        private void BuildActiveRow(string title, string status, Color statusColor)
+        private void BuildActiveRow(string title, string status, Color color)
         {
-            if (activeMissionsParent == null) return;
-
-            GameObject row = CreateVerticalGroup(activeMissionsParent, "Active_" + title, 2f);
+            var row = CreateVerticalGroup(activeMissionsParent, "ExpeditionStatus", 4);
             _spawnedRows.Add(row);
-
-            CreateText(row.transform, title, titleColor, 18f, FontStyles.Normal);
-            CreateText(row.transform, status, statusColor, 15f, FontStyles.Italic);
+            CreateText(row.transform, title, titleColor, 21, FontStyles.Bold);
+            CreateText(row.transform, status, color, 19, FontStyles.Normal);
         }
 
         private static string DescribeLoot(ExplorationMissionDefinition mission)
@@ -246,10 +306,11 @@ namespace Core.Village.Exploration.UI
             tmp.color = color;
             tmp.fontSize = size;
             tmp.fontStyle = style;
+            tmp.raycastTarget = false;
             tmp.textWrappingMode = TextWrappingModes.Normal;
 
             var layoutElement = go.AddComponent<LayoutElement>();
-            layoutElement.preferredWidth = 900f;
+            layoutElement.minWidth = 0;
             layoutElement.flexibleWidth = 1f;
 
             return tmp;
@@ -261,7 +322,7 @@ namespace Core.Village.Exploration.UI
             go.transform.SetParent(parent, false);
 
             var image = go.GetComponent<Image>();
-            image.color = new Color(tint.r, tint.g, tint.b, 0.25f);
+            image.color = new Color(tint.r * .4f, tint.g * .4f, tint.b * .4f, 1f);
 
             var layoutElement = go.GetComponent<LayoutElement>();
             layoutElement.preferredWidth = 160f;
@@ -277,9 +338,10 @@ namespace Core.Village.Exploration.UI
 
             var tmp = textGo.AddComponent<TextMeshProUGUI>();
             tmp.text = label;
-            tmp.color = tint;
-            tmp.fontSize = 17f;
+            tmp.color = Color.white;
+            tmp.fontSize = 22f;
             tmp.alignment = TextAlignmentOptions.Center;
+            tmp.raycastTarget = false;
 
             return go.GetComponent<Button>();
         }

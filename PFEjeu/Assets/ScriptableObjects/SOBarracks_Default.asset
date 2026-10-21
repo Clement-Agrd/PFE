@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: SOBarracks_Default
   m_EditorClassIdentifier: Assembly-CSharp::Core.BarracksSystem.SOBarracks
   barracksName: Caserne
-  soldierPrefab: {fileID: 3201000000000000001, guid: d75d64bdbd7a4c50a7a5cc24cbaf3265, type: 3}
+  soldierPrefab: {fileID: 7582639430425303973, guid: a878a0ed70b17354fad1689bb1ef27f9, type: 3}
   flagPrefab: {fileID: 100100000, guid: 13a3b24c4edb49dc8dd4e5c6463e7d11, type: 3}
   flagPreviewPrefab: {fileID: 100100000, guid: 9955d65aa9b04eef85338309a4c2f351, type: 3}
   flagPlacementRange: 12

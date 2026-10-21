@@ -20,6 +20,12 @@ namespace Core.BarracksSystem
         public ClasseHeros Classe => classe;
         public int Level => Mathf.Clamp(level, 1, 5);
         public Barracks AssignedBarracks { get; private set; }
+        public Core.Village.Exploration.ExplorationManager AssignedExpedition { get; private set; }
+        public string ExpeditionName { get; private set; }
+        public bool IsOnExpedition => AssignedExpedition != null;
+        public bool IsExpeditionPending => IsOnExpedition && AssignedExpedition.CanCancelMission(this);
+        public bool HasAssignment => AssignedBarracks != null || IsOnExpedition;
+        internal void NotifyExpeditionStateChanged() => Changed?.Invoke();
         public string ClasseName => classe switch
         {
             ClasseHeros.Tank => "Tank",
@@ -33,7 +39,7 @@ namespace Core.BarracksSystem
 
         public void Initialize(string displayName, ClasseHeros heroClass, int heroLevel)
         {
-            if (AssignedBarracks != null) throw new InvalidOperationException("Un héros affecté ne peut pas être réinitialisé.");
+            if (AssignedBarracks != null || IsOnExpedition) throw new InvalidOperationException("Un héros affecté ne peut pas être réinitialisé.");
             heroName = displayName;
             classe = heroClass;
             level = Mathf.Clamp(heroLevel, 1, 5);
@@ -50,7 +56,8 @@ namespace Core.BarracksSystem
 
         internal bool TryClaim(Barracks barracks)
         {
-            if (!isActiveAndEnabled || (AssignedBarracks != null && AssignedBarracks != barracks)) return false;
+            if (barracks == null || !isActiveAndEnabled || (AssignedBarracks != null && AssignedBarracks != barracks)) return false;
+            if (IsOnExpedition && !AssignedExpedition.TryCancelMission(this)) return false;
             if (AssignedBarracks != barracks)
             {
                 AssignedBarracks = barracks;
@@ -68,9 +75,28 @@ namespace Core.BarracksSystem
             }
         }
 
+        internal bool TryClaimExpedition(Core.Village.Exploration.ExplorationManager owner, string missionName)
+        {
+            if (owner == null || !isActiveAndEnabled || IsOnExpedition) return false;
+            AssignedExpedition = owner;
+            ExpeditionName = missionName;
+            if (AssignedBarracks != null) AssignedBarracks.AssignHero(null);
+            Changed?.Invoke();
+            return true;
+        }
+
+        internal void ReleaseExpedition(Core.Village.Exploration.ExplorationManager owner)
+        {
+            if (AssignedExpedition != owner) return;
+            AssignedExpedition = null;
+            ExpeditionName = null;
+            Changed?.Invoke();
+        }
+
         private void OnDisable()
         {
             if (AssignedBarracks != null) AssignedBarracks.AssignHero(null);
+            if (AssignedExpedition != null) AssignedExpedition.CancelHero(this);
         }
 
         private void OnDestroy() => Destroyed?.Invoke(this);

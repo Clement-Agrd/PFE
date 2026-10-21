@@ -9,6 +9,7 @@ namespace Core.Village.Exploration
     {
         [field: SerializeField] public string DisplayName { get; private set; } = "Nouvelle mission";
         [field: SerializeField] public ExplorationZone Zone { get; private set; }
+        [field: SerializeField, Range(1, 3)] public int ZoneLevel { get; private set; } = 1;
         [field: SerializeField, Min(1)] public int DurationCycles { get; private set; } = 1;
         [field: SerializeField] public MissionRisk BaseRisk { get; private set; } = MissionRisk.Faible;
         [field: SerializeField] public List<LootEntry> Loot { get; private set; } = new();

@@ -98,7 +98,7 @@ namespace Core.Village.UI
         {
             if (villageView != null)
             {
-                villageView.OnBuildingClicked += Show;
+                villageView.OnBuildingClicked += HandleBuildingClicked;
                 villageView.OnExitedVillageView += Hide;
             }
             if (villageManager != null)
@@ -112,7 +112,7 @@ namespace Core.Village.UI
         {
             if (villageView != null)
             {
-                villageView.OnBuildingClicked -= Show;
+                villageView.OnBuildingClicked -= HandleBuildingClicked;
                 villageView.OnExitedVillageView -= Hide;
             }
             if (villageManager != null)
@@ -153,6 +153,14 @@ namespace Core.Village.UI
             _ownsFreeze = false;
             GameFreeze.ReleasePause(this);
             GameFreeze.ReleaseCursorUnlock(this);
+        }
+
+        private void HandleBuildingClicked(Building building)
+        {
+            // Ces services proposent leur propre bouton d'amélioration.
+            if (building != null && (building.GetComponent<Core.TavernSystem.Tavern>() != null ||
+                building.GetComponent<Core.Village.Exploration.ExplorationPostTrigger>() != null)) return;
+            Show(building);
         }
 
         public void Show(Building building)
