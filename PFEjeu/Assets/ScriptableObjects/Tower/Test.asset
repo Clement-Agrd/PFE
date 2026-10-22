@@ -15,7 +15,7 @@ MonoBehaviour:
   towerName: Test
   detectionRange: 9
   towerType: 0
-  targetCondition1: 0
+  targetCondition1: 5
   targetCondition2: 0
   targetDistance: 0
   projectileType: 0
