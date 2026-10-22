@@ -55,9 +55,7 @@ namespace Core.TowerDefense
 
             _owner.PathFollower
                 .SetDestinationSafe(
-                    _owner.Target
-                        .transform
-                        .position
+                    _owner.GetCombatTargetPosition(_owner.Target)
                 );
         }
 

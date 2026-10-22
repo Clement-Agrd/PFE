@@ -47,6 +47,8 @@ namespace Core.Village.Exploration
         private bool _defenseInProgress;
         private readonly List<ActiveMission> _active = new();
         private readonly List<ExpeditionResult> _results = new();
+        private readonly List<ExpeditionResult> _lastDefenseResults = new();
+        public IReadOnlyList<ExpeditionResult> LastDefenseResults => _lastDefenseResults;
         private readonly Dictionary<heros, int> _wounded = new();
         public float FailedLootFactor => failedLootFactor;
         public int BuildingLevel => expeditionBuilding != null ? expeditionBuilding.CurrentLevel : 0;
@@ -63,7 +65,7 @@ namespace Core.Village.Exploration
             {
                 _defenseInProgress = waveSpawner.IsWaveActive;
                 waveSpawner.OnWaveStarted += HandleDefenseStarted;
-                waveSpawner.OnAllWavesCompleted += AdvanceCycle;
+                waveSpawner.OnDefenseCompleted += AdvanceCycle;
             }
             if (recruitedHeroes != null) recruitedHeroes.Changed += HandleRosterChanged;
             if (expeditionBuilding != null) expeditionBuilding.OnLevelChanged += HandleLevelChanged;
@@ -73,7 +75,7 @@ namespace Core.Village.Exploration
             if (waveSpawner != null)
             {
                 waveSpawner.OnWaveStarted -= HandleDefenseStarted;
-                waveSpawner.OnAllWavesCompleted -= AdvanceCycle;
+                waveSpawner.OnDefenseCompleted -= AdvanceCycle;
             }
             if (recruitedHeroes != null) recruitedHeroes.Changed -= HandleRosterChanged;
             if (expeditionBuilding != null) expeditionBuilding.OnLevelChanged -= HandleLevelChanged;
@@ -170,6 +172,7 @@ namespace Core.Village.Exploration
         private void AdvanceCycle()
         {
             _defenseInProgress = false;
+            _lastDefenseResults.Clear();
             var storage = villageManager != null ? villageManager.HdvInventory : null;
             if (storage == null) return;
             foreach (var result in _results) Deliver(result, storage);
@@ -184,6 +187,7 @@ namespace Core.Village.Exploration
                 entry.Hero.ReleaseExpedition(this);
                 if (result.Outcome == ExpeditionOutcome.CriticalFailure) recruitedHeroes.RemoveHero(entry.Hero);
                 _results.Insert(0, result);
+                _lastDefenseResults.Add(result);
                 Deliver(result, storage);
             }
             // Keep undelivered loot even when the visible history is trimmed.

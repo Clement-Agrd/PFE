@@ -35,6 +35,8 @@ namespace Core.TowerDefense
         // PATH
         // ============================================================
 
+        [SerializeField] private Core.HealthSystem.Health defenseObjective;
+        [SerializeField] private Collider objectiveCollider;
         [Header("Chemin de secours")]
 
         [Tooltip(
@@ -192,10 +194,8 @@ namespace Core.TowerDefense
                     );
                 }
 
-                controller.Initialize(
-                    wallet,
-                    playerInventory
-                );
+                controller.Initialize(wallet, playerInventory);
+                controller.SetDefenseObjective(defenseObjective, objectiveCollider);
 
                 return;
             }

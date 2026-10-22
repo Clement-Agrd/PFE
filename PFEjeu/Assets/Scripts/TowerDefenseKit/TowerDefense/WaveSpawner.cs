@@ -29,6 +29,11 @@ namespace Core.WaveSystem
         private WaveSetDefinition waveSet;
 
 
+        [Tooltip("Retour au village après chaque vague, y compris en boucle infinie.")]
+        [SerializeField] private bool villageBetweenWaves;
+        public bool IsDefeated { get; private set; }
+        public event Action OnDefenseCompleted;
+
         [Header("Pooling")]
 
         [Tooltip(
@@ -106,13 +111,13 @@ namespace Core.WaveSystem
 
 
         public bool CanStartWave =>
-            !_isWaveActive &&
+            isActiveAndEnabled && !IsDefeated && !_isWaveActive &&
             HasMoreWaves;
 
 
         /// <summary>Vrai si une vague personnalisée peut démarrer (aucune en cours).</summary>
         public bool CanStartCustomWave =>
-            !_isWaveActive;
+            isActiveAndEnabled && !IsDefeated && !_isWaveActive;
 
 
         public int NextWaveNumber =>
@@ -244,7 +249,7 @@ namespace Core.WaveSystem
         public bool StartCustomWave(
             IReadOnlyList<SpawnEntry> entries)
         {
-            if (_isWaveActive ||
+            if (!CanStartCustomWave ||
                 entries == null ||
                 entries.Count == 0)
             {
@@ -263,6 +268,12 @@ namespace Core.WaveSystem
         /// <summary>
         /// Stoppe la vague en cours et retire tous les ennemis encore vivants.
         /// </summary>
+        public void FailDefense()
+        {
+            if (IsDefeated) return;
+            IsDefeated = true;
+            DismissAll();
+        }
         public void DismissAll()
         {
             StopAllCoroutines();
@@ -386,9 +397,7 @@ namespace Core.WaveSystem
 
 
             // Attend que tous les ennemis soient :
-            // - morts
-            // OU
-            // - arrivés au bout de leur spline.
+            // - morts (les ennemis affectés à une herse continuent à la combattre).
             while (_aliveCount > 0)
             {
                 yield return null;
@@ -418,8 +427,8 @@ namespace Core.WaveSystem
                         false;
 
 
-                    OnAllWavesCompleted
-                        ?.Invoke();
+                    OnAllWavesCompleted?.Invoke();
+                    OnDefenseCompleted?.Invoke();
 
 
                     yield break;
@@ -427,8 +436,8 @@ namespace Core.WaveSystem
             }
 
 
-            _isWaveActive =
-                false;
+            _isWaveActive = false;
+            if (villageBetweenWaves) OnDefenseCompleted?.Invoke();
         }
 
 

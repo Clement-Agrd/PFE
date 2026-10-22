@@ -398,8 +398,9 @@ namespace Core.Village.UI
             var order = new List<ItemDefinition>();
             var now = new Dictionary<ItemDefinition, float>();
             var later = new Dictionary<ItemDefinition, float>();
-            Accumulate(current, now, order);
-            Accumulate(next, later, order);
+            bool perDefense = _current != null && _current.TryGetComponent<ResourceProducer>(out var producer) && producer.ProducesPerDefense;
+            Accumulate(current, now, order, perDefense);
+            Accumulate(next, later, order, perDefense);
 
             if (productionSection != null) productionSection.SetActive(order.Count > 0);
             if (order.Count == 0 || productionRowsParent == null || productionRowPrefab == null) return;
@@ -410,11 +411,11 @@ namespace Core.Village.UI
                 ItemDefinition item = order[i];
                 float perMinute = now.TryGetValue(item, out float a) ? a : 0f;
                 float nextPerMinute = next == null ? -1f : (later.TryGetValue(item, out float b) ? b : 0f);
-                _productionRows[i].Set(item, perMinute, nextPerMinute);
+                _productionRows[i].Set(item, perMinute, nextPerMinute, perDefense ? "/vague" : "/min");
             }
         }
 
-        private static void Accumulate(BuildingLevelData data, Dictionary<ItemDefinition, float> perMinute, List<ItemDefinition> order)
+        private static void Accumulate(BuildingLevelData data, Dictionary<ItemDefinition, float> perMinute, List<ItemDefinition> order, bool perDefense)
         {
             if (data == null || data.productions == null) return;
             foreach (ProductionEntry entry in data.productions)
@@ -422,7 +423,7 @@ namespace Core.Village.UI
                 if (entry.item == null || entry.amount <= 0 || entry.interval <= 0f) continue;
                 if (!order.Contains(entry.item)) order.Add(entry.item);
                 perMinute.TryGetValue(entry.item, out float value);
-                perMinute[entry.item] = value + entry.amount * 60f / entry.interval;
+                perMinute[entry.item] = value + (perDefense ? entry.amount : entry.amount * 60f / entry.interval);
             }
         }
 

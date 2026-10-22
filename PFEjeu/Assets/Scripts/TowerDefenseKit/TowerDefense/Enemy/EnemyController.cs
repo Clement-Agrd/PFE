@@ -96,6 +96,14 @@ namespace Core.TowerDefense
         private int _runtimeGoldReward;
         private LootTable _runtimeLoot;
         private bool _finished;
+        private Health _defenseObjective;
+        private Collider _objectiveCollider;
+        private bool _assaultingObjective;
+        public void SetDefenseObjective(Health target, Collider surface)
+        { _defenseObjective = target; _objectiveCollider = surface; _assaultingObjective = false; }
+        public Vector3 GetCombatTargetPosition(Health target)
+            => target != null && target == _defenseObjective && _objectiveCollider != null
+                ? _objectiveCollider.ClosestPoint(transform.position) : target != null ? target.transform.position : transform.position;
 
         private EnemyStateMachine _stateMachine;
         private EnemyFollowPathState _followPathState;
@@ -249,6 +257,9 @@ namespace Core.TowerDefense
             }
 
             _finished = false;
+            _assaultingObjective = false;
+            _defenseObjective = null;
+            _objectiveCollider = null;
             Target = null;
 
             targetSensor?.ResetRuntime();
@@ -458,6 +469,8 @@ namespace Core.TowerDefense
                     deltaTime
                 );
 
+            if (Target == null && _assaultingObjective && _defenseObjective != null && !_defenseObjective.IsDead)
+                Target = _defenseObjective;
             return Target != null;
         }
 
@@ -470,7 +483,7 @@ namespace Core.TowerDefense
             }
 
             return GetPlanarDistanceTo(
-                       Target.transform.position
+                       GetCombatTargetPosition(Target)
                    ) <=
                    attackModule.AttackRange;
         }
@@ -481,8 +494,7 @@ namespace Core.TowerDefense
                 return;
 
             Vector3 direction =
-                Target.transform.position -
-                transform.position;
+                GetCombatTargetPosition(Target) - transform.position;
 
             direction.y = 0f;
 
@@ -596,11 +608,16 @@ namespace Core.TowerDefense
             Defeat();
         }
 
-                internal void FinishPath()
+        internal void FinishPath()
         {
-            if (_finished)
+            if (_finished) return;
+            if (_defenseObjective != null && !_defenseObjective.IsDead)
+            {
+                _assaultingObjective = true;
+                Target = _defenseObjective;
+                ChangeToChase();
                 return;
-
+            }
             _finished = true;
 
             ChangeState(

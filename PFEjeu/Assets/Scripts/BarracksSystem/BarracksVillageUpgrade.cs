@@ -12,6 +12,7 @@ namespace Core.BarracksSystem
         private Barracks _barracks;
         private Building _building;
 
+        public void Configure(BuildingPanelUI panel) => buildingPanel = panel;
         public bool CanOpen => isActiveAndEnabled && buildingPanel != null && _building != null && _building.Definition != null;
 
         private void Awake()

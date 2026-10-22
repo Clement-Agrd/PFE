@@ -81,7 +81,7 @@ namespace Core.TowerDefense
 
             float distance =
                 Owner.GetPlanarDistanceTo(
-                    target.transform.position
+                    Owner.GetCombatTargetPosition(target)
                 );
 
             return distance <=
