@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Core.WaveSystem;
 using Core.Village;
 
@@ -25,22 +25,26 @@ namespace Core.Village
         [Tooltip("Le point où le joueur apparaît pour défendre.")]
         [SerializeField] private Transform defenseSpawnPoint;
 
+        private bool _inDefense;
+        private void HandleDefenseCompleted() => _inDefense = false;
+
         private void OnEnable()
         {
             if (waveSpawner != null)
-                waveSpawner.OnWaveStarted += HandleWaveStarted;
+                { waveSpawner.OnWaveStarted += HandleWaveStarted; waveSpawner.OnDefenseCompleted += HandleDefenseCompleted; }
         }
 
         private void OnDisable()
         {
             if (waveSpawner != null)
-                waveSpawner.OnWaveStarted -= HandleWaveStarted;
+                { waveSpawner.OnWaveStarted -= HandleWaveStarted; waveSpawner.OnDefenseCompleted -= HandleDefenseCompleted; }
         }
 
         private void HandleWaveStarted(int waveNumber)
         {
             // Ne téléporte qu'au début d'une session (première vague du set).
-            if (waveNumber != 1) return;
+            if (_inDefense) return;
+            _inDefense = true;
 
             if (villageView != null && villageView.IsInVillageView)
                 villageView.ExitVillageView();

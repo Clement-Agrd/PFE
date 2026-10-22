@@ -34,10 +34,10 @@ namespace Core.Village.UI
             }
             if (nameLabel != null) nameLabel.text = def.DisplayName;
             if (levelLabel != null) levelLabel.text = def.MaxLevel > 0 ? $"Niveau {level} / {def.MaxLevel}" : $"Niveau {level}";
-            if (productionLabel != null) productionLabel.text = BuildProductionText(def.GetLevelData(level));
+            if (productionLabel != null) productionLabel.text = BuildProductionText(def.GetLevelData(level), building.TryGetComponent<ResourceProducer>(out var producer) && producer.ProducesPerDefense);
         }
 
-        private static string BuildProductionText(BuildingLevelData data)
+        private static string BuildProductionText(BuildingLevelData data, bool perDefense)
         {
             if (data == null || data.productions == null || data.productions.Length == 0) return "Aucune production";
 
@@ -48,7 +48,7 @@ namespace Core.Village.UI
                 if (entry.item == null || entry.amount <= 0 || entry.interval <= 0f) continue;
                 if (!order.Contains(entry.item)) order.Add(entry.item);
                 perMinute.TryGetValue(entry.item, out float value);
-                perMinute[entry.item] = value + entry.amount * 60f / entry.interval;
+                perMinute[entry.item] = value + (perDefense ? entry.amount : entry.amount * 60f / entry.interval);
             }
 
             if (order.Count == 0) return "Aucune production";
@@ -59,7 +59,7 @@ namespace Core.Village.UI
                 if (i > 0) sb.Append("    ");
                 float rate = perMinute[order[i]];
                 string formatted = Mathf.Approximately(rate, Mathf.Round(rate)) ? Mathf.RoundToInt(rate).ToString() : rate.ToString("0.#");
-                sb.Append(order[i].DisplayName).Append(' ').Append(formatted).Append(" /min");
+                sb.Append(order[i].DisplayName).Append(' ').Append(formatted).Append(perDefense ? " /vague" : " /min");
             }
             return sb.ToString();
         }

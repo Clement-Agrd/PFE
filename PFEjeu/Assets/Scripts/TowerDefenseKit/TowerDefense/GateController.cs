@@ -59,7 +59,7 @@ namespace Core.Village
             if (waveSpawner == null) return;
 
             waveSpawner.OnWaveStarted += HandleWaveStarted;
-            waveSpawner.OnAllWavesCompleted += HandleAllWavesCompleted;
+            waveSpawner.OnDefenseCompleted += HandleAllWavesCompleted;
         }
 
         private void OnDisable()
@@ -67,7 +67,7 @@ namespace Core.Village
             if (waveSpawner == null) return;
 
             waveSpawner.OnWaveStarted -= HandleWaveStarted;
-            waveSpawner.OnAllWavesCompleted -= HandleAllWavesCompleted;
+            waveSpawner.OnDefenseCompleted -= HandleAllWavesCompleted;
         }
 
         // Appelé à CHAQUE vague (1, 2, 3...) : sans effet si déjà fermée, donc
@@ -85,7 +85,7 @@ namespace Core.Village
 
             if (gate != null)
                 gate.TweenLocalMove(new Vector3(gate.localPosition.x, closedY, gate.localPosition.z), moveDuration)
-                    .SetEase(ease);
+                    .SetEase(ease).SetUnscaledTime(true);
 
             SetObstacleActive(true);
         }
@@ -98,7 +98,7 @@ namespace Core.Village
 
             if (gate != null)
                 gate.TweenLocalMove(new Vector3(gate.localPosition.x, openY, gate.localPosition.z), moveDuration)
-                    .SetEase(ease);
+                    .SetEase(ease).SetUnscaledTime(true);
 
             SetObstacleActive(false);
         }

@@ -20,7 +20,7 @@ namespace Core.Village.UI
 
         /// <param name="perMinute">Cadence actuelle (≤ 0 = pas encore produit).</param>
         /// <param name="nextPerMinute">Cadence au prochain niveau (&lt; 0 = pas de prochain niveau).</param>
-        public void Set(ItemDefinition item, float perMinute, float nextPerMinute)
+        public void Set(ItemDefinition item, float perMinute, float nextPerMinute, string unit = "/min")
         {
             if (item == null) return;
 
@@ -30,7 +30,7 @@ namespace Core.Village.UI
                 icon.enabled = item.Icon != null;
             }
             if (nameLabel != null) nameLabel.text = item.DisplayName;
-            if (currentLabel != null) currentLabel.text = perMinute > 0f ? $"{Format(perMinute)} /min" : "—";
+            if (currentLabel != null) currentLabel.text = perMinute > 0f ? $"{Format(perMinute)} {unit}" : "—";
 
             if (nextLabel == null) return;
 
@@ -38,7 +38,7 @@ namespace Core.Village.UI
             nextLabel.gameObject.SetActive(changes);
             if (!changes) return;
 
-            nextLabel.text = $"→ {Format(nextPerMinute)} /min";
+            nextLabel.text = $"→ {Format(nextPerMinute)} {unit}";
             nextLabel.color = nextPerMinute > perMinute ? gainColor : lossColor;
         }
 
