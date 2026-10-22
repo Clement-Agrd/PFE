@@ -33,6 +33,8 @@ public class TowerProjectil : MonoBehaviour
     [Header("projectil en cloche datat")]
     [SerializeField] private float arcHeight = 2f;
     [Min(0.01f)][SerializeField] private float travelDuration = 2f;
+    public float TravelDuration => travelDuration;
+    
     private Vector3 startPosition;
     private Vector3 targetPosition;
     private float elapsedTime;

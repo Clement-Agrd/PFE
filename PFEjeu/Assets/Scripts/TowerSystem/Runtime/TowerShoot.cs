@@ -117,7 +117,7 @@ public class TowerShoot : MonoBehaviour
                 Debug.LogWarning($"Pas d'EntityStats sur {enemy.name}", enemy);     // 2, à la place du continue seul
                 continue;
             }
-
+            
             enemyStats.AddModifier(
                 StatType.Speed,
                 slowPower,
@@ -155,6 +155,7 @@ public class TowerShoot : MonoBehaviour
                 false
             );
         }
+        
     }
 
     public void FireBall()
