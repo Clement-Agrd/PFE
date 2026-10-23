@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Core.HealthSystem;
 using Core.PoolingSystem;
 using Core.StatsSystem;
@@ -18,6 +19,9 @@ public class TowerShoot : MonoBehaviour
     [SerializeField] private float zoneImpact = 3f;
     [SerializeField] private int arrowCount = 10;
 
+    List<Collider> enemySlow = new List<Collider>();
+    
+    
     public Transform firePoint => tower.FirePoint;
 
     private void Awake()
@@ -118,13 +122,44 @@ public class TowerShoot : MonoBehaviour
                 continue;
             }
             
-            enemyStats.AddModifier(
-                StatType.Speed,
-                slowPower,
-                StatModifierType.PercentAdditive,
-                this
-            );
+            if (!enemySlow.Contains(enemy))
+            {
+                enemyStats.AddModifier(
+                    StatType.Speed,
+                    slowPower,
+                    StatModifierType.PercentAdditive,
+                    this
+                );
+                
+                enemySlow.Add(enemy);
+            }
             Debug.Log($"Speed de {enemy.name} : {enemyStats.GetStat(StatType.Speed)}");
+        }
+
+        for (int i = enemySlow.Count - 1; i >= 0; i--)
+        {
+            Collider enemy = enemySlow[i];
+
+            // 1. Vérifier si l'ennemi a été détruit
+            if (enemy == null)
+            {
+                enemySlow.RemoveAt(i);
+                continue;
+            }
+
+            // 2. Récupérer ses statistiques
+            EntityStats enemyStats = enemy.GetComponent<EntityStats>();
+
+            // 3. Vérifier si l'ennemi est sorti de portée
+            if (!tower.IATower.AllTargets.Contains(enemy))
+            {
+                if (enemyStats != null)
+                {
+                    enemyStats.RemoveModifiersFromSource(this);
+                }
+
+                enemySlow.RemoveAt(i);
+            }
         }
     }
 
