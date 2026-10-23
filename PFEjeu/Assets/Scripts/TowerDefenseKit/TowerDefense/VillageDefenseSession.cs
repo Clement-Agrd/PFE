@@ -14,6 +14,7 @@ namespace Core.TowerDefense
     public sealed class VillageDefenseSession : MonoBehaviour
     {
         [SerializeField] private WaveSpawner spawner;
+        [SerializeField] private Core.Village.VillageViewController villageView;
         [SerializeField] private Health gateHealth;
         [SerializeField] private ExplorationManager expeditions;
         [SerializeField] private Core.Village.ResourceProducer[] producers;
@@ -65,6 +66,7 @@ namespace Core.TowerDefense
         private void HealthChanged(int current, int maximum) => UpdateHud();
         private void Update()
         {
+            if (_hud != null && villageView != null) _hud.transform.parent.gameObject.SetActive(!villageView.IsInVillageView);
             if (spawner != null && _lastAlive != spawner.AliveCount) UpdateHud();
         }
         private void UpdateHud()

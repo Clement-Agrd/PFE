@@ -9,6 +9,12 @@ namespace Core.BarracksSystem
     [DisallowMultipleComponent]
     public sealed class HeroRoster : MonoBehaviour
     {
+        [SerializeField] private Core.Village.RecruitmentCamp recruitmentCamp;
+        public int MaxHeroes => recruitmentCamp != null ? recruitmentCamp.Capacity : int.MaxValue;
+        public bool HasRecruitmentSpace => Count < MaxHeroes;
+        private void OnEnable(){if(recruitmentCamp!=null)recruitmentCamp.CapacityChanged+=HandleHeroChanged;}
+        private void OnDisable(){if(recruitmentCamp!=null)recruitmentCamp.CapacityChanged-=HandleHeroChanged;}
+
         [Header("Debug — recrutement")]
         [SerializeField] private bool enableDebugRecruitment = true;
         [SerializeField] private Key debugRecruitKey = Key.F8;
@@ -29,12 +35,13 @@ namespace Core.BarracksSystem
         }
 
         public heros RecruitDebugHero()
-            => Recruit((ClasseHeros)UnityEngine.Random.Range(0, 3), UnityEngine.Random.Range(1, 6));
+            => Recruit((ClasseHeros)UnityEngine.Random.Range(0, 3), 1);
 
         public heros Recruit(ClasseHeros classe, int level)
         {
             if ((int)classe < 0 || (int)classe > 2)
                 throw new ArgumentOutOfRangeException(nameof(classe));
+            if (!HasRecruitmentSpace) return null;
             string label = classe == ClasseHeros.Degats ? "Dégâts" : classe.ToString();
             var go = new GameObject($"Héros {label} #{_nextId++}");
             go.transform.SetParent(transform, false);

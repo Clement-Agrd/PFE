@@ -29,15 +29,52 @@ namespace Core.Village
         private Color[] _originalColors;
         private bool _isHighlighted;
         private bool _manualRenderers;
+        private Coroutine _refresh;
+        private Building _building;
 
         private void Awake()
         {
+            _building = GetComponent<Building>();
             _block = new MaterialPropertyBlock();
             _manualRenderers = renderers != null && renderers.Length > 0;
         }
 
+        public void Configure(VillageViewController view)
+        {
+            if (isActiveAndEnabled && villageView != null)
+            {
+                villageView.OnEnteredVillageView -= Show;
+                villageView.OnExitedVillageView -= Hide;
+            }
+            Hide();
+            villageView = view;
+            if (isActiveAndEnabled)
+            {
+                if (villageView != null)
+                {
+                    villageView.OnEnteredVillageView += Show;
+                    villageView.OnExitedVillageView += Hide;
+                }
+                QueueRefresh();
+            }
+        }
+        private void LevelChanged(int _) => QueueRefresh();
+        private void QueueRefresh()
+        {
+            if (_refresh != null) StopCoroutine(_refresh);
+            _refresh = StartCoroutine(RefreshAfterModel());
+        }
+        private System.Collections.IEnumerator RefreshAfterModel()
+        {
+            // Building/Barracks can replace their model in Start or during an upgrade.
+            yield return null;
+            _refresh = null;
+            if (villageView != null && villageView.IsInVillageView) Show();
+        }
         private void OnEnable()
         {
+            if (_building != null) _building.OnLevelChanged += LevelChanged;
+            QueueRefresh();
             if (villageView != null)
             {
                 villageView.OnEnteredVillageView += Show;
@@ -47,6 +84,8 @@ namespace Core.Village
 
         private void OnDisable()
         {
+            if (_building != null) _building.OnLevelChanged -= LevelChanged;
+            if (_refresh != null) { StopCoroutine(_refresh); _refresh = null; }
             if (villageView != null)
             {
                 villageView.OnEnteredVillageView -= Show;
@@ -71,7 +110,7 @@ namespace Core.Village
         public void Hide()
         {
             _isHighlighted = false;
-            if (renderers == null) return;
+            if (renderers == null || _originalColors == null || _block == null) return;
 
             for (int i = 0; i < renderers.Length; i++)
             {
@@ -87,9 +126,7 @@ namespace Core.Village
         // fois qu'on entre en vue village (capte le modèle instancié depuis Building).
         private void RefreshRenderers()
         {
-            if (_manualRenderers) return; // liste fournie à la main : on ne la touche pas
-
-            renderers = GetComponentsInChildren<Renderer>();
+            if (!_manualRenderers) renderers = GetComponentsInChildren<Renderer>();
             _originalColors = new Color[renderers.Length];
 
             for (int i = 0; i < renderers.Length; i++)
@@ -103,7 +140,7 @@ namespace Core.Village
 
         private void ApplyColor(float strength)
         {
-            if (renderers == null) return;
+            if (renderers == null || _originalColors == null || _block == null) return;
             strength = Mathf.Clamp01(strength);
 
             for (int i = 0; i < renderers.Length; i++)

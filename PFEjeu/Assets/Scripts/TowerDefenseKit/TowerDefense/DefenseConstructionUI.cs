@@ -11,6 +11,7 @@ namespace Core.TowerDefense
     public sealed class DefenseConstructionUI : MonoBehaviour
     {
         [SerializeField] private VillageManager village;
+        [SerializeField] private VillageViewController villageView;
         [SerializeField] private WaveSpawner spawner;
         [SerializeField] private DefenseBuildingDefinition[] catalog;
         [SerializeField] private Transform buildingsRoot;
@@ -23,8 +24,8 @@ namespace Core.TowerDefense
         public bool CanBuildNow=>spawner!=null&&!spawner.IsWaveActive&&!spawner.IsDefeated;
         public bool IsOpen=>_canvas!=null&&_canvas.activeSelf;
         public IReadOnlyList<DefenseBuildingDefinition> Catalog=>catalog;
-        private void OnEnable(){if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;}
-        private void OnDisable(){if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;Close();}
+        private void OnEnable(){if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnExitedVillageView+=Close;}}
+        private void OnDisable(){if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
         private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
         private void Update(){if(IsOpen&&Input.GetKeyDown(KeyCode.Escape))Close();}
         private void OnDefenseStarted(int _)=>Close();
@@ -72,6 +73,12 @@ namespace Core.TowerDefense
             var building=Instantiate(def.prefab,anchor.position+anchor.rotation*def.placementOffset,anchor.rotation,buildingsRoot);
             building.name=def.displayName+" · "+slot.name;
             if(building.TryGetComponent<Core.BarracksSystem.BarracksVillageUpgrade>(out var upgrade))upgrade.Configure(upgradePanel);
+            if(building.TryGetComponent<Building>(out _))
+            {
+                var highlight=building.GetComponent<BuildingHighlight>();
+                if(highlight==null)highlight=building.AddComponent<BuildingHighlight>();
+                highlight.Configure(villageView);
+            }
             var obstacle=building.GetComponent<UnityEngine.AI.NavMeshObstacle>();
             if(obstacle==null)obstacle=building.AddComponent<UnityEngine.AI.NavMeshObstacle>();
             obstacle.shape=UnityEngine.AI.NavMeshObstacleShape.Box;obstacle.size=def.footprint;obstacle.center=Vector3.up*(def.footprint.y*.5f);obstacle.carving=true;obstacle.carveOnlyStationary=false;

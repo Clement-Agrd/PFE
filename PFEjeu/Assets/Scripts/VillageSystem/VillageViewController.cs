@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
@@ -19,6 +19,7 @@ namespace Core.Village
         [Header("Caméra")]
         [SerializeField] private Camera targetCamera;
         [SerializeField] private Transform villageViewPose;
+        [SerializeField] private Transform defenseViewPose;
 
         [Header("Transition")]
         [SerializeField, Min(0.1f)] private float transitionDuration = 1.2f;
@@ -38,6 +39,10 @@ namespace Core.Village
         [SerializeField] private VillageInputReader input;
 
         public bool IsInVillageView { get; private set; }
+        public bool IsDefenseMap { get; private set; }
+        public bool CanSelectMap => IsInVillageView && !_isTransitioning;
+        public Camera MapCamera => targetCamera;
+        public event Action OnMapAreaChanged;
 
         public event Action<Building> OnBuildingClicked;
         public event Action OnEnteredVillageView;
@@ -80,6 +85,7 @@ namespace Core.Village
             if (IsInVillageView || _isTransitioning) return;
             if (targetCamera == null || villageViewPose == null) return;
 
+            IsDefenseMap = false;
             _savedPosition = targetCamera.transform.position;
             _savedRotation = targetCamera.transform.rotation;
 
@@ -108,6 +114,7 @@ namespace Core.Village
             if (!IsInVillageView || _isTransitioning || targetCamera == null) return;
 
             IsInVillageView = false;
+            OnMapAreaChanged?.Invoke();
             // Libère avant de relancer le tween retour : sinon le temps resterait
             // figé et l'animation ne progresserait jamais.
             GameFreeze.ReleasePause(this);
@@ -116,15 +123,41 @@ namespace Core.Village
             _isTransitioning = true;
             targetCamera.transform.KillTweens();
 
-            targetCamera.transform.TweenMove(_savedPosition, transitionDuration).SetEase(ease);
+            targetCamera.transform.TweenMove(_savedPosition, transitionDuration).SetEase(ease).SetUnscaledTime(true);
             targetCamera.transform.TweenRotate(_savedRotation, transitionDuration)
-                .SetEase(ease)
+                .SetEase(ease).SetUnscaledTime(true)
                 .OnComplete(() =>
                 {
                     _isTransitioning = false;
                     SetPlayerControlEnabled(true);
                     OnExitedVillageView?.Invoke();
                 });
+        }
+
+        public void ShowDefenseMap() => ChangeMap(true);
+        public void ShowVillageMap() => ChangeMap(false);
+        private void ChangeMap(bool defenses)
+        {
+            var pose = defenses ? defenseViewPose : villageViewPose;
+            if (!CanSelectMap || pose == null || targetCamera == null) return;
+            OnMapAreaChanged?.Invoke();
+            IsDefenseMap = defenses;
+            _isTransitioning = true;
+            targetCamera.transform.KillTweens();
+            targetCamera.transform.TweenMove(pose.position, transitionDuration).SetEase(ease).SetUnscaledTime(true);
+            targetCamera.transform.TweenRotate(pose.rotation, transitionDuration).SetEase(ease).SetUnscaledTime(true)
+                .OnComplete(() => _isTransitioning = false);
+        }
+        public void SelectMapRay(Ray ray)
+        {
+            if (!CanSelectMap) return;
+            if (Physics.Raycast(ray, out var hit, 500f, buildingLayer))
+            {
+                var slot = hit.collider.GetComponentInParent<Core.TowerDefense.DefenseBuildSlot>();
+                if (slot != null && !slot.IsOccupied) { slot.OpenFromVillageView(); return; }
+                if (hit.collider.GetComponentInParent<Building>() is Building building)
+                    OnBuildingClicked?.Invoke(building);
+            }
         }
 
         private void SetPlayerControlEnabled(bool enabled)
@@ -147,14 +180,11 @@ namespace Core.Village
             // Un clic sur l'UI (bouton du panneau...) ne doit pas sélectionner le bâtiment derrière.
             if (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject()) return;
 
+            if (Mouse.current == null) return;
             Vector2 mousePos = Mouse.current.position.ReadValue();
             Ray ray = targetCamera.ScreenPointToRay(mousePos);
 
-            if (Physics.Raycast(ray, out RaycastHit hit, 500f, buildingLayer))
-            {
-                if (hit.collider.GetComponentInParent<Building>() is Building building)
-                    OnBuildingClicked?.Invoke(building);
-            }
+            SelectMapRay(ray);
         }
     }
 }
