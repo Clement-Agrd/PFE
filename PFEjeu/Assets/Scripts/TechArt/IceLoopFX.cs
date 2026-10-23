@@ -16,6 +16,9 @@ public class IceLoopFX : MonoBehaviour
     [Tooltip("Portée du projectile : durée de vie = distance / vitesse")]
     [Min(1f)] [SerializeField] private float range = 14f;
 
+    [Tooltip("Layers que le projectile peut toucher. Mettre le sol seul pour qu'il ignore tout le reste (joueur, ennemis, décor).")]
+    [SerializeField] private LayerMask hitMask = ~0;
+
     private float _next;
 
     private void OnEnable() { _next = Time.time + startDelay; }
@@ -38,6 +41,7 @@ public class IceLoopFX : MonoBehaviour
         if (p == null) return;
         p.damage = 0f;
         p.frozenTime = 0f;
+        p.hitMask = hitMask;
         p.target = target;
         p.lifetime = range / Mathf.Max(0.1f, p.speed);
     }

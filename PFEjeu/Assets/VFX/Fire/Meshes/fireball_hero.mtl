@@ -1,0 +1,25 @@
+# Exported by three-d-stage
+newmtl M_FireCore
+Kd 0.8000 0.8000 0.8000
+Ks 0.2000 0.2000 0.2000
+Ns 100
+d 1.0000
+
+newmtl M_FireOuter
+Kd 0.8000 0.8000 0.8000
+Ks 0.2000 0.2000 0.2000
+Ns 100
+d 1.0000
+
+newmtl M_FireTongues
+Kd 0.8000 0.8000 0.8000
+Ks 0.2000 0.2000 0.2000
+Ns 100
+d 1.0000
+
+newmtl M_Lava
+Kd 0.0103 0.0048 0.0030
+Ks 0.2000 0.2000 0.2000
+Ns 20
+d 1.0000
+
