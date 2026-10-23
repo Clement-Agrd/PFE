@@ -1,0 +1,43 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_SpiritGround
+  m_Shader: {fileID: 4800000, guid: 9304a15694acc544f83a1c9f093c52fc, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: 3000
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _Breath: 0
+    - _Crack: 0
+    - _Flash: 0
+    - _Intensity: 1
+    - _Open: 0
+    - _Parallax: 1
+    - _Seed: 3.7
+    - _Wave: 0
+    m_Colors:
+    - _Deep: {r: 0.012, g: 0.06, b: 0.04, a: 1}
+    - _Hot: {r: 1.7, g: 1.5, b: 0.9, a: 1}
+    - _Mid: {r: 0.2, g: 1.15, b: 0.6, a: 1}
+    - _Size: {r: 14.3, g: 22, b: 0, a: 0}
+    - _Spirit: {r: 6.5, g: 10, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
