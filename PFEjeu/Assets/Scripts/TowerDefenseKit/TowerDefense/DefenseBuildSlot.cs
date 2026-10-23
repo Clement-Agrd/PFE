@@ -14,6 +14,7 @@ namespace Core.TowerDefense
         public override string Prompt=>"Construire une défense";
         public override bool CanInteract(GameObject interactor)=>isActiveAndEnabled&&!IsOccupied&&construction!=null&&construction.CanBuildNow&&!Core.GameFreeze.IsPaused;
         public override void Interact(GameObject interactor){if(CanInteract(interactor))construction.Open(this);}
+        public void OpenFromVillageView(){if(isActiveAndEnabled&&!IsOccupied&&construction!=null&&construction.CanBuildNow)construction.Open(this);}
         public bool BelongsTo(DefenseConstructionUI owner)=>construction==owner;
         public void Occupy(GameObject building)
         {

@@ -99,6 +99,7 @@ namespace Core.Village.UI
             if (villageView != null)
             {
                 villageView.OnBuildingClicked += HandleBuildingClicked;
+                villageView.OnMapAreaChanged += Hide;
                 villageView.OnExitedVillageView += Hide;
             }
             if (villageManager != null)
@@ -113,6 +114,7 @@ namespace Core.Village.UI
             if (villageView != null)
             {
                 villageView.OnBuildingClicked -= HandleBuildingClicked;
+                villageView.OnMapAreaChanged -= Hide;
                 villageView.OnExitedVillageView -= Hide;
             }
             if (villageManager != null)
@@ -159,7 +161,7 @@ namespace Core.Village.UI
         {
             // Ces services proposent leur propre bouton d'amélioration.
             if (building != null && (building.GetComponent<Core.TavernSystem.Tavern>() != null ||
-                building.GetComponent<Core.Village.Exploration.ExplorationPostTrigger>() != null)) return;
+                building.GetComponent<Core.Village.Exploration.ExplorationPostTrigger>() != null || building.GetComponent<Core.Village.RecruitmentCamp>() != null)) { Hide(); return; }
             Show(building);
         }
 

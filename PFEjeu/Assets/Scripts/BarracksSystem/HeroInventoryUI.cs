@@ -42,7 +42,7 @@ namespace Core.BarracksSystem
             _countLabel = NewText("HeroCount", root, "", 24, Accent, TextAlignmentOptions.Right);
             Anchor(_countLabel.rectTransform, Vector2.one, Vector2.one, Vector2.zero, new Vector2(500, 60));
             string key = roster != null ? roster.DebugRecruitKey.ToString() : "F8";
-            var hint = NewText("DebugRecruitHint", root, $"{key} : recruter un héros aléatoire (debug) · Classe aléatoire · Niveau 1 à 5", 22, TextMuted);
+            var hint = NewText("DebugRecruitHint", root, $"{key} : recruter un héros aléatoire (debug) · Classe aléatoire · Niveau 1", 22, TextMuted);
             Anchor(hint.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(0, -60), new Vector2(1450, 45));
 
             var scroll = NewRect("HeroScrollView", root);
@@ -65,7 +65,7 @@ namespace Core.BarracksSystem
             sr.horizontal = false;
             sr.movementType = UnityEngine.UI.ScrollRect.MovementType.Clamped;
             sr.scrollSensitivity = 40;
-            _emptyLabel = NewText("EmptyHeroes", _rowsParent, $"Aucun héros recruté.\nAppuie sur {key} pour recruter ton premier héros.", 28, TextMuted, TextAlignmentOptions.Center);
+            _emptyLabel = NewText("EmptyHeroes", _rowsParent, $"Aucun héros recruté.\nRecrute au camp de recrutement.\n{key} : recrutement de debug.", 28, TextMuted, TextAlignmentOptions.Center);
             Layout(_emptyLabel.gameObject, height: 150);
         }
 
@@ -74,7 +74,7 @@ namespace Core.BarracksSystem
             if (_rowsParent == null) return;
             var heroes = roster != null ? roster.OrderedHeroes.ToArray() : System.Array.Empty<heros>();
             int count = heroes.Length;
-            _countLabel.text = $"{count} héros recruté{(count == 1 ? "" : "s")}";
+            _countLabel.text = roster != null && roster.MaxHeroes < int.MaxValue ? $"{count} / {roster.MaxHeroes} héros" : $"{count} héros recruté{(count == 1 ? "" : "s")}";
             _emptyLabel.gameObject.SetActive(count == 0);
             while (_rows.Count < count)
             {
