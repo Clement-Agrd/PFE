@@ -114,6 +114,9 @@ namespace ProfessionalTPS
             _damagedThisSwing =
                 new HashSet<IDamageable>();
 
+        /// <summary>Raised when a combo step starts (index = 0 based). Used by the slash VFX.</summary>
+        public event System.Action<int> StepStarted;
+
         private int _stepIndex;
 
         private float _timer;
@@ -281,6 +284,8 @@ namespace ProfessionalTPS
             Owner?.Animation?.PlayMeleeAttack(
                 _stepIndex
             );
+
+            StepStarted?.Invoke(_stepIndex);
         }
 
         private void CompleteCurrentStep()
