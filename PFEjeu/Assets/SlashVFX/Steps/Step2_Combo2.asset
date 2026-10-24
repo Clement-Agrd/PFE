@@ -1,0 +1,60 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06b9dd16a73f024459250c447618bf03, type: 3}
+  m_Name: Step2_Combo2
+  m_EditorClassIdentifier: Assembly-CSharp::SlashVFX.SlashComboStep
+  prefab: {fileID: 5993784929943791801, guid: a937826e6db2ecb46b2a3d9d2a47b784, type: 3}
+  ramp: {fileID: 2800000, guid: e6a94cb362d0afb4aa35ad1484137e69, type: 3}
+  mask: {fileID: 2800000, guid: 6034986e359df024e950f84d14f8735f, type: 3}
+  flashColor: {r: 0.4, g: 0.8, b: 1, a: 1}
+  duration: 0.2
+  sweepCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 3.2
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  impactFraction: 0.4
+  intensity: 6.2
+  scale: 1.15
+  mirror: 1
+  tiltDegrees: 0
+  pitchDegrees: -55
+  yOffset: -1
+  randomRoll: 4
+  hitStop: 0.03
+  shake: 0.07
+  sparkCount: 10
+  hitFlashScale: 1
+  secondBladeDelay: 0.06
+  shockwave: 0
+  bloomPulse: 0
+  sfx: {fileID: 0}
+  sfxVolume: 0.7

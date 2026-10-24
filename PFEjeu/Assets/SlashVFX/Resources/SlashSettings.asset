@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32bb6e3a65dcd394baf141df4f65aa06, type: 3}
+  m_Name: SlashSettings
+  m_EditorClassIdentifier: Assembly-CSharp::SlashVFX.SlashSettings
+  quality: 2
+  rampIce: {fileID: 2800000, guid: e6a94cb362d0afb4aa35ad1484137e69, type: 3}
+  rampVoid: {fileID: 2800000, guid: ef2a674491745c44e8b0b3d3cf3c969b, type: 3}
+  rampFire: {fileID: 2800000, guid: ae3d4faf956832d40b4b5924c4a97f10, type: 3}
+  rampHoly: {fileID: 2800000, guid: 4b771fa4f41f1b84380e8e9c9c4cd44a, type: 3}
