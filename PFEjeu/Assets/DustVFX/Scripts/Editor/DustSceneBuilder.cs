@@ -69,7 +69,7 @@ namespace DustVFX.EditorTools
             sun.color = new Color(1f, 0.8f, 0.58f);
             sun.intensity = 2.6f;
             sun.shadows = LightShadows.Soft;
-            sunGo.transform.rotation = Quaternion.Euler(9f, 215f, 0f);
+            sunGo.transform.rotation = Quaternion.Euler(16f, 140f, 0f);
             RenderSettings.sun = sun;
 
             // ---- volume

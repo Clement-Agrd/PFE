@@ -184,9 +184,9 @@ namespace DustVFX.Demo
             }
             else
             {
-                sun.transform.rotation = Quaternion.Euler(9f, 215f, 0f);
+                sun.transform.rotation = Quaternion.Euler(16f, 140f, 0f);
                 sun.color = new Color(1f, 0.8f, 0.58f);
-                sun.intensity = 2.6f;
+                sun.intensity = 3.2f;
             }
         }
 
