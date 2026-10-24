@@ -16,7 +16,7 @@ MonoBehaviour:
   quality: 2
   maxActiveSteps: 6
   wetness: 0
-  stepPrefab: {fileID: 0}
+  stepPrefab: {fileID: 3877492883687675459, guid: 931d1e3c004e53b43a3ef98883f87b86, type: 3}
   defaultSurface: {fileID: 11400000, guid: 0d8b3ea50e0c6f04eb2cfa181a2d1b94, type: 2}
   surfaces:
   - {fileID: 11400000, guid: 0d8b3ea50e0c6f04eb2cfa181a2d1b94, type: 2}
