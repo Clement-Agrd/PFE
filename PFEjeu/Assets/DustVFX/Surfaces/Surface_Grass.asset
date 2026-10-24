@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f0b24ddcec70b447a3365c163890198, type: 3}
+  m_Name: Surface_Grass
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.DustSurface
+  kind: 4
+  suppressDust: 0
+  color: {r: 0.5, g: 0.52, b: 0.32, a: 1}
+  densityMul: 0.22
+  sizeMul: 0.6
+  lifetimeMul: 0.7
+  riseMul: 0.5
+  veilMul: 0.25
+  grainCount: 5
+  grainMesh: {fileID: 0}
+  grainSize: {x: 0.02, y: 0.045}
+  grainColor: {r: 0.3, g: 0.45, b: 0.16, a: 1}
+  grainBounce: 0.1
+  grainSpeedMul: 0.8
+  sfx: []
+  sfxVolume: 0.6
+  tags:
+  - DustGrass
+  physicsMaterials: []
+  terrainLayers: []

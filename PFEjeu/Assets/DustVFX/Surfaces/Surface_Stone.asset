@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f0b24ddcec70b447a3365c163890198, type: 3}
+  m_Name: Surface_Stone
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.DustSurface
+  kind: 2
+  suppressDust: 0
+  color: {r: 0.62, g: 0.64, b: 0.68, a: 1}
+  densityMul: 0.45
+  sizeMul: 0.7
+  lifetimeMul: 0.8
+  riseMul: 0.6
+  veilMul: 0.45
+  grainCount: 9
+  grainMesh: {fileID: 0}
+  grainSize: {x: 0.02, y: 0.05}
+  grainColor: {r: 0.5, g: 0.5, b: 0.53, a: 1}
+  grainBounce: 0.5
+  grainSpeedMul: 1.5
+  sfx: []
+  sfxVolume: 0.6
+  tags: []
+  physicsMaterials:
+  - {fileID: 13400000, guid: ccbfef7e139396e4e82617cc40d803c2, type: 2}
+  terrainLayers: []

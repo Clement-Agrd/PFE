@@ -1,0 +1,29 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a85944b2da4428c48bbe66805cf3d72b, type: 3}
+  m_Name: DustSettings
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.DustSettings
+  intensity: 1
+  quality: 2
+  maxActiveSteps: 6
+  wetness: 0
+  stepPrefab: {fileID: 0}
+  defaultSurface: {fileID: 11400000, guid: 0d8b3ea50e0c6f04eb2cfa181a2d1b94, type: 2}
+  surfaces:
+  - {fileID: 11400000, guid: 0d8b3ea50e0c6f04eb2cfa181a2d1b94, type: 2}
+  - {fileID: 11400000, guid: 74726c23c3a8771448a54579c4ef8705, type: 2}
+  - {fileID: 11400000, guid: fa957b737ac68f04bb8e380e08ea5472, type: 2}
+  - {fileID: 11400000, guid: 59511b858b03af74591db729810504e2, type: 2}
+  - {fileID: 11400000, guid: 2938b9d9b22c6ef49bd6e5431392252b, type: 2}
+  - {fileID: 11400000, guid: 3915dbfbc8e12ba4db3c0c4513d05ee4, type: 2}
+  - {fileID: 11400000, guid: 153a9c575c90e5e41bc3aac617eb87a4, type: 2}
+  sfx: 1
