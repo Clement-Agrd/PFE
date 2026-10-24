@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1e9a557f6e5c9c74d976251c4d798ac8, type: 3}
+  m_Name: Style_Sand
+  m_EditorClassIdentifier: Assembly-CSharp::Core.DisintegrationVFX.DisintegrationStyle
+  ramp: {fileID: 2800000, guid: f4d6e5d9b4895614cacade648891f31c, type: 3}
+  noiseScale: 3
+  edgeWidth: 0.1
+  charWidth: 0.2
+  curl: 0
+  noiseAmp: 0.1
+  edgeIntensity: 3
+  charColor: {r: 0.32, g: 0.22, b: 0.1, a: 1}
+  flashColor: {r: 3.5, g: 2.8, b: 1.2, a: 1}
+  duration: 2.2
+  direction: 0
+  motion: 2
+  speed: 0.8
+  gravity: 0.7
+  emberCount: 70
+  ashCount: 220
+  scrapCount: 30
+  smokeCount: 5
+  scrapColor: {r: 0.5, g: 0.38, b: 0.18, a: 1}
+  ashColor: {r: 0.85, g: 0.7, b: 0.4, a: 1}
+  emberColor: {r: 1, g: 0.9, b: 0.4, a: 1}
+  emberColorEnd: {r: 0.7, g: 0.5, b: 0.15, a: 1}
+  smokeColor: {r: 0.55, g: 0.45, b: 0.28, a: 1}
+  scrapHot: {r: 2.5, g: 1.8, b: 0.5, a: 1}
+  lightColor: {r: 1, g: 0.8, b: 0.35, a: 1}
+  lightIntensity: 0.8

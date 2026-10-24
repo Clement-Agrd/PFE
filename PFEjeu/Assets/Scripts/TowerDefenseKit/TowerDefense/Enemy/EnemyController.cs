@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.AI;
 
+using Core.DisintegrationVFX;
 using Core.WaveSystem;
 using Core.PoolingSystem;
 using Core.HealthSystem;
@@ -635,7 +636,7 @@ namespace Core.TowerDefense
 
             RollDrops();
 
-            Defeat();
+            Defeat(true);
         }
 
         private void RollDrops()
@@ -667,7 +668,7 @@ namespace Core.TowerDefense
             }
         }
 
-        private void Defeat()
+        private void Defeat(bool burn = false)
         {
             if (_agent != null &&
                 _agent.isOnNavMesh)
@@ -679,6 +680,30 @@ namespace Core.TowerDefense
             Defeated?.Invoke(
                 this
             );
+            if (burn)
+            {
+                DisintegrationController dis = DisintegrationController.GetOrAdd(gameObject);
+                if (dis != null)
+                {
+                    dis.OnDisintegrated += ReleaseAfterBurn;
+                    if (dis.Disintegrate())
+                        return;
+                    dis.OnDisintegrated -= ReleaseAfterBurn;
+                }
+            }
+
+            ReleaseSelf();
+        }
+
+        private void ReleaseAfterBurn()
+        {
+            if (TryGetComponent(out DisintegrationController dis))
+                dis.OnDisintegrated -= ReleaseAfterBurn;
+            ReleaseSelf();
+        }
+
+        private void ReleaseSelf()
+        {
 
             if (TryGetComponent(
                     out PooledObject pooled))
