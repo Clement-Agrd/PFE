@@ -224,8 +224,8 @@ namespace ProfessionalTPS
 
             _impactDone = true;
 
-            // VFX du mouvement d'épée.
-            Owner?.VFX?.PlaySlash();
+            // L'ancien VFX de slash (Owner.VFX.PlaySlash) est remplacé par SlashVFX,
+            // déclenché au début de chaque étape via StepStarted.
 
             DoHit(
                 combo[_stepIndex]
