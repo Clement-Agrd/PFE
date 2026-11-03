@@ -36,6 +36,12 @@ namespace Core.BarracksSystem
         private Vector3 _previewPosition;
         private bool _previewValid;
 
+        private Core.Village.VillageViewController _mapView;
+        private bool _automaticOnCancel;
+        private int _beginFrame;
+        private LineRenderer _rangeRing;
+        private Material _rangeMaterial;
+        public bool IsConstructionPlacement => IsPlacing && _automaticOnCancel;
         public bool IsPlacing { get; private set; }
         public bool HasFlag { get; private set; }
         public Vector3 FlagPosition { get; private set; }
@@ -56,7 +62,7 @@ namespace Core.BarracksSystem
 
         private void Update()
         {
-            if (!IsPlacing) return;
+            if (!IsPlacing || Time.frameCount == _beginFrame) return;
 
             if (!IsInteractorStillInRange())
             {
@@ -72,8 +78,9 @@ namespace Core.BarracksSystem
                 return;
             }
 
-            if (_previewValid && Input.GetMouseButtonDown(confirmMouseButton))
-                ConfirmPlacement();
+            if (_mapView == null && Input.GetMouseButtonDown(confirmMouseButton) &&
+                (UnityEngine.EventSystems.EventSystem.current == null || !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject()))
+                TryPlaceFromRay(PlacementRay());
         }
 
         public void Configure(Barracks owner, SOBarracks data)
@@ -82,47 +89,186 @@ namespace Core.BarracksSystem
             _data = data;
         }
 
-        public void BeginPlacement(GameObject interactor)
+        public void BeginPlacement(GameObject interactor) => BeginPlacement(interactor, null, false);
+
+        public void BeginConstructionPlacement(GameObject interactor, Core.Village.VillageViewController view)
+            => BeginPlacement(interactor, view != null && view.IsInVillageView ? view : null, true);
+
+        private void BeginPlacement(GameObject interactor, Core.Village.VillageViewController view, bool automaticOnCancel)
         {
             if (barracks == null || _data == null) return;
-
-            if (_activePlacement != null && _activePlacement != this)
-                _activePlacement.CancelPlacement();
-
-            _activePlacement = this;
+            if (_activePlacement != null) _activePlacement.CancelPlacement();
             _interactor = interactor;
-
-            ResolveCamera();
-
+            _mapView = view;
+            _automaticOnCancel = automaticOnCancel;
+            if (_mapView != null)
+            {
+                placementCamera = _mapView.MapCamera;
+                _mapView.OnMapAreaChanged += CancelPlacement;
+                _mapView.OnBuildingClicked += BuildingSelected;
+            }
+            else ResolveCamera();
             if (placementCamera == null)
             {
-                Debug.LogWarning("[BarracksFlagPlacement] Aucune caméra trouvée.", this);
+                if (automaticOnCancel) PlaceAutomaticFlag();
+                EndPlacement();
                 return;
             }
-
-            EnsurePreview();
+            _activePlacement = this;
             IsPlacing = true;
-
-            if (_previewInstance != null)
-                _previewInstance.SetActive(true);
-
-            // On garde la caméra TPS normale : curseur verrouillé et visée
-            // depuis le centre de l'écran.
+            _beginFrame = Time.frameCount;
+            // Give soldiers a valid provisional destination before Barracks.Start.
+            if (automaticOnCancel) PlaceAutomaticFlag();
+            if (_flagInstance != null) _flagInstance.SetActive(false);
+            EnsurePreview();
+            _previewInstance.SetActive(true);
+            ShowRange();
             UpdatePreview();
+        }
+
+        private void BuildingSelected(Core.Village.Building building)
+        {
+            if (building != null && building.gameObject != gameObject) CancelPlacement();
+        }
+
+        public static void CancelActivePlacement()
+        {
+            if (_activePlacement != null) _activePlacement.CancelPlacement();
+        }
+
+        // The map handles confirmation once, using the same ray as building selection.
+        // Returning false lets a different building/empty slot receive its normal click.
+        public static bool TryHandleMapRay(Core.Village.VillageViewController view, Ray ray)
+        {
+            var active = _activePlacement;
+            if (active == null || !active.IsPlacing || active._mapView != view) return false;
+            if (Time.frameCount == active._beginFrame) return true;
+            return active.TryPlaceFromRay(ray);
+        }
+
+        public bool TryPlaceFromRay(Ray ray)
+        {
+            if (!IsPlacing) return false;
+            if (Physics.Raycast(ray, out var hit, maxRayDistance, groundMask, QueryTriggerInteraction.Ignore))
+            {
+                var building = hit.collider.GetComponentInParent<Core.Village.Building>();
+                var slot = hit.collider.GetComponentInParent<Core.TowerDefense.DefenseBuildSlot>();
+                if ((building != null && building.gameObject != gameObject) || (slot != null && !slot.IsOccupied))
+                {
+                    CancelPlacement();
+                    return false;
+                }
+            }
+            UpdatePreview(ray);
+            if (_previewValid) ConfirmPlacement();
+            else if (_automaticOnCancel) CancelPlacement();
+            return true;
         }
 
         public void CancelPlacement()
         {
+            if (IsPlacing && _automaticOnCancel) PlaceAutomaticFlag();
+            EndPlacement();
+        }
+
+        private void EndPlacement()
+        {
+            if (_mapView != null)
+            {
+                _mapView.OnMapAreaChanged -= CancelPlacement;
+                _mapView.OnBuildingClicked -= BuildingSelected;
+            }
+            _mapView = null;
+            _automaticOnCancel = false;
             IsPlacing = false;
             _previewValid = false;
-
-            if (_previewInstance != null)
-                _previewInstance.SetActive(false);
-
+            if (_previewInstance != null) _previewInstance.SetActive(false);
+            if (_flagInstance != null) _flagInstance.SetActive(true);
+            if (_rangeRing != null) _rangeRing.gameObject.SetActive(false);
             _interactor = null;
+            placementCamera = null;
+            if (_activePlacement == this) _activePlacement = null;
+        }
 
-            if (_activePlacement == this)
-                _activePlacement = null;
+        public bool TryGetAutomaticFlagPosition(out Vector3 position)
+        {
+            position = default;
+            if (barracks == null || _data == null) return false;
+            float best = float.PositiveInfinity;
+            Vector3 center = barracks.transform.position;
+            foreach (var path in FindObjectsByType<Core.TowerDefense.EnemySplinePath>(FindObjectsSortMode.None))
+            {
+                if (!path.isActiveAndEnabled || path.gameObject.scene != gameObject.scene || !path.IsValid) continue;
+                for (int i = 0; i < path.Count - 1; i++)
+                {
+                    var a = path.GetPoint(i); var b = path.GetPoint(i + 1);
+                    var direction = b - a; direction.y = 0;
+                    var delta = center - a; delta.y = 0;
+                    float t = direction.sqrMagnitude > .0001f ? Mathf.Clamp01(Vector3.Dot(delta, direction) / direction.sqrMagnitude) : 0;
+                    var point = Vector3.Lerp(a, b, t);
+                    if (!NavMesh.SamplePosition(point, out var nav, navMeshSampleRadius, NavMesh.AllAreas)) continue;
+                    float distance = PlanarDistanceSquared(nav.position, center);
+                    if (distance > _data.FlagPlacementRange * _data.FlagPlacementRange || distance >= best) continue;
+                    best = distance;
+                    position = nav.position;
+                }
+            }
+            return !float.IsPositiveInfinity(best);
+        }
+
+        private void PlaceAutomaticFlag()
+        {
+            if (TryGetAutomaticFlagPosition(out var point)) SetFlagPosition(point, true);
+            else
+            {
+                // Legacy scenes may not contain an enemy spline within deployment range.
+                SetInitialFlagPosition(transform.TransformPoint(_data.DefaultFlagOffset));
+                FlagPlaced?.Invoke(FlagPosition);
+            }
+        }
+
+        private static float PlanarDistanceSquared(Vector3 a, Vector3 b)
+        {
+            var delta = a - b; delta.y = 0; return delta.sqrMagnitude;
+        }
+
+        private void ShowRange()
+        {
+            if (_rangeRing == null)
+            {
+                var go = new GameObject("TroopPlacementRange"); go.transform.SetParent(transform, false); go.layer = 2;
+                _rangeRing = go.AddComponent<LineRenderer>();
+                _rangeRing.useWorldSpace = true; _rangeRing.loop = true; _rangeRing.positionCount = 128;
+                _rangeRing.widthMultiplier = .22f; _rangeRing.numCornerVertices = 2;
+                _rangeRing.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                _rangeRing.receiveShadows = false;
+                _rangeMaterial = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                _rangeMaterial.SetColor("_BaseColor", new Color(1f, .8f, .15f));
+                _rangeRing.sharedMaterial = _rangeMaterial;
+            }
+            _rangeRing.gameObject.SetActive(true);
+            var center = barracks.transform.position;
+            for (int i = 0; i < _rangeRing.positionCount; i++)
+            {
+                float angle = 2 * Mathf.PI * i / _rangeRing.positionCount;
+                var point = center + new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle)) * _data.FlagPlacementRange;
+                // Sample terrain only, so roofs, units and the preview do not deform the circle.
+                foreach (var terrain in Terrain.activeTerrains)
+                {
+                    var local = point - terrain.transform.position; var size = terrain.terrainData.size;
+                    if (local.x >= 0 && local.z >= 0 && local.x <= size.x && local.z <= size.z)
+                    { point.y = terrain.SampleHeight(point) + terrain.transform.position.y; break; }
+                }
+                _rangeRing.SetPosition(i, point + Vector3.up * .18f);
+            }
+        }
+
+        private void OnDestroy()
+        {
+            EndPlacement();
+            if (_previewInstance != null) Destroy(_previewInstance);
+            if (_flagInstance != null) Destroy(_flagInstance);
+            if (_rangeMaterial != null) Destroy(_rangeMaterial);
         }
 
         public void SetInitialFlagPosition(Vector3 desiredWorldPosition)
@@ -150,6 +296,7 @@ namespace Core.BarracksSystem
 
         private bool IsInteractorStillInRange()
         {
+            if (_mapView != null && _mapView.IsInVillageView) return true;
             if (_interactor == null || barracks == null || _data == null)
                 return false;
 
@@ -180,21 +327,21 @@ namespace Core.BarracksSystem
                 placementCamera = Camera.main;
         }
 
+        private Ray PlacementRay()
+        {
+            Vector2 screenPoint = _mapView != null ? (Vector2)Input.mousePosition :
+                new Vector2(placementCamera.pixelWidth * .5f, placementCamera.pixelHeight * .5f);
+            return placementCamera.ScreenPointToRay(screenPoint);
+        }
+
         private void UpdatePreview()
         {
-            if (placementCamera == null || barracks == null || _data == null)
-            {
-                _previewValid = false;
-                UpdatePreviewVisual();
-                return;
-            }
+            if (placementCamera == null) return;
+            UpdatePreview(PlacementRay());
+        }
 
-            Vector2 screenCenter = new Vector2(
-                placementCamera.pixelWidth * 0.5f,
-                placementCamera.pixelHeight * 0.5f);
-
-            Ray ray = placementCamera.ScreenPointToRay(screenCenter);
-
+        private void UpdatePreview(Ray ray)
+        {
             int hitCount = Physics.RaycastNonAlloc(
                 ray,
                 _rayHits,
@@ -252,7 +399,9 @@ namespace Core.BarracksSystem
                     NavMesh.AllAreas))
             {
                 _previewPosition = navHit.position;
-                _previewValid = true;
+                _previewValid = !_automaticOnCancel ||
+                    (PlanarDistanceSquared(groundPoint, barracks.transform.position) <= _data.FlagPlacementRange * _data.FlagPlacementRange &&
+                     PlanarDistanceSquared(navHit.position, barracks.transform.position) <= _data.FlagPlacementRange * _data.FlagPlacementRange);
             }
             else
             {
@@ -268,7 +417,7 @@ namespace Core.BarracksSystem
             if (!_previewValid) return;
 
             SetFlagPosition(_previewPosition, true);
-            CancelPlacement();
+            EndPlacement();
         }
 
         private void SetFlagPosition(Vector3 worldPosition, bool notify)

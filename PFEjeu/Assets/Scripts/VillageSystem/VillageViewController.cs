@@ -151,6 +151,7 @@ namespace Core.Village
         public void SelectMapRay(Ray ray)
         {
             if (!CanSelectMap) return;
+            if (Core.BarracksSystem.BarracksFlagPlacement.TryHandleMapRay(this, ray)) return;
             if (Physics.Raycast(ray, out var hit, 500f, buildingLayer))
             {
                 var slot = hit.collider.GetComponentInParent<Core.TowerDefense.DefenseBuildSlot>();

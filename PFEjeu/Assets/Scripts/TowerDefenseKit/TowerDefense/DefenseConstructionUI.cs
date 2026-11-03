@@ -28,10 +28,11 @@ namespace Core.TowerDefense
         private void OnDisable(){if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
         private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
         private void Update(){if(IsOpen&&Input.GetKeyDown(KeyCode.Escape))Close();}
-        private void OnDefenseStarted(int _)=>Close();
+        private void OnDefenseStarted(int _){Core.BarracksSystem.BarracksFlagPlacement.CancelActivePlacement();Close();}
         public void Open(DefenseBuildSlot slot)
         {
             if(!CanBuildNow||slot==null||slot.IsOccupied||!slot.BelongsTo(this))return;
+            Core.BarracksSystem.BarracksFlagPlacement.CancelActivePlacement();
             if(_canvas==null)BuildUI();
             _slot=slot;
             _canvas.SetActive(true);
@@ -85,6 +86,11 @@ namespace Core.TowerDefense
             foreach(var c in Costs(def))village.HdvInventory.Remove(c.Key,c.Value);
             slot.Occupy(building);
             Close();
+            if(building.TryGetComponent<Core.BarracksSystem.BarracksFlagPlacement>(out var placement))
+            {
+                var actor=FindFirstObjectByType<Core.InteractionSystem.Interactor>();
+                placement.BeginConstructionPlacement(actor!=null?actor.gameObject:null,villageView);
+            }
             return true;
         }
         private void Refresh()
