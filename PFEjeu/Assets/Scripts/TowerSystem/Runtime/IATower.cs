@@ -133,6 +133,52 @@ public class IATower : MonoBehaviour
                 }
                 break;
             
+            case EnumTargetPriority.TargetPriority.Tank:
+                
+                Debug.Log("Cible qui a plus de point de vie");
+
+                if (currentTarget == null && target.Length > 0)
+                {
+                    currentTarget = target[0];
+                    
+                    float HighHp = GetEnemyStat(currentTarget, StatType.Life);
+
+                    for (int i = 1; i < target.Length; i++)
+                    {
+                        Collider ennemy = target[i];
+                        float TankEnnemy = GetEnemyStat(ennemy, StatType.DefenseMagic);
+
+                        if (HighHp < TankEnnemy)
+                        {
+                            HighHp = TankEnnemy;
+                            currentTarget = ennemy;
+                        }
+                    }
+                }
+                break;
+            
+            case EnumTargetPriority.TargetPriority.squishy :
+                
+                if (currentTarget == null && target.Length > 0)
+                {
+                    currentTarget = target[0];
+                    
+                    float LowHp = GetEnemyStat(currentTarget, StatType.Life);
+
+                    for (int i = 1; i < target.Length; i++)
+                    {
+                        Collider ennemy = target[i];
+                        float SquishyEnnemy = GetEnemyStat(ennemy, StatType.DefenseMagic);
+
+                        if (LowHp > SquishyEnnemy)
+                        {
+                            LowHp = SquishyEnnemy;
+                            currentTarget = ennemy;
+                        }
+                    }
+                }
+                break;
+            
             case EnumTargetPriority.TargetPriority.All:
                 
                 for (int i = 0; i < target.Length; i++)

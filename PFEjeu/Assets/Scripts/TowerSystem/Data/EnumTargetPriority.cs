@@ -12,8 +12,8 @@ public class EnumTargetPriority
         HighDefMag,
         LoweDefMag,
         
-        HighHp,
-        LowHp,
+        Tank,
+        squishy,
         
         All,
     }
