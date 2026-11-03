@@ -81,12 +81,12 @@ namespace Core.Village
                 {
                     var captured=hero;
                     row=NewButton(_heroRows,"",()=>{_selectedHero=captured;Refresh();},fontSize:24);
-                    row.name="CampHero_"+hero.GetEntityId();Layout(row.gameObject,height:104);
+                    row.name="CampHero_"+hero.GetEntityId();Layout(row.gameObject,height:120);
                     row.Label.textWrappingMode=TextWrappingModes.Normal;
                     _heroButtons.Add(hero,row);
                 }
                 row.transform.SetSiblingIndex(index++);
-                row.Label.text=$"{hero.HeroName} · {hero.ClasseName} · Niv. {hero.Level}\n{Assignment(hero)}";
+                row.Label.text=$"{hero.HeroName} · {hero.ClasseName} · Niv. {hero.Level}\n{hero.ExperienceLabel} · {Assignment(hero)}";
                 row.SetActive(_selectedHero==hero);
             }
             _empty.gameObject.SetActive(camp.Roster.Count==0);

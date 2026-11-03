@@ -135,10 +135,12 @@ namespace Core.TowerDefense
                         if (producer.PendingProduction.Count > 0) text.AppendLine("Stockage plein : production conservée en attente.");
                     }
             text.AppendLine("\n<b>Rapport des héros</b>");
+            var roster = expeditions != null ? expeditions.RecruitedHeroes : null;
+            if (roster != null) foreach (var reward in roster.LastWaveExperience) text.AppendLine(reward);
             if (results.Count == 0) text.AppendLine("Aucune expédition terminée cette défense.");
             foreach (var result in results)
             {
-                text.AppendLine($"{result.HeroName} · {result.Mission.DisplayName}\n{result.Status}");
+                text.AppendLine($"{result.HeroName} · {result.Mission.DisplayName}\n{result.Status} · {result.ExperienceSummary}");
                 if (result.PendingLoot.Count > 0) text.AppendLine("Stockage plein : butin conservé en attente.");
                 text.AppendLine();
             }

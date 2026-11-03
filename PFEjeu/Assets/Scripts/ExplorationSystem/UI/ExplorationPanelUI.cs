@@ -146,7 +146,7 @@ namespace Core.Village.Exploration.UI
                     ? (cancellable ? $"Départ en attente : {hero.ExpeditionName} · Cliquer pour annuler" : $"En expédition : {hero.ExpeditionName}")
                     : hero.AssignedBarracks != null ? "Affecté à une caserne"
                     : selectable ? "Disponible" : manager.GetHeroUnavailableReason(hero);
-                choice.Label.text = $"{hero.HeroName} · {hero.ClasseName} · Nv {hero.Level}\n{status}";
+                choice.Label.text = $"{hero.HeroName} · {hero.ClasseName} · Nv {hero.Level}\n{hero.ExperienceLabel} · {status}";
                 choice.SetActive(_selectedHeroes.Contains(hero));
                 choice.GetComponent<UnityEngine.UI.Button>().interactable = selectable || cancellable;
                 choice.GetComponent<CanvasGroup>().alpha = selectable || cancellable ? 1f : .5f;
@@ -188,7 +188,7 @@ namespace Core.Village.Exploration.UI
             {
                 string loot = result.Loot.Count > 0 ? " · " + string.Join(", ", result.Loot.Select(l => $"{l.amount} {l.item.DisplayName}")) : "";
                 string pending = result.PendingLoot.Count > 0 ? " · Stockage plein : butin en attente" : "";
-                BuildActiveRow($"{result.HeroName} → {result.Mission.DisplayName}", result.Status + loot + pending,
+                BuildActiveRow($"{result.HeroName} → {result.Mission.DisplayName}", result.Status + " · " + result.ExperienceSummary + loot + pending,
                     result.Outcome == ExpeditionOutcome.Success ? availableColor : failColor);
             }
         }
@@ -200,7 +200,7 @@ namespace Core.Village.Exploration.UI
             row.GetComponent<VerticalLayoutGroup>().padding = new RectOffset(24, 24, 18, 18);
             bool unlocked = manager.IsMissionUnlocked(mission);
             CreateText(row.transform, mission.DisplayName, unlocked ? titleColor : unavailableColor, 26, FontStyles.Bold);
-            CreateText(row.transform, DescribeLoot(mission), mutedColor, 19, FontStyles.Normal);
+            CreateText(row.transform, DescribeLoot(mission) + $" · Réussite : {manager.GetMissionExperience(mission)} XP · Échec : {manager.GetMissionExperience(mission, ExpeditionOutcome.Failure)} XP", mutedColor, 19, FontStyles.Normal);
             string reason = !unlocked ? $"Centre niveau {mission.ZoneLevel} requis"
                 : _selectedHeroes.Count == 0 ? "Sélectionne des héros à droite" : "";
             foreach (var hero in manager.HeroRoster.Where(h => _selectedHeroes.Contains(h)))

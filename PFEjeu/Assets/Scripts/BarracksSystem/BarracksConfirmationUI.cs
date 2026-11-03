@@ -179,7 +179,7 @@ namespace Core.BarracksSystem
                     if (index < _displayHeroes.Length) SelectHero(_displayHeroes[index]);
                 }, fontSize: 24);
                 choice.name = "AssignHeroButton" + index;
-                Layout(choice.gameObject, height: 80);
+                Layout(choice.gameObject, height: 110);
                 _heroLabels.Add(choice.GetComponentInChildren<TMP_Text>());
                 _heroButtons.Add(choice.GetComponent<UnityEngine.UI.Button>());
             }
@@ -192,7 +192,7 @@ namespace Core.BarracksSystem
                     (candidate.AssignedBarracks == null || candidate.AssignedBarracks == _owner);
                 _heroButtons[i].interactable = available;
                 _heroLabels[i].text = candidate != null
-                    ? $"{candidate.HeroName}\n{candidate.ClasseName} · Niveau {candidate.Level}" + (candidate.IsExpeditionPending ? " · Expédition annulable" : candidate.IsOnExpedition ? " · En expédition" : candidate.AssignedBarracks != null ? " · Affecté à une caserne" : available ? "" : " · Indisponible")
+                    ? $"{candidate.HeroName}\n{candidate.ClasseName} · Niveau {candidate.Level}\n{candidate.ExperienceLabel}" + (candidate.IsExpeditionPending ? " · Expédition annulable" : candidate.IsOnExpedition ? " · En expédition" : candidate.AssignedBarracks != null ? " · Affecté à une caserne" : available ? "" : " · Indisponible")
                     : "Héros indisponible";
                 _heroButtons[i].GetComponent<Core.PauseMenu.PauseButton>().SetActive(candidate == _previewHero);
             }

@@ -79,7 +79,7 @@ namespace Core.BarracksSystem
             while (_rows.Count < count)
             {
                 var card = NewImage("HeroRow" + _rows.Count, _rowsParent, CardRaised, 14);
-                Layout(card.gameObject, height: 100);
+                Layout(card.gameObject, height: 128);
                 var identity = NewText("Identity", card.transform, "", 25, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
                 identity.rectTransform.anchorMin = Vector2.zero;
                 identity.rectTransform.anchorMax = new Vector2(0.55f, 1);
@@ -98,7 +98,7 @@ namespace Core.BarracksSystem
                 row.Root.SetActive(i < count);
                 if (i >= count) continue;
                 var hero = heroes[i];
-                row.Identity.text = $"{hero.HeroName}\n{hero.ClasseName} · Niveau {hero.Level} / 5";
+                row.Identity.text = $"{hero.HeroName}\n{hero.ClasseName} · Niveau {hero.Level} / 5\n{hero.ExperienceLabel}";
                 var barracks = hero.AssignedBarracks;
                 row.Assignment.text = hero.IsOnExpedition ? $"{(hero.IsExpeditionPending ? "Départ en attente" : "En expédition")} : {hero.ExpeditionName}" : barracks != null
                     ? $"Affecté à : {barracks.name}\nCaserne niveau {barracks.CurrentLevel}"

@@ -14,6 +14,12 @@ namespace Core.BarracksSystem
         [SerializeField] private ClasseHeros classe;
         [SerializeField, Range(1, 5)] private int level = 1;
 
+        [SerializeField, Min(0)] private int experience;
+        [SerializeField, Min(1)] private int baseExperiencePerLevel = 100;
+        public bool IsMaxLevel => Level >= 5;
+        public int Experience => IsMaxLevel ? 0 : Mathf.Max(0, experience);
+        public int ExperienceToNextLevel => IsMaxLevel ? 0 : Mathf.Max(1, baseExperiencePerLevel) * Level;
+        public string ExperienceLabel => IsMaxLevel ? "Niveau maximum" : $"XP {Experience} / {ExperienceToNextLevel}";
         private bool _notifyPending;
 
         public string HeroName => string.IsNullOrWhiteSpace(heroName) ? ClasseName : heroName;
@@ -43,6 +49,7 @@ namespace Core.BarracksSystem
             heroName = displayName;
             classe = heroClass;
             level = Mathf.Clamp(heroLevel, 1, 5);
+            experience = 0;
             Changed?.Invoke();
         }
 
@@ -51,7 +58,26 @@ namespace Core.BarracksSystem
             int next = Mathf.Clamp(value, 1, 5);
             if (level == next) return;
             level = next;
+            experience = 0;
             Changed?.Invoke();
+        }
+
+        public int AddExperience(int amount)
+        {
+            if (amount <= 0 || IsMaxLevel) return 0;
+            long remaining = 0;
+            for (int next = Level; next < 5; next++) remaining += (long)Mathf.Max(1, baseExperiencePerLevel) * next;
+            remaining -= Experience;
+            int gained = (int)Math.Min(amount, Math.Max(0, remaining));
+            long total = (long)Experience + gained;
+            while (!IsMaxLevel && total >= ExperienceToNextLevel)
+            {
+                total -= ExperienceToNextLevel;
+                level = Level + 1;
+            }
+            experience = IsMaxLevel ? 0 : (int)total;
+            if (gained > 0) Changed?.Invoke();
+            return gained;
         }
 
         internal bool TryClaim(Barracks barracks)
@@ -104,6 +130,8 @@ namespace Core.BarracksSystem
         private void OnValidate()
         {
             level = Mathf.Clamp(level, 1, 5);
+            baseExperiencePerLevel = Mathf.Clamp(baseExperiencePerLevel, 1, 1000000);
+            experience = IsMaxLevel ? 0 : Mathf.Clamp(experience, 0, ExperienceToNextLevel - 1);
             // Inspector edits are applied on the main thread in the next Update.
             _notifyPending = true;
         }

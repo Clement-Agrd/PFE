@@ -16,6 +16,10 @@ namespace Core.Village.Exploration
         public ExpeditionOutcome Outcome { get; internal set; }
         public List<(ItemDefinition item, int amount)> Loot { get; } = new();
         public List<(ItemDefinition item, int amount)> PendingLoot { get; } = new();
+        public int ExperienceGained { get; internal set; }
+        public int LevelBefore { get; internal set; }
+        public int LevelAfter { get; internal set; }
+        public string ExperienceSummary => $"+{ExperienceGained} XP" + (LevelAfter > LevelBefore ? $" · Niveau {LevelBefore} → {LevelAfter}" : "");
         public string Status => Outcome == ExpeditionOutcome.CriticalFailure ? "Échec critique — héros perdu définitivement"
             : Outcome == ExpeditionOutcome.Failure ? "Échec — butin réduit" : "Réussite";
     }
@@ -35,6 +39,19 @@ namespace Core.Village.Exploration
         [SerializeField, Range(0f, 1f)] private float criticalShareOfFailures = .2f;
         [SerializeField, Range(0f, 1f)] private float failedLootFactor = .4f;
 
+        [Header("Expérience des héros")]
+        [SerializeField, Min(0)] private int forestExperiencePerZoneLevel = 30;
+        [SerializeField, Min(0)] private int mountainExperiencePerZoneLevel = 45;
+        [SerializeField, Range(0f, 1f)] private float failedExperienceFactor = .5f;
+        public int GetMissionExperience(ExplorationMissionDefinition mission, ExpeditionOutcome outcome = ExpeditionOutcome.Success)
+        {
+            if (mission == null || outcome == ExpeditionOutcome.CriticalFailure) return 0;
+            int basis = mission.Zone == ExplorationZone.Montagne ? mountainExperiencePerZoneLevel : forestExperiencePerZoneLevel;
+            double amount = (double)Mathf.Max(0, basis) * Mathf.Clamp(mission.ZoneLevel, 1, 3);
+            if (outcome == ExpeditionOutcome.Failure) amount *= Mathf.Clamp01(failedExperienceFactor);
+            return (int)Math.Min(int.MaxValue, Math.Round(amount, MidpointRounding.AwayFromZero));
+        }
+
         private sealed class ActiveMission
         {
             public ExplorationMissionDefinition Definition;
@@ -51,6 +68,7 @@ namespace Core.Village.Exploration
         public IReadOnlyList<ExpeditionResult> LastDefenseResults => _lastDefenseResults;
         private readonly Dictionary<heros, int> _wounded = new();
         public float FailedLootFactor => failedLootFactor;
+        public HeroRoster RecruitedHeroes => recruitedHeroes;
         public int BuildingLevel => expeditionBuilding != null ? expeditionBuilding.CurrentLevel : 0;
         public Building ExpeditionBuilding => expeditionBuilding;
         public IReadOnlyList<heros> HeroRoster => recruitedHeroes != null ? recruitedHeroes.OrderedHeroes.ToArray() : Array.Empty<heros>();
@@ -184,7 +202,11 @@ namespace Core.Village.Exploration
                 if (!entry.Departed || --entry.CyclesRemaining > 0) continue;
                 _active.Remove(entry);
                 var result = Resolve(entry);
+                result.LevelBefore = entry.Hero.Level;
                 entry.Hero.ReleaseExpedition(this);
+                if (result.Outcome != ExpeditionOutcome.CriticalFailure)
+                    result.ExperienceGained = entry.Hero.AddExperience(GetMissionExperience(entry.Definition, result.Outcome));
+                result.LevelAfter = entry.Hero.Level;
                 if (result.Outcome == ExpeditionOutcome.CriticalFailure) recruitedHeroes.RemoveHero(entry.Hero);
                 _results.Insert(0, result);
                 _lastDefenseResults.Add(result);
