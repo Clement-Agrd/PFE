@@ -146,7 +146,7 @@ public class IATower : MonoBehaviour
                     for (int i = 1; i < target.Length; i++)
                     {
                         Collider ennemy = target[i];
-                        float TankEnnemy = GetEnemyStat(ennemy, StatType.DefenseMagic);
+                        float TankEnnemy = GetEnemyStat(ennemy, StatType.Life);
 
                         if (HighHp < TankEnnemy)
                         {
@@ -168,7 +168,7 @@ public class IATower : MonoBehaviour
                     for (int i = 1; i < target.Length; i++)
                     {
                         Collider ennemy = target[i];
-                        float SquishyEnnemy = GetEnemyStat(ennemy, StatType.DefenseMagic);
+                        float SquishyEnnemy = GetEnemyStat(ennemy, StatType.Life);
 
                         if (LowHp > SquishyEnnemy)
                         {

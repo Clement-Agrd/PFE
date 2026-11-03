@@ -206,9 +206,15 @@ public class TowerShoot : MonoBehaviour
     
     public void FireBall()
     {
+        MagicPower();
+    }
+
+    public void Ice()
+    {
+        MagicPower();
+        
         
     }
-    
     
     // Action spécial
     private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
@@ -232,6 +238,32 @@ public class TowerShoot : MonoBehaviour
 
         return projectile.TravelDuration;
     }
+
+    private void MagicPower()
+    {
+        if (tower == null) return;
+        if (tower.IATower == null) return;
+        if (tower.TowerData == null) return;
+        if (stats == null) return;
+        if (tower.IATower.CurrentTarget == null) return;
+        
+        Vector3 impactPosition = tower.IATower.CurrentTarget.transform.position;
+
+        StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
+
+        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
+        
+        float duration = 0f;
+        
+        duration = SpawnArrow(
+            null,
+            impactPosition,
+            finalDamage,
+            false
+        );
+        
+        StartCoroutine(RainArrowDamage(impactPosition, finalDamage, duration));
+    }
     
     private void ApplyAreaDamage(
         Vector3 impactPosition,
@@ -247,6 +279,50 @@ public class TowerShoot : MonoBehaviour
             radius,
             tower.IATower.EnemyLayer
         );
+
+        switch (tower.TowerData.ShootMode)
+        {
+            case EnumShootType.ShootMode.Ice :
+
+                for (int i = 0; i < enemiesInZone.Length; i++)
+                {
+                    Collider enemy = enemiesInZone[i];
+                    
+                    if (enemy == null) continue;
+            
+
+                    EntityStats enemyStats = enemy.GetComponent<EntityStats>();
+            
+            
+                    if (enemyStats == null)
+                    {
+                        Debug.LogWarning($"Pas d'EntityStats sur {enemy.name}", enemy);     // 2, à la place du continue seul
+                        continue;
+                    }
+            
+                    if (!enemySlow.Contains(enemy))
+                    {
+                        enemyStats.AddModifier(
+                            StatType.Speed,
+                            slowPower,
+                            StatModifierType.PercentAdditive,
+                            this
+                        );
+                
+                        enemySlow.Add(enemy);
+                    }
+                    Debug.Log($"Speed de {enemy.name} : {enemyStats.GetStat(StatType.Speed)}");
+                    
+                }
+                
+                break;
+            
+            case EnumShootType.ShootMode.Fire :
+                
+                
+
+                break;
+        }
 
         for (int i = 0; i < enemiesInZone.Length; i++)
         {
