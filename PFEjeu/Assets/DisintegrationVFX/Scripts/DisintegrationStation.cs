@@ -28,6 +28,24 @@ namespace Core.DisintegrationVFX
         public List<DisintegrationStyle> Styles => styles;
         public bool Loop { get => loop; set => loop = value; }
 
+        public string StyleName
+        {
+            get
+            {
+                if (styles.Count == 0 || styles[Mod(_styleIndex)] == null) return "Défaut";
+                string n = styles[Mod(_styleIndex)].name;
+                return n.StartsWith("Style_") ? n.Substring(6) : n;
+            }
+        }
+
+        public void SelectStyle(int delta)
+        {
+            if (styles.Count == 0) return;
+            _styleIndex = Mod(_styleIndex + delta);
+        }
+
+        private int Mod(int i) => styles.Count == 0 ? 0 : ((i % styles.Count) + styles.Count) % styles.Count;
+
         public override bool CanInteract(GameObject interactor) => isActiveAndEnabled;
 
         public override void Interact(GameObject interactor) => Trigger();
@@ -35,7 +53,7 @@ namespace Core.DisintegrationVFX
         public void Trigger()
         {
             float delay = 0f;
-            DisintegrationStyle st = styles.Count > 0 ? styles[_styleIndex % styles.Count] : null;
+            DisintegrationStyle st = styles.Count > 0 ? styles[Mod(_styleIndex)] : null;
             for (int i = 0; i < targets.Count; i++)
             {
                 DisintegrationController t = targets[i];
@@ -46,7 +64,7 @@ namespace Core.DisintegrationVFX
                 delay += staggerPerTarget;
             }
 
-            _styleIndex++;
+            if (loop) _styleIndex++;
             _nextAt = Time.time + loopDelay + delay;
         }
 

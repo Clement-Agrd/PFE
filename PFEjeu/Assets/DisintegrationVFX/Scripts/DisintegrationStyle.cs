@@ -27,8 +27,14 @@ namespace Core.DisintegrationVFX
         public Color charColor = new Color(0.03f, 0.02f, 0.015f, 1f);
         [ColorUsage(false, true)] public Color flashColor = new Color(4f, 2.2f, 1f, 1f);
 
+        [Header("Desintegration par morceaux")]
+        [Tooltip("0 = front continu (bas->haut), 1 = plaques aleatoires qui s allument partout.")]
+        [Range(0f, 1f)] public float patchiness = 0.9f;
+        [Tooltip("Taille des plaques : petit = grandes plaques, grand = petits morceaux.")]
+        [Range(0.05f, 3f)] public float patchScale = 0.3f;
+
         [Header("Timeline")]
-        [Range(0.6f, 6f)] public float duration = 2.2f;
+        [Range(0.6f, 6f)] public float duration =  4f;
         public BurnDirection direction = BurnDirection.BottomUp;
 
         [Header("Particules")]

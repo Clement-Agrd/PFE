@@ -21,7 +21,9 @@ MonoBehaviour:
   edgeIntensity: 3
   charColor: {r: 0.32, g: 0.22, b: 0.1, a: 1}
   flashColor: {r: 3.5, g: 2.8, b: 1.2, a: 1}
-  duration: 2.2
+  patchiness: 0.9
+  patchScale: 0.3
+  duration: 5
   direction: 0
   motion: 2
   speed: 0.8

@@ -25,6 +25,8 @@ Shader "VFX/Disintegrate"
         _BurnOrigin ("Origin (xyz)", Vector) = (0,0,0,0)
         _BurnDir ("Dir (xyz) Radial (w)", Vector) = (0,1,0,0)
         _BurnRange ("Range", Float) = 1.8
+        _PatchAmount ("Patchiness", Range(0,1)) = 0
+        _PatchScale ("Patch Scale", Float) = 0.5
 
         [NoScaleOffset] _BurnNoise ("Burn Noise", 2D) = "gray" {}
         [NoScaleOffset] _BurnCracks ("Burn Cracks", 2D) = "white" {}
@@ -64,6 +66,8 @@ Shader "VFX/Disintegrate"
             float4 _BurnOrigin;
             float4 _BurnDir;
             float _BurnRange;
+            float _PatchAmount;
+            float _PatchScale;
         CBUFFER_END
 
         // Trois echantillons projetes (jamais purement horizontaux : pas de stries verticales),
@@ -104,9 +108,32 @@ Shader "VFX/Disintegrate"
             return lerp(-_NoiseAmp - 0.02, endv, _Progress);
         }
 
-        float BurnS(float3 wp, float n)
+        // Champ de plaques (0..1) : meme formule cote CPU (DisintegrationController.PatchField).
+        float PatchMix(float a, float b)
         {
-            return FrontPos() - (BurnBase(wp) + (n - 0.5) * _NoiseAmp * 2.0);
+            return saturate(((a + b) * 0.5 - 0.5) * 3.0 + 0.5);
+        }
+
+        float PatchFieldLOD(float3 wp)
+        {
+            float3 p = wp * _PatchScale;
+            float a = SAMPLE_TEXTURE2D_LOD(_BurnNoise, sampler_BurnNoise, float2(p.x + p.z * 0.5, p.y), 0).r;
+            float b = SAMPLE_TEXTURE2D_LOD(_BurnNoise, sampler_BurnNoise, float2(p.z - p.x * 0.5, p.y * 1.3 + 0.37), 0).r;
+            return PatchMix(a, b);
+        }
+
+        float PatchField(float3 wp)
+        {
+            float3 p = wp * _PatchScale;
+            float a = SAMPLE_TEXTURE2D(_BurnNoise, sampler_BurnNoise, float2(p.x + p.z * 0.5, p.y)).r;
+            float b = SAMPLE_TEXTURE2D(_BurnNoise, sampler_BurnNoise, float2(p.z - p.x * 0.5, p.y * 1.3 + 0.37)).r;
+            return PatchMix(a, b);
+        }
+
+        float BurnS(float3 wp, float n, float patch)
+        {
+            float b = lerp(BurnBase(wp), patch, _PatchAmount);
+            return FrontPos() - (b + (n - 0.5) * _NoiseAmp * 2.0);
         }
 
         float HoleLimit(float n2)
@@ -126,13 +153,13 @@ Shader "VFX/Disintegrate"
 
         float3 Curl(float3 wp, float3 nw)
         {
-            float s = BurnS(wp, BurnNoiseLOD(wp));
+            float s = BurnS(wp, BurnNoiseLOD(wp), PatchFieldLOD(wp));
             return nw * saturate((s - _EdgeWidth * 0.5) / max(_CharWidth, 0.01)) * _CurlAmount;
         }
 
         void BurnClip(float3 wp)
         {
-            float s = BurnS(wp, BurnNoise(wp));
+            float s = BurnS(wp, BurnNoise(wp), PatchField(wp));
             float crackV = Cracks(wp);
             clip(HoleLimit(N2(wp) - (1.0 - crackV) * 0.2) - s);
         }
@@ -195,7 +222,7 @@ Shader "VFX/Disintegrate"
                 float3 wp = IN.positionWS;
                 float n = BurnNoise(wp);
                 float n2 = N2(wp);
-                float s = BurnS(wp, n);
+                float s = BurnS(wp, n, PatchField(wp));
                 float crackV = Cracks(wp);
                 clip(HoleLimit(n2 - (1.0 - crackV) * 0.2) - s);
 

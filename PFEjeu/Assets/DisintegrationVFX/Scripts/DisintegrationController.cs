@@ -24,7 +24,7 @@ namespace Core.DisintegrationVFX
         [SerializeField, Range(0, 6)] private int hitStopFrames = 2;
         [Tooltip("Courbe de progression du front (0..1 -> 0..1).")]
         [SerializeField] private AnimationCurve progressCurve = new AnimationCurve(
-            new Keyframe(0f, 0f, 0f, 0.35f), new Keyframe(0.55f, 0.6f, 1.6f, 1.6f), new Keyframe(1f, 1f, 0.5f, 0f));
+            new Keyframe(0f, 0f, 0f, 0.6f), new Keyframe(0.5f, 0.5f, 1.05f, 1.05f), new Keyframe(1f, 1f, 0.8f, 0f));
 
         [Header("Désactivation à la fin")]
         [SerializeField] private bool disableColliders = true;
@@ -54,6 +54,8 @@ namespace Core.DisintegrationVFX
         private static readonly List<Vector3> TmpV = new List<Vector3>(8192);
         private static readonly List<Vector3> TmpN = new List<Vector3>(8192);
         private static Mesh _bake;
+        private static Texture2D _noiseTex;
+        private float _patchAmount, _patchScale;
 
         private State _state;
         private Renderer[] _renderers;
@@ -139,6 +141,11 @@ namespace Core.DisintegrationVFX
                 return false;
             }
 
+            _noiseTex = cfg.template.GetTexture("_BurnNoise") as Texture2D;
+            _patchAmount = _noiseTex != null && _noiseTex.isReadable ? _active.patchiness : 0f;
+            _patchScale = _active.patchScale;
+            if (_noiseTex != null && !_noiseTex.isReadable)
+                Debug.LogWarning("[Disintegration] T_BurnNoise non lisible : desintegration par morceaux desactivee.", this);
             _quality = cfg.quality;
             _duration = duration > 0f ? duration : _active.duration;
             if (!Bake(fromHit || _active.direction == BurnDirection.FromHitPoint, hit))
@@ -336,7 +343,17 @@ namespace Core.DisintegrationVFX
         private float BurnBase(Vector3 wp)
         {
             Vector3 d = wp - _origin;
-            return (_radial ? d.magnitude : Vector3.Dot(d, _dir)) / Mathf.Max(_range, 0.001f);
+            float spatial = (_radial ? d.magnitude : Vector3.Dot(d, _dir)) / Mathf.Max(_range, 0.001f);
+            return _patchAmount > 0f ? Mathf.Lerp(spatial, PatchField(wp), _patchAmount) : spatial;
+        }
+
+        // Meme formule que Disintegrate.shader (PatchField) : bilineaire, texture Repeat.
+        private float PatchField(Vector3 wp)
+        {
+            Vector3 p = wp * _patchScale;
+            float a = _noiseTex.GetPixelBilinear(p.x + p.z * 0.5f, p.y).r;
+            float b = _noiseTex.GetPixelBilinear(p.z - p.x * 0.5f, p.y * 1.3f + 0.37f).r;
+            return Mathf.Clamp01(((a + b) * 0.5f - 0.5f) * 3.0f + 0.5f);
         }
 
         private void BuildMaterials(Material template)
@@ -375,7 +392,8 @@ namespace Core.DisintegrationVFX
 
                     if (o.HasProperty(SmoothId)) b.SetFloat(SmoothId, o.GetFloat(SmoothId));
                     if (o.HasProperty(MetalId)) b.SetFloat(MetalId, o.GetFloat(MetalId));
-                    b.SetColor(EmisId, o.HasProperty(EmisId) && o.IsKeywordEnabled("_EMISSION") ? o.GetColor(EmisId) : Color.black);
+                    bool hasEmisMap = o.HasProperty("_EmissionMap") && o.GetTexture("_EmissionMap") != null;
+                    b.SetColor(EmisId, !hasEmisMap && o.HasProperty(EmisId) && o.IsKeywordEnabled("_EMISSION") ? o.GetColor(EmisId) : Color.black);
                 }
             }
         }
@@ -402,6 +420,8 @@ namespace Core.DisintegrationVFX
                     b.SetVector(OriginId, _origin);
                     b.SetVector(DirId, dir);
                     b.SetFloat(RangeId, _range);
+                    b.SetFloat("_PatchAmount", _patchAmount);
+                    b.SetFloat("_PatchScale", _patchScale);
                 }
             }
         }
