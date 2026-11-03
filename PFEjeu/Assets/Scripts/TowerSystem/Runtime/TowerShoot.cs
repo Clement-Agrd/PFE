@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using Core.HealthSystem;
 using Core.PoolingSystem;
@@ -176,23 +177,33 @@ public class TowerShoot : MonoBehaviour
         StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
         
         int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
-        
+
+        float duration = 0f;
+            
         for (int i = 0; i < arrowCount; i++)
         {
             Vector2 offset = UnityEngine.Random.insideUnitCircle * zoneImpact;
             Vector3 randomOffset = new Vector3(offset.x, 0f, offset.y);
 
             Vector3 arrowImpactPosition = impactPosition + randomOffset;
-            SpawnArrow(
+            
+            duration = Mathf.Max(duration, SpawnArrow(
                 null,
                 arrowImpactPosition,
                 finalDamage,
                 false
-            );
+            ));
         }
-        
+        StartCoroutine(RainArrowDamage(impactPosition, finalDamage, duration));
     }
+    
+    private IEnumerator RainArrowDamage(Vector3 impactPosition, int finalDamage, float duration)
+    {
+        yield return new WaitForSeconds(duration);
 
+        ApplyAreaDamage(impactPosition, zoneImpact, finalDamage);
+    }
+    
     public void FireBall()
     {
         
@@ -200,16 +211,16 @@ public class TowerShoot : MonoBehaviour
     
     
     // Action spécial
-    private void SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
+    private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
     {
         GameObject arrow = PoolManager.Instance.Spawn(
-            tower.TowerData.ProjectilePrefab, 
-            firePoint.position, 
+            tower.TowerData.ProjectilePrefab,
+            firePoint.position,
             firePoint.rotation);
-        
-        if (arrow == null) return;
 
-        if (!arrow.TryGetComponent(out TowerProjectil projectile)) return;
+        if (arrow == null) return 0f;
+
+        if (!arrow.TryGetComponent(out TowerProjectil projectile)) return 0f;
 
         projectile.SetTarget(
             target,
@@ -218,6 +229,8 @@ public class TowerShoot : MonoBehaviour
             tower.TowerData.ProjectileMovement,
             impactPosition,
             damageEnable);
+
+        return projectile.TravelDuration;
     }
     
     private void ApplyAreaDamage(
@@ -239,7 +252,9 @@ public class TowerShoot : MonoBehaviour
         {
             if (enemiesInZone[i] == null) continue;
 
-            if (enemiesInZone[i].TryGetComponent(out Health health))
+            Health health = enemiesInZone[i].GetComponentInParent<Health>();
+
+            if (health != null)
             {
                 health.TakeDamage(
                     new DamageInfo(finalDamage, tower.TowerData.DamageType)
