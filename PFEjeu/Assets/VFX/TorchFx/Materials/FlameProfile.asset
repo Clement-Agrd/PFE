@@ -1,0 +1,36 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74bd295b134f4024ab91bffda6a67573, type: 3}
+  m_Name: FlameProfile
+  m_EditorClassIdentifier: Assembly-CSharp::TorchFx.FlameProfile
+  material: {fileID: 2100000, guid: fafacb16d688c4d48827f227d4902a72, type: 2}
+  width: 0.32
+  height: 0.46
+  layers:
+  - name: Externe
+    widthScale: 1
+    heightScale: 1
+    seedOffset: 0
+    tint: {r: 1, g: 1, b: 1, a: 1}
+    speedMultiplier: 1
+  - name: Coeur
+    widthScale: 0.6
+    heightScale: 0.62
+    seedOffset: 4.3
+    tint: {r: 1.25, g: 1.15, b: 0.9, a: 1}
+    speedMultiplier: 1.35
+  flickerFrequency: 3.2
+  heightFlicker: 0.18
+  widthFlicker: 0.08
+  brightnessFlicker: 0.25
+  igniteDuration: 0.6
+  extinguishDuration: 0.35

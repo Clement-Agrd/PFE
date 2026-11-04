@@ -1,0 +1,51 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Flame
+  m_Shader: {fileID: 4800000, guid: 0b710e51b024e54429060d48fa92d446, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _Additive: 0.35
+    - _BaseWidth: 0.7
+    - _Brightness: 1
+    - _CutCore: 0.62
+    - _CutEdge: 0.05
+    - _CutMid: 0.32
+    - _Distort: 0.55
+    - _Erode: 0.7
+    - _Flicker: 0
+    - _ScrollSpeed: 1.2
+    - _Seed: 0
+    - _Softness: 0.03
+    - _SpeedMul: 1
+    - _Taper: 1.25
+    - _WindBend: 0.8
+    m_Colors:
+    - _ColorCore: {r: 6, g: 4.2, b: 1.6, a: 1}
+    - _ColorEdge: {r: 1.4, g: 0.18, b: 0.02, a: 1}
+    - _ColorMid: {r: 3.2, g: 1.1, b: 0.12, a: 1}
+    - _NoiseScale: {r: 2.2, g: 1.6, b: 0, a: 0}
+    - _Tint: {r: 1, g: 1, b: 1, a: 1}
+    - _WindWS: {r: 0, g: 0, b: 0, a: 0}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

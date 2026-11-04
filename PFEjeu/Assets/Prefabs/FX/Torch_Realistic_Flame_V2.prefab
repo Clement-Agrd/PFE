@@ -1,0 +1,144 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &7275163954818030252
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2929954688069195771, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: wind.x
+      value: 0.35
+      objectReference: {fileID: 0}
+    - target: {fileID: 2929954688069195771, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: wind.z
+      value: 0.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 2929954688069195771, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: profile
+      value: 
+      objectReference: {fileID: 11400000, guid: 8e88bb3c871c5f341967671dda01a59b, type: 2}
+    - target: {fileID: 6262720583016034728, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_Name
+      value: Torch_Realistic_Flame_V2
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6747086706949942034, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7706259158599885383, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: baseRange
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7706259158599885383, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: baseIntensity
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7706259158599885383, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: positionJitter
+      value: 0.06
+      objectReference: {fileID: 0}
+    - target: {fileID: 7706259158599885383, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: flickerAmplitude
+      value: 0.3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920647262848298481, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: turbulence
+      value: 0.6
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920647262848298481, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: sizeRange.x
+      value: 0.008
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920647262848298481, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: sizeRange.y
+      value: 0.018
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920647262848298481, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: emissionRate
+      value: 9
+      objectReference: {fileID: 0}
+    - target: {fileID: 7920647262848298481, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      propertyPath: maxParticles
+      value: 36
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 2754226699570041933, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 3854427643788630085}
+  m_SourcePrefab: {fileID: 100100000, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+--- !u!1 &4813901073593093857 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 2754226699570041933, guid: f2733267f244875458fd544bc5b00afd, type: 3}
+  m_PrefabInstance: {fileID: 7275163954818030252}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &3854427643788630085
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4813901073593093857}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1

@@ -1,0 +1,42 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 74bd295b134f4024ab91bffda6a67573, type: 3}
+  m_Name: FlameProfile_Realistic
+  m_EditorClassIdentifier: Assembly-CSharp::TorchFx.FlameProfile
+  material: {fileID: 2100000, guid: 3bf6217642d8ac943b2264daa4b1184a, type: 2}
+  width: 0.28
+  height: 0.53
+  layers:
+  - name: Externe
+    widthScale: 1
+    heightScale: 1
+    seedOffset: 0
+    tint: {r: 1, g: 0.8, b: 0.7, a: 0.75}
+    speedMultiplier: 1
+  - name: Milieu
+    widthScale: 0.75
+    heightScale: 0.8
+    seedOffset: 3.7
+    tint: {r: 1.2, g: 1, b: 0.7, a: 0.85}
+    speedMultiplier: 1.3
+  - name: Coeur
+    widthScale: 0.45
+    heightScale: 0.5
+    seedOffset: 8.1
+    tint: {r: 1.3, g: 1.2, b: 1, a: 0.9}
+    speedMultiplier: 1.7
+  flickerFrequency: 1.56
+  heightFlicker: 0.400443
+  widthFlicker: 0.26599592
+  brightnessFlicker: 0.07190259
+  igniteDuration: 3.07
+  extinguishDuration: 3.93
