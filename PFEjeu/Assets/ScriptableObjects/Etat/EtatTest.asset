@@ -13,7 +13,9 @@ MonoBehaviour:
   m_Name: EtatTest
   m_EditorClassIdentifier: Assembly-CSharp::SOEtat
   duration: 0
-  modifier: 0
-  stat: 0
+  statModifiers:
+  - stat: 0
+    modifier: 0
+  stats: 
   damage: 0
   interval: 0

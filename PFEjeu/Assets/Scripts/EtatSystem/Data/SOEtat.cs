@@ -8,11 +8,12 @@ public class SOEtat : ScriptableObject
     [SerializeField] private float duration;
     public float Duration => duration;
     
-    [SerializeField] private float modifier;
-    public float Modifier => modifier;
+    [SerializeField] private StatModifierData[] statModifiers;
+    public StatModifierData[] StatModifiers => statModifiers;
     
-    [SerializeField] private StatType stat;
-    public StatType Stat => stat;
+    [Header("Stats")]
+    [SerializeField] private StatType[] stats;
+    public StatType[] Stats => stats;
 
     [Header("Damage")]
     [SerializeField, Min(0)] private int damage;
@@ -20,4 +21,11 @@ public class SOEtat : ScriptableObject
     
     [SerializeField, Min(0)] private float interval;
     public float Interval => Mathf.Max(0, interval);
+    
+    [System.Serializable]
+    public class StatModifierData
+    {
+        public StatType stat;
+        public float modifier;
+    }
 }

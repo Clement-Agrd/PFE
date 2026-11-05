@@ -312,9 +312,12 @@ public class TowerShoot : MonoBehaviour
                         enemySlow.Add(enemy);
                     }
                     Debug.Log($"Speed de {enemy.name} : {enemyStats.GetStat(StatType.Speed)}");
+                }
+
+                for (int i = 0; i < enemySlow.Count; i++)
+                {
                     
                 }
-                
                 break;
             
             case EnumShootType.ShootMode.Fire :
