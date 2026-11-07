@@ -1,0 +1,85 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f6890c3c7d34bb3428fce2f5bf8bcc63, type: 3}
+  m_Name: MountainProfile
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::Defense.Mountain.EditorTools.MountainProfile
+  seed: 1337
+  valleyY: 5
+  baseSnapshot: {fileID: 15600000, guid: 79310510ccaeea94fb0e9a6612bcaad4, type: 2}
+  noiseScaleMeters: 45
+  thresholdMode: 1
+  flankMinRelHeight: 10
+  percentileRadiusFromHerse: 250
+  treeThinStart:
+    meters: 10
+    percentile: 0
+  treeNone:
+    meters: 40
+    percentile: 0.62
+  screeStart:
+    meters: 25
+    percentile: 0.52
+  cliffStart:
+    meters: 45
+    percentile: 0.72
+  summitStart:
+    meters: 70
+    percentile: 0.88
+  frostStart:
+    meters: 90
+    percentile: 0.97
+  rockSlope: 30
+  rockSlopeBlend: 4
+  slopeNoise: 3
+  screeSlopeMin: 18
+  screeSlopeMax: 30
+  summitRockMinSlope: 10
+  screeFootRadius: 14
+  mossMaxShare: 0.5
+  mossAltitudeFalloff: 25
+  frostPatchThreshold: 0.58
+  frostMaxSlope: 50
+  frostMaxShare: 0.9
+  altPaleStartRel: 50
+  altPaleEndRel: 140
+  altPaleMax: 0.4
+  farPaleStart: 250
+  farPaleEnd: 450
+  farPaleMax: 0
+  rockLayerName: Rock_Layer
+  screeLayerName: Rock_Layer 1
+  frostLayerName: Neige
+  mossLayerName: Forest_Layer
+  treeThinRamp: 12
+  treeSparseKeep: 0.35
+  treeFadeWidth: 10
+  grassKeepHigh: 0.35
+  outerTreeThinStart: 250
+  outerTreeKeep: 0.6
+  outerTreeCullStart: 330
+  outerTreeCullEnd: 400
+  terrainTreeDistance: 450
+  terrainDrawInstanced: 1
+  laneMargin: 6
+  laneFade: 6
+  slotRadius: 9
+  slotFade: 4
+  habitedRadius: 22
+  habitedFade: 8
+  plateauRadius: 38
+  plateauFade: 3
+  habitedObjectNames:
+  - herse
+  - Prefabs_Barracks
+  - NPC_Capitaine
+  - Player
+  habitedChildrenRoot: VillageBuildings

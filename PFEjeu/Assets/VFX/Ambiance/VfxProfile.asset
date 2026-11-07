@@ -1,0 +1,64 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6bac08d660ff164d9461061543921d1, type: 3}
+  m_Name: VfxProfile
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Vfx.VfxProfile
+  qualityLevel: 2
+  low:
+    particleMultiplier: 0.4
+    farMistLayers: 1
+    maxRealLights: 2
+  medium:
+    particleMultiplier: 0.7
+    farMistLayers: 2
+    maxRealLights: 4
+  high:
+    particleMultiplier: 1
+    farMistLayers: 3
+    maxRealLights: 6
+  enemyColor: {r: 1, g: 0.38, b: 0.1, a: 1}
+  defenseColor: {r: 0.1, g: 0.85, b: 0.8, a: 1}
+  torchColor: {r: 1, g: 0.6, b: 0.2, a: 1}
+  ambientColor: {r: 0.45, g: 0.55, b: 0.72, a: 1}
+  mistCenter: {x: 147.625, y: -14.500004}
+  mistExtent: {x: 113.375, y: 121.5}
+  mistColor: {r: 0.5, g: 0.6, b: 0.78, a: 1}
+  groundMistCount: 140
+  groundMistHeight: 2.5
+  groundMistSize: {x: 16, y: 30}
+  groundMistAlpha: 0.1
+  driftStrength: 1.2
+  laneClearRadius: 12
+  laneFadeRadius: 30
+  baseNearDistance: 60
+  baseNearClearMultiplier: 1.8
+  farLayers:
+  - distanceRange: {x: 140, y: 240}
+    heightAboveGround: 5
+    count: 36
+    sizeRange: {x: 40, y: 70}
+    alpha: 0.09
+    tint: {r: 0.55, g: 0.65, b: 0.85, a: 1}
+  - distanceRange: {x: 200, y: 320}
+    heightAboveGround: 22
+    count: 30
+    sizeRange: {x: 60, y: 100}
+    alpha: 0.1
+    tint: {r: 0.45, g: 0.56, b: 0.8, a: 1}
+  - distanceRange: {x: 260, y: 400}
+    heightAboveGround: 50
+    count: 24
+    sizeRange: {x: 90, y: 150}
+    alpha: 0.12
+    tint: {r: 0.38, g: 0.5, b: 0.78, a: 1}
+  farMistSectorDegrees: 150
+  isNight: 1

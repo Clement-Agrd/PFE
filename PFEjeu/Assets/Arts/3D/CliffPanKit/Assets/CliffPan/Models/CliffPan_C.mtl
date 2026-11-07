@@ -1,0 +1,5 @@
+newmtl CliffPan_C_Mat
+Kd 1 1 1
+Ks 0 0 0
+map_Kd ../Textures/CliffPan_C_D.png
+map_Bump ../Textures/CliffPan_C_N.png

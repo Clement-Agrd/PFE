@@ -1,0 +1,108 @@
+{
+  "atlas": {
+    "atlas_w": 1494,
+    "atlas_h": 2043,
+    "atlas_pages": 1,
+    "charts": 406,
+    "utilization": 0.8266071081161499,
+    "texels_per_unit": 149.57330322265625,
+    "overlapping_texels": 0
+  },
+  "resolution": 2048,
+  "variants": {
+    "A": {
+      "label": "Éboulis dense",
+      "lods": {
+        "0": {
+          "tris": 1500,
+          "verts_in_obj": 2125,
+          "base_tris_excluded_from_atlas": 181,
+          "watertight": true,
+          "winding_consistent": true,
+          "size_m": [
+            4.122,
+            1.068,
+            3.518
+          ],
+          "ymin": 0.0,
+          "volume_m3": 5.4129
+        },
+        "1": {
+          "tris": 700,
+          "verts_in_obj": 1126,
+          "base_tris_excluded_from_atlas": 22,
+          "watertight": true,
+          "winding_consistent": true,
+          "size_m": [
+            4.127,
+            1.056,
+            3.478
+          ],
+          "ymin": 0.0,
+          "volume_m3": 5.3887
+        },
+        "2": {
+          "tris": 250,
+          "verts_in_obj": 472,
+          "base_tris_excluded_from_atlas": 0,
+          "watertight": true,
+          "winding_consistent": true,
+          "size_m": [
+            4.081,
+            1.061,
+            3.519
+          ],
+          "ymin": 0.0001,
+          "volume_m3": 5.3047
+        }
+      }
+    },
+    "B": {
+      "label": "Éboulis étalé",
+      "lods": {
+        "0": {
+          "tris": 1500,
+          "verts_in_obj": 2292,
+          "base_tris_excluded_from_atlas": 185,
+          "watertight": true,
+          "winding_consistent": true,
+          "size_m": [
+            4.976,
+            0.814,
+            2.768
+          ],
+          "ymin": 0.0,
+          "volume_m3": 3.825
+        },
+        "1": {
+          "tris": 700,
+          "verts_in_obj": 1230,
+          "base_tris_excluded_from_atlas": 22,
+          "watertight": true,
+          "winding_consistent": true,
+          "size_m": [
+            4.977,
+            0.814,
+            2.766
+          ],
+          "ymin": 0.0,
+          "volume_m3": 3.8054
+        },
+        "2": {
+          "tris": 250,
+          "verts_in_obj": 452,
+          "base_tris_excluded_from_atlas": 0,
+          "watertight": true,
+          "winding_consistent": true,
+          "size_m": [
+            4.982,
+            0.814,
+            2.666
+          ],
+          "ymin": 0.0001,
+          "volume_m3": 3.6629
+        }
+      }
+    }
+  }
+}

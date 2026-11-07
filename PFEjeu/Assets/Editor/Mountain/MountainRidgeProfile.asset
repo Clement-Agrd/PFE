@@ -1,0 +1,83 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 42861586c65146b42a942b5b314e37e2, type: 3}
+  m_Name: MountainRidgeProfile
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::Defense.Mountain.EditorTools.MountainRidgeProfile
+  enabled: 1
+  seed: 4242
+  minDistanceFromHerse: 250
+  rampInWidth: 30
+  borderFadeWidth: 40
+  ridges:
+  - radius: 320
+    halfWidth: 70
+    height: 55
+    wobble: 45
+  - radius: 385
+    halfWidth: 75
+    height: 80
+    wobble: 58
+  - radius: 440
+    halfWidth: 80
+    height: 110
+    wobble: 70
+  angularFrequency: 2.2
+  peakFrequency: 7.5
+  peakContrast: 0.45
+  detailScaleMeters: 40
+  crestSharpness: 1.4
+  ridgedScaleBig: 70
+  ridgedScaleSmall: 26
+  ridgedStrength: 0.55
+  gullyScale: 38
+  gullyStrength: 0.3
+  passFrequency: 1.4
+  passLow: 0.28
+  passHigh: 0.48
+  passMinHeight: 0.45
+  maxHeightFactor: 1.6
+  massifDetailEnabled: 1
+  massifStartRel: 45
+  massifFullRel: 65
+  massifBigScale: 70
+  massifBigAmplitude: 14
+  massifMidScale: 28
+  massifMidAmplitude: 6
+  massifFineScale: 11
+  massifFineAmplitude: 1.8
+  massifWarp: 18
+  strataHeight: 3.5
+  strataStrength: 0.22
+  strataStartRel: 55
+  strataFullRel: 85
+  cragEnabled: 1
+  cragStartRel: 45
+  cragSteepMinRel: 10
+  cragWallScale: 36
+  cragWallAmplitude: 13
+  ledgeStrengthOnWalls: 0.85
+  cragSteepSlopeLow: 52
+  cragSteepSlopeHigh: 62
+  cragFullRel: 62
+  cragSlopeLow: 14
+  cragSlopeHigh: 38
+  cragLargeScale: 13
+  cragLargeAmplitude: 3.4
+  cragFineScale: 5
+  cragFineAmplitude: 1.5
+  cragWarp: 7
+  ledgeHeight: 2.4
+  ledgeStrength: 0.5
+  cragGentleShare: 0.25
+  sectorAzimuth: 33
+  sectorWidth: 45
+  sectorBoost: 1.25

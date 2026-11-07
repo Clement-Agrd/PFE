@@ -1,0 +1,212 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d8600d522b38c249a8428c267e69331, type: 3}
+  m_Name: MountainRockProfile
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::Defense.Mountain.EditorTools.MountainRockProfile
+  prefabFolder: Assets/PackagesStore/Idyllic Fantasy Nature/Prefabs/
+  cliffNames:
+  - Cliff_01
+  - Cliff_02
+  - Cliff_03
+  - Cliff_04
+  - Cliff_05
+  bigNames:
+  - Rock_Big_01
+  - Rock_Big_02
+  - Rock_Big_03
+  mediumNames:
+  - Rock_Medium_01
+  - Rock_Medium_02
+  - Rock_Medium_03
+  smallNames:
+  - Rock_Small_01
+  - Rock_Small_02
+  - Rock_Small_03
+  kitPanelPaths: []
+  kitMediumPaths:
+  - Assets/Arts/3D_Rocks/RockBlocksKit/RockBlocksKit/Assets/RockBlocks/Prefabs/RockBlock_A.prefab
+  - Assets/Arts/3D_Rocks/RockBlocksKit/RockBlocksKit/Assets/RockBlocks/Prefabs/RockBlock_B.prefab
+  - Assets/Arts/3D_Rocks/RockBlocksKit/RockBlocksKit/Assets/RockBlocks/Prefabs/RockBlock_C.prefab
+  - Assets/Arts/3D_Rocks/RockBlocksKit/RockBlocksKit/Assets/RockBlocks/Prefabs/RockBlock_D.prefab
+  - Assets/Arts/3D_Rocks/RockBlocksKit/RockBlocksKit/Assets/RockBlocks/Prefabs/RockBlock_E.prefab
+  kitSmallPaths: []
+  kitScreePaths: []
+  kitSlabPaths:
+  - Assets/Arts/3D_Rocks/RockSlabKit/RockSlabKit/Assets/RockSlab/Prefabs/RockSlab_A.prefab
+  - Assets/Arts/3D_Rocks/RockSlabKit/RockSlabKit/Assets/RockSlab/Prefabs/RockSlab_B.prefab
+  kitLandmarkPaths:
+  - Assets/Arts/3D_Rocks/RockLandmarkKit/RockLandmarkKit/Assets/RockLandmark/Prefabs/RockLandmark_JunctionA.prefab
+  - Assets/Arts/3D_Rocks/RuinKit/RuinKit/Assets/Ruin/Prefabs/Ruin_Main.prefab
+  - Assets/Arts/3D_Rocks/RuinKit/RuinKit/Assets/Ruin/Prefabs/Ruin_Arch.prefab
+  - Assets/Arts/3D_Rocks/RuinKit/RuinKit/Assets/Ruin/Prefabs/Ruin_Pillar.prefab
+  - Assets/Arts/3D_Rocks/RuinKit/RuinKit/Assets/Ruin/Prefabs/Ruin_Wall.prefab
+  kitMediumScale: 2.2
+  kitSmallScale: 2.4
+  kitScreeScale: 1.4
+  kitPanelScale: 1
+  kitStretchXZ: 0.3
+  kitStretchY: 0.25
+  kitLuminanceMatch: 0.7
+  kitScaleVariation: 0.45
+  mirrorChance: 0.5
+  tiltDegrees: 9
+  farScaleStart: 200
+  farScaleEnd: 430
+  farScaleMax: 3.2
+  wallPanelShare: 0.7
+  screeAnchorShare: 0.4
+  seed: 20241105
+  rootName: Environment_Rocks
+  heroRootName: Environment_Rocks_Hero
+  maxRadiusFromHerse: 430
+  gridSpacing: 7
+  maxRocks: 2600
+  densityMultiplier: 3
+  fiveRockChance: 0.4
+  burialMin: 0.35
+  burialMax: 0.5
+  scaleVariation: 0.25
+  alignToNormal: 0.85
+  overlapPadding: 0.4
+  wallMinSlope: 46
+  wallMinRel: 8
+  wallSpacing: 8
+  wallMaxRocks: 900
+  wallMaxRadius: 430
+  wallScaleMin: 0.9
+  wallScaleMax: 1.5
+  wallOverlap: 0.6
+  tintDarkRel: 10
+  tintLightRel: 130
+  darkBrightness: 0.7
+  lightBrightness: 1
+  altitudeBuckets: 6
+  topTint: {r: 0.92, g: 0.95, b: 1, a: 1}
+  valleyY: 5
+  useColdMaterials: 1
+  coldMaterialFolder: Assets/Materials/Mountain
+  coldTint: {r: 0.8, g: 0.84, b: 0.92, a: 1}
+  mossColor: {r: 0.3, g: 0.42, b: 0.35, a: 1}
+  densityByAltitude:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 5
+      value: 0.01
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 12
+      value: 0.035
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 25
+      value: 0.08
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 40
+      value: 0.12
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 60
+      value: 0.17
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 90
+      value: 0.2
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 130
+      value: 0.16
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 180
+      value: 0.12
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  patchMin: 0.65
+  patchMax: 1.35
+  nearPlateauBoost: 1.4
+  farPlateauFactor: 0.6
+  altScaleMin: 0.8
+  altScaleMax: 1.5
+  altScaleStartRel: 20
+  altScaleEndRel: 120
+  cliffAnchorStartRel: 40
+  cliffAnchorFullRel: 95
+  cliffAnchorMax: 0.85
+  bigAnchorStartRel: 12
+  bigAnchorFullRel: 50
+  slopeBurialBonus: 0.12
+  cliffZoneMinSlope: 35
+  patchNoiseScale: 40
+  laneEdgeMin: 4
+  plainLaneEdgeMin: 8
+  slotMin: 6
+  respectNavMesh: 0
+  navMeshPadding: 0.5
+  protectThreshold: 0.5
+  plateauKeepOut: 41.5
+  spawnKeepOut: 32
+  corridorDistance: 110
+  corridorHalfWidth: 9
+  landmarks:
+  - label: Repere_A_GrosRocher
+    position: {x: 140, y: -10}
+    laneOffset: 10
+  - label: Repere_B_Formation
+    position: {x: 110, y: -62}
+    laneOffset: 11
+  belvedereTargetAzimuth: 45
+  belvedereMinCliffSlope: 44
+  belvedereGuardOffset: 3.2
