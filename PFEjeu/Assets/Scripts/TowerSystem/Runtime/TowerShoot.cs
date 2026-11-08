@@ -48,6 +48,10 @@ public class TowerShoot : MonoBehaviour
                 Slow();
                 break;
             
+            case EnumShootType.ShootMode.Fire :
+                FireBall();
+                break;
+            
             case EnumShootType.ShootMode.RainArrow :
                 RainArrow();
                 break;
@@ -283,41 +287,8 @@ public class TowerShoot : MonoBehaviour
         switch (tower.TowerData.ShootMode)
         {
             case EnumShootType.ShootMode.Ice :
-
-                for (int i = 0; i < enemiesInZone.Length; i++)
-                {
-                    Collider enemy = enemiesInZone[i];
-                    
-                    if (enemy == null) continue;
-            
-
-                    EntityStats enemyStats = enemy.GetComponent<EntityStats>();
-            
-            
-                    if (enemyStats == null)
-                    {
-                        Debug.LogWarning($"Pas d'EntityStats sur {enemy.name}", enemy);     // 2, à la place du continue seul
-                        continue;
-                    }
-            
-                    if (!enemySlow.Contains(enemy))
-                    {
-                        enemyStats.AddModifier(
-                            StatType.Speed,
-                            slowPower,
-                            StatModifierType.PercentAdditive,
-                            this
-                        );
                 
-                        enemySlow.Add(enemy);
-                    }
-                    Debug.Log($"Speed de {enemy.name} : {enemyStats.GetStat(StatType.Speed)}");
-                }
-
-                for (int i = 0; i < enemySlow.Count; i++)
-                {
-                    
-                }
+                
                 break;
             
             case EnumShootType.ShootMode.Fire :

@@ -10,17 +10,13 @@ public class SOEtat : ScriptableObject
     
     [SerializeField] private StatModifierData[] statModifiers;
     public StatModifierData[] StatModifiers => statModifiers;
-    
-    [Header("Stats")]
-    [SerializeField] private StatType[] stats;
-    public StatType[] Stats => stats;
 
     [Header("Damage")]
     [SerializeField, Min(0)] private int damage;
     public int Damage => Mathf.Max(0, damage);
     
-    [SerializeField, Min(0)] private float interval;
-    public float Interval => Mathf.Max(0, interval);
+    [SerializeField, Min(0.01f)] private float interval = 1f;
+    public float Interval => Mathf.Max(0.01f, interval);
     
     [System.Serializable]
     public class StatModifierData
