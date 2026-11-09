@@ -5,7 +5,7 @@ public class EnumShootType
     public enum ShootMode
     {
         Classic,
-        Slow,
+        Heal,
         RainArrow,
         MagicPower,
     }

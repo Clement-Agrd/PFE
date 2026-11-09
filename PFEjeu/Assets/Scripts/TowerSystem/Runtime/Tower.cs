@@ -171,7 +171,7 @@ public class Tower : MonoBehaviour
     
     private bool HasTarget()
     {
-        if (towerData.ShootMode == EnumShootType.ShootMode.Slow)
+        if (towerData.TargetPriority == EnumTargetPriority.TargetPriority.All)
             return iaTower.AllTargets.Count > 0;
         return iaTower.CurrentTarget != null;
     }

@@ -10,9 +10,6 @@ public class IATower : MonoBehaviour
     [Header("System")]
     [SerializeField] private Tower tower;
     
-    // Ciblage variable
-    [SerializeField] private LayerMask enemyLayer;
-    public LayerMask EnemyLayer => enemyLayer;
     private float timer;
     
     // Cilbe
@@ -45,7 +42,7 @@ public class IATower : MonoBehaviour
         Collider[] targets = Physics.OverlapSphere(
             transform.position,
             tower.TowerData.DetectionRange,
-            enemyLayer);
+            tower.TowerData.TargetLayer);
         
         SelectTarget(targets);
         

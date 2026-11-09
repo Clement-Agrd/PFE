@@ -36,6 +36,9 @@ public class SOTower : ScriptableObject
     [SerializeField] private EnumTargetDistance.TargetDistance targetDistance;
     public EnumTargetDistance.TargetDistance TargetDistance => targetDistance;
     
+    [SerializeField] private LayerMask targetLayer;
+    public LayerMask TargetLayer => targetLayer;
+    
     
     [Header("Projectile")]
     [SerializeField] private EnumProjectilSetting.projectilType projectileType;

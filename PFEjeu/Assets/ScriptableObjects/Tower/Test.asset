@@ -16,12 +16,15 @@ MonoBehaviour:
   detectionRange: 20
   towerType: 0
   etat: {fileID: 11400000, guid: 4ec6d35c090e22845971f49d0dfa5474, type: 2}
-  targetCondition1: 0
+  targetCondition1: 7
   targetCondition2: 0
   targetDistance: 0
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 72
   projectileType: 0
   projectileMovement: 0
-  shootMode: 0
+  shootMode: 1
   projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
   damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
   minLevel: 1
@@ -36,7 +39,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 20
     - type: 3
-      baseValue: 0
+      baseValue: 10
     - type: 4
       baseValue: 0
     - type: 5

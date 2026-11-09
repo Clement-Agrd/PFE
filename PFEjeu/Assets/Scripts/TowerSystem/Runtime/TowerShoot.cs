@@ -7,6 +7,7 @@ using Core.StatsSystem;
 using Core.TowerDefense;
 using StatType = Core.StatsSystem.EnumStats.StatTypes;
 using UnityEngine;
+using UnityEngine.AI;
 
 public class TowerShoot : MonoBehaviour
 {
@@ -14,21 +15,24 @@ public class TowerShoot : MonoBehaviour
     [SerializeField] private Tower tower;
     [SerializeField] private EntityStats stats;
     [SerializeField] private PoolManager poolManager;
-    
+
     [Header("Data")]
-    [SerializeField] private float slowPower = -0.30f;
     [SerializeField] private float zoneImpact = 3f;
     [SerializeField] private int arrowCount = 10;
 
-    List<Collider> enemySlow = new List<Collider>();
+    [Header("Tir prédictif (RainArrow)")]
+    [SerializeField] private bool predictMovement = true;
+    // Temps de vol estimé des flèches, utilisé pour anticiper le déplacement de la cible.
+    [SerializeField] private float estimatedFlightTime = 1f;
     
-    
+    private readonly List<Health> healthsTouched = new List<Health>();
+
     public Transform firePoint => tower.FirePoint;
 
     private void Awake()
     {
         tower = GetComponent<Tower>();
-        
+
         if (tower == null)
         {
             Debug.LogError("TowerShoot : aucun composant Tower trouvé sur ce GameObject.", this);
@@ -37,22 +41,24 @@ public class TowerShoot : MonoBehaviour
 
     public void Shoot()
     {
-        Debug.Log("Shoot appelé");
+        if (tower == null) return;
+        if (tower.TowerData == null) return;
+        
         switch (tower.TowerData.ShootMode)
         {
-            case EnumShootType.ShootMode.Classic :
+            case EnumShootType.ShootMode.Classic:
                 ClassicShoot();
                 break;
-            
-            case EnumShootType.ShootMode.MagicPower :
+
+            case EnumShootType.ShootMode.MagicPower:
                 MagicPower();
                 break;
-            
-            case EnumShootType.ShootMode.Slow :
-                Slow();
+
+            case EnumShootType.ShootMode.Heal:
+                HealAllies();
                 break;
-            
-            case EnumShootType.ShootMode.RainArrow :
+
+            case EnumShootType.ShootMode.RainArrow:
                 RainArrow();
                 break;
         }
@@ -62,17 +68,24 @@ public class TowerShoot : MonoBehaviour
     {
         switch (category)
         {
-            case DamageCategory.Physical :
+            case DamageCategory.Physical:
                 return StatType.PhysicDamage;
-            
-            case DamageCategory.Magical :
+
+            case DamageCategory.Magical:
                 return StatType.MagicDamage;
-            
+
             default:
                 return StatType.PhysicDamage;
         }
     }
-    
+
+    // CORRIGÉ : ce calcul était recopié dans 3 méthodes, il est maintenant au même endroit.
+    private int GetFinalDamage()
+    {
+        StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
+        return Mathf.RoundToInt(stats.GetStat(damageStat));
+    }
+
     /// <summary>
     /// Fait apparaître un projectile via le pool et lui donne sa cible + son
     /// type de dégâts. Toute la logique de vol/impact vit ensuite dans
@@ -88,83 +101,42 @@ public class TowerShoot : MonoBehaviour
         if (tower.TowerData.ProjectilePrefab == null) return;
         if (firePoint == null) return; // le modèle du niveau actuel n'a pas de FirePoint valide
 
-        
+        int finalDamage = GetFinalDamage();
 
-        // Donne au projectile sa cible et le type de dégâts à infliger
-        // (le type sert aux résistances éventuelles côté Health de la cible).
-
-        StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
-        
-        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
-        
         SpawnArrow(
             tower.IATower.CurrentTarget.transform,
             tower.IATower.CurrentTarget.transform.position,
             finalDamage,
             true);
     }
-
-    public void Slow()
+    
+    public void HealAllies()
     {
         if (tower.IATower == null) return;
         if (tower.TowerData == null) return;
+        if (stats == null) return;
 
-        Debug.Log($"Slow appelé, cibles : {tower.IATower.AllTargets.Count}");
+        int healAmount = Mathf.RoundToInt(stats.GetStat(StatType.MagicDamage));
+        if (healAmount <= 0) return;
+        healthsTouched.Clear();
         
         for (int i = 0; i < tower.IATower.AllTargets.Count; i++)
         {
-            Collider enemy = tower.IATower.AllTargets[i];
+            Collider ally = tower.IATower.AllTargets[i];
 
-            if (enemy == null) continue;
+            if (ally == null) continue;
             
+            Health allyHealth = ally.GetComponentInParent<Health>();
 
-            EntityStats enemyStats = enemy.GetComponent<EntityStats>();
-            
-            
-            if (enemyStats == null)
+            if (allyHealth == null)
             {
-                Debug.LogWarning($"Pas d'EntityStats sur {enemy.name}", enemy);     // 2, à la place du continue seul
+                Debug.LogWarning($"Pas d'EntityStats sur {ally.name}", ally);
                 continue;
             }
-            
-            if (!enemySlow.Contains(enemy))
-            {
-                enemyStats.AddModifier(
-                    StatType.Speed,
-                    slowPower,
-                    StatModifierType.PercentAdditive,
-                    this
-                );
-                
-                enemySlow.Add(enemy);
-            }
-            Debug.Log($"Speed de {enemy.name} : {enemyStats.GetStat(StatType.Speed)}");
-        }
+            if (healthsTouched.Contains(allyHealth)) continue;
+            healthsTouched.Add(allyHealth);
 
-        for (int i = enemySlow.Count - 1; i >= 0; i--)
-        {
-            Collider enemy = enemySlow[i];
-
-            // 1. Vérifier si l'ennemi a été détruit
-            if (enemy == null)
-            {
-                enemySlow.RemoveAt(i);
-                continue;
-            }
-
-            // 2. Récupérer ses statistiques
-            EntityStats enemyStats = enemy.GetComponent<EntityStats>();
-
-            // 3. Vérifier si l'ennemi est sorti de portée
-            if (!tower.IATower.AllTargets.Contains(enemy))
-            {
-                if (enemyStats != null)
-                {
-                    enemyStats.RemoveModifiersFromSource(this);
-                }
-
-                enemySlow.RemoveAt(i);
-            }
+            allyHealth.Heal(healAmount);
         }
     }
 
@@ -175,22 +147,21 @@ public class TowerShoot : MonoBehaviour
         if (tower.TowerData == null) return;
         if (stats == null) return;
         if (tower.IATower.CurrentTarget == null) return;
-        
-        Vector3 impactPosition = tower.IATower.CurrentTarget.transform.position;
-        
-        StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
-        
-        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
+
+        // on vise l'endroit où l'ennemi SERA, pas où il est au moment du tir.
+        Vector3 impactPosition = PredictPosition(tower.IATower.CurrentTarget, estimatedFlightTime);
+
+        int finalDamage = GetFinalDamage();
 
         float duration = 0f;
-            
+
         for (int i = 0; i < arrowCount; i++)
         {
             Vector2 offset = UnityEngine.Random.insideUnitCircle * zoneImpact;
             Vector3 randomOffset = new Vector3(offset.x, 0f, offset.y);
 
             Vector3 arrowImpactPosition = impactPosition + randomOffset;
-            
+
             duration = Mathf.Max(duration, SpawnArrow(
                 null,
                 arrowImpactPosition,
@@ -198,16 +169,63 @@ public class TowerShoot : MonoBehaviour
                 false
             ));
         }
-        StartCoroutine(RainArrowDamage(impactPosition, finalDamage, duration));
-    }
-    
-    private IEnumerator RainArrowDamage(Vector3 impactPosition, int finalDamage, float duration)
-    {
-        yield return new WaitForSeconds(duration);
 
-        ApplyAreaDamage(impactPosition, zoneImpact, finalDamage);
+        // La zone reste fixe : c'est là que les flèches tombent visuellement.
+        StartCoroutine(AreaDamageAfterDelay(null, impactPosition, finalDamage, duration));
+    }
+
+    private void MagicPower()
+    {
+        if (tower == null) return;
+        if (tower.IATower == null) return;
+        if (tower.TowerData == null) return;
+        if (stats == null) return;
+        if (tower.IATower.CurrentTarget == null) return;
+
+        Transform target = tower.IATower.CurrentTarget.transform;
+        Vector3 impactPosition = target.position;
+
+        int finalDamage = GetFinalDamage();
+
+        float duration = SpawnArrow(
+            target,
+            impactPosition,
+            finalDamage,
+            false
+        );
+
+        // on passe la cible, pour lire sa position au moment de l'impact.
+        StartCoroutine(AreaDamageAfterDelay(target, impactPosition, finalDamage, duration));
     }
     
+    private IEnumerator AreaDamageAfterDelay(Transform followTarget, Vector3 fallbackPosition, int finalDamage, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+
+        bool targetStillValid = followTarget != null && followTarget.gameObject.activeInHierarchy;
+        Vector3 position = targetStillValid ? followTarget.position : fallbackPosition;
+
+        ApplyAreaDamage(position, zoneImpact, finalDamage);
+    }
+
+    // Position estimée de la cible dans "time" secondes.
+    // Fonctionne si l'ennemi utilise un NavMeshAgent ; sinon, renvoie sa position actuelle.
+    private Vector3 PredictPosition(Collider target, float time)
+    {
+        Vector3 position = target.transform.position;
+
+        if (!predictMovement) return position;
+
+        NavMeshAgent agent = target.GetComponentInParent<NavMeshAgent>();
+
+        if (agent != null)
+        {
+            position += agent.velocity * time;
+        }
+
+        return position;
+    }
+
     // Action spécial
     private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
     {
@@ -231,34 +249,6 @@ public class TowerShoot : MonoBehaviour
         return projectile.TravelDuration;
     }
 
-    private void MagicPower()
-    {
-        if (tower == null) return;
-        if (tower.IATower == null) return;
-        if (tower.TowerData == null) return;
-        if (stats == null) return;
-        if (tower.IATower.CurrentTarget == null) return;
-        
-        Vector3 impactPosition = tower.IATower.CurrentTarget.transform.position;
-
-        StatType damageStat = GetDamageStat(tower.TowerData.DamageType.Category);
-
-        int finalDamage = Mathf.RoundToInt(stats.GetStat(damageStat));
-        
-        float duration = 0f;
-        
-        Transform target = tower.IATower.CurrentTarget.transform;
-
-        duration = SpawnArrow(
-            target,
-            impactPosition,
-            finalDamage,
-            false
-        );
-        
-        StartCoroutine(RainArrowDamage(impactPosition, finalDamage, duration));
-    }
-    
     private void ApplyAreaDamage(
         Vector3 impactPosition,
         float radius,
@@ -271,37 +261,37 @@ public class TowerShoot : MonoBehaviour
         Collider[] enemiesInZone = Physics.OverlapSphere(
             impactPosition,
             radius,
-            tower.IATower.EnemyLayer
+            tower.TowerData.TargetLayer
         );
 
-        // Appliquer l'état et les dégâts
+        healthsTouched.Clear();
+
         for (int i = 0; i < enemiesInZone.Length; i++)
         {
             Collider enemy = enemiesInZone[i];
 
             if (enemy == null) continue;
 
-            // Récupérer le manager de l'ennemi
-            EtatManager etatManager = enemy.GetComponentInParent<EtatManager>();
+            Health health = enemy.GetComponentInParent<Health>();
+            
+            if (health == null || healthsTouched.Contains(health)) continue;
+            healthsTouched.Add(health);
 
             // Appliquer l'état défini dans le SOTower
+            EtatManager etatManager = enemy.GetComponentInParent<EtatManager>();
+
             if (etatManager != null && tower.TowerData.ETAT != null)
             {
                 etatManager.AddEtat(tower.TowerData.ETAT);
             }
 
             // Infliger les dégâts
-            Health health = enemy.GetComponentInParent<Health>();
-
-            if (health != null)
-            {
-                health.TakeDamage(
-                    new DamageInfo(
-                        finalDamage,
-                        tower.TowerData.DamageType
-                    )
-                );
-            }
+            health.TakeDamage(
+                new DamageInfo(
+                    finalDamage,
+                    tower.TowerData.DamageType
+                )
+            );
         }
     }
 }
