@@ -1,3 +1,4 @@
+using Core.HealthSystem;
 using Core.TowerDefense;
 using UnityEngine;
 
@@ -16,6 +17,7 @@ namespace Core.Vfx
 
         [SerializeField] private VfxProfile profile;
         [SerializeField] private PlayerBase playerBase;
+        [SerializeField] private Health gateHealth;
         [SerializeField] private ParticleSystem[] systems = System.Array.Empty<ParticleSystem>();
         [SerializeField, Range(0.05f, 1f)] private float baseIntensity = 0.6f;
         [SerializeField, Range(0f, 3f)] private float flashBoost = 1.6f;
@@ -39,14 +41,20 @@ namespace Core.Vfx
 
         private void OnEnable()
         {
-            if (playerBase != null) playerBase.OnHealthChanged += OnHealthChanged;
+            if (gateHealth != null)
+            {
+                gateHealth.OnHealthChanged += OnHealthChanged;
+                OnHealthChanged(gateHealth.CurrentHealth, gateHealth.MaxHealth);
+            }
+            else if (playerBase != null) playerBase.OnHealthChanged += OnHealthChanged;
             Play();
             Apply();
         }
 
         private void OnDisable()
         {
-            if (playerBase != null) playerBase.OnHealthChanged -= OnHealthChanged;
+            if (gateHealth != null) gateHealth.OnHealthChanged -= OnHealthChanged;
+            else if (playerBase != null) playerBase.OnHealthChanged -= OnHealthChanged;
         }
 
         public void Play()
