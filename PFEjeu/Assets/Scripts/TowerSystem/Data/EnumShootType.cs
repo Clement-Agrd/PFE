@@ -7,7 +7,6 @@ public class EnumShootType
         Classic,
         Slow,
         RainArrow,
-        Fire,
-        Ice,
+        MagicPower,
     }
 }

@@ -21,6 +21,7 @@ GameObject:
   - component: {fileID: 135903904758233112}
   - component: {fileID: -3493915325760101831}
   - component: {fileID: 8447951853033440010}
+  - component: {fileID: -5594666093926683490}
   m_Layer: 3
   m_Name: Enemy_Combo
   m_TagString: Untagged
@@ -290,6 +291,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarLink
   healthBar: {fileID: 8786016738097504801}
+--- !u!114 &-5594666093926683490
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1436972150820126028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 775d0db067c661a46aa42a5621f17644, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EtatManager
 --- !u!1001 &6713170804522079046
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -22,6 +22,7 @@ GameObject:
   - component: {fileID: 4863070488277620485}
   - component: {fileID: 6765001367769977471}
   - component: {fileID: 6550145341354955439}
+  - component: {fileID: 4887090801734402355}
   m_Layer: 3
   m_Name: Enemy_Test
   m_TagString: Untagged
@@ -252,6 +253,11 @@ MonoBehaviour:
   endReachDistance: 1.2
   repathInterval: 0.25
   navSampleRadius: 5
+  spreadAcrossPath: 1
+  widthUsage: 0.85
+  useHighQualityAvoidance: 1
+  minAvoidancePriority: 25
+  maxAvoidancePriority: 75
 --- !u!114 &7839453828944222734
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -325,6 +331,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarLink
   healthBar: {fileID: 8059207870161539598}
+--- !u!114 &4887090801734402355
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2454647618617984211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 775d0db067c661a46aa42a5621f17644, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::EtatManager
 --- !u!1001 &5413260991469003625
 PrefabInstance:
   m_ObjectHideFlags: 0

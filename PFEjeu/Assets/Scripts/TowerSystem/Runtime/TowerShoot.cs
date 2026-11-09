@@ -44,12 +44,12 @@ public class TowerShoot : MonoBehaviour
                 ClassicShoot();
                 break;
             
-            case EnumShootType.ShootMode.Slow :
-                Slow();
+            case EnumShootType.ShootMode.MagicPower :
+                MagicPower();
                 break;
             
-            case EnumShootType.ShootMode.Fire :
-                FireBall();
+            case EnumShootType.ShootMode.Slow :
+                Slow();
                 break;
             
             case EnumShootType.ShootMode.RainArrow :
@@ -208,18 +208,6 @@ public class TowerShoot : MonoBehaviour
         ApplyAreaDamage(impactPosition, zoneImpact, finalDamage);
     }
     
-    public void FireBall()
-    {
-        MagicPower();
-    }
-
-    public void Ice()
-    {
-        MagicPower();
-        
-        
-    }
-    
     // Action spécial
     private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
     {
@@ -259,8 +247,10 @@ public class TowerShoot : MonoBehaviour
         
         float duration = 0f;
         
+        Transform target = tower.IATower.CurrentTarget.transform;
+
         duration = SpawnArrow(
-            null,
+            target,
             impactPosition,
             finalDamage,
             false
@@ -284,30 +274,32 @@ public class TowerShoot : MonoBehaviour
             tower.IATower.EnemyLayer
         );
 
-        switch (tower.TowerData.ShootMode)
-        {
-            case EnumShootType.ShootMode.Ice :
-                
-                
-                break;
-            
-            case EnumShootType.ShootMode.Fire :
-                
-                
-
-                break;
-        }
-
+        // Appliquer l'état et les dégâts
         for (int i = 0; i < enemiesInZone.Length; i++)
         {
-            if (enemiesInZone[i] == null) continue;
+            Collider enemy = enemiesInZone[i];
 
-            Health health = enemiesInZone[i].GetComponentInParent<Health>();
+            if (enemy == null) continue;
+
+            // Récupérer le manager de l'ennemi
+            EtatManager etatManager = enemy.GetComponentInParent<EtatManager>();
+
+            // Appliquer l'état défini dans le SOTower
+            if (etatManager != null && tower.TowerData.ETAT != null)
+            {
+                etatManager.AddEtat(tower.TowerData.ETAT);
+            }
+
+            // Infliger les dégâts
+            Health health = enemy.GetComponentInParent<Health>();
 
             if (health != null)
             {
                 health.TakeDamage(
-                    new DamageInfo(finalDamage, tower.TowerData.DamageType)
+                    new DamageInfo(
+                        finalDamage,
+                        tower.TowerData.DamageType
+                    )
                 );
             }
         }

@@ -22,6 +22,9 @@ public class SOTower : ScriptableObject
     
     [SerializeField] private TypeTower towerType;
     public TypeTower TowerType => towerType;
+
+    [SerializeField] private SOEtat etat;
+    public SOEtat ETAT => etat;
     
     [Header("IA")]
     [SerializeField] private EnumTargetPriority.TargetPriority targetCondition1;
