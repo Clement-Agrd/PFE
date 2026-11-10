@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d21ba301454d5b34eb7537703b1f5353, type: 3}
+  m_Name: SkyPreset_Crepuscule
+  m_EditorClassIdentifier: Assembly-CSharp::LayeredSky.SkyPreset
+  displayName: "Cr\xE9puscule"
+  state:
+    zenithColor: {r: 0.050708696, g: 0.07016476, b: 0.23479503, a: 1}
+    midColor: {r: 0.27169973, g: 0.17184407, b: 0.44297102, a: 1}
+    horizonColor: {r: 0.95468706, g: 0.50638634, b: 0.5468542, a: 1}
+    groundColor: {r: 0.06100852, g: 0.050708696, b: 0.14282566, a: 1}
+    sunAzimuth: 0
+    sunElevation: 2
+    sunColor: {r: 1, g: 0.8962438, b: 0.7353569, a: 1}
+    sunRadiance: 60
+    sunSize: 0.62
+    sunGlow: 1
+    starIntensity: 1
+    twinkle: 0.35
+    starRotation: 0
+    moonVisibility: 1
+    moonRadiance: 1
+    moon1Azimuth: 185
+    moon1Elevation: 16
+    moon1Radius: 3.6
+    moon1Color: {r: 0.9776915, g: 0.9776915, b: 0.9593465, a: 1}
+    meteorIntensity: 0.4
+    cloudCoverage: 0.55
+    cloudSpeed: 0.015
+    cloudShadowColor: {r: 0.26006746, g: 0.19641909, b: 0.41002083, a: 1}
+    cloudLitColor: {r: 1, g: 0.7083696, b: 0.5468542, a: 1}
+    cloudLitGain: 1
+    auroraIntensity: 0.5
+    auroraColorA: {r: 0.34919015, g: 1, b: 0.6499564, a: 1}
+    auroraColorB: {r: 0.95468706, g: 0.50638634, b: 0.93092453, a: 1}
+    auroraSpeed: 0.15
+    lightAzimuth: 0
+    lightElevation: 8
+    lightColor: {r: 1, g: 0.8322835, b: 0.66518503, a: 1}
+    lightIntensity: 1.4
+    ambientIntensity: 1
+    fogColor: {r: 0.56572837, g: 0.33183, b: 0.436627, a: 1}
+    fogDensity: 0.004
+    exposure: 1

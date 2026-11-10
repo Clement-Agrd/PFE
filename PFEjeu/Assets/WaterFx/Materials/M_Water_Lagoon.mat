@@ -1,0 +1,70 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_Water_Lagoon
+  m_Shader: {fileID: 4800000, guid: b88434e57d2cab9499791b4931b0c993, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _FoamMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _NormalMap:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _EdgeFade: 0.7
+    - _FlowPeriod: 3
+    - _FlowSpeed: 0.02
+    - _FoamAmount: 0.9
+    - _FoamCrest: 0.97
+    - _FoamShoreWidth: 1.1
+    - _FoamTiling: 7
+    - _NormalStrength: 0.5
+    - _NormalTilingA: 9
+    - _NormalTilingB: 3.4
+    - _ReflectionDistortion: 0.03
+    - _ReflectionStrength: 1
+    - _RefractionStrength: 0.06
+    - _Roughness: 0.04
+    - _SpecularStrength: 1
+    - _SssDistortion: 0.6
+    - _SssPower: 4
+    - _Turbidity: 1
+    - _UsePlanar: 0
+    - _WaveScale: 1
+    - _WaveSpeed: 1
+    m_Colors:
+    - _Absorption: {r: 0.55, g: 0.12, b: 0.06, a: 0}
+    - _DeepColor: {r: 0, g: 0.3, b: 0.32, a: 1}
+    - _FlowDirection: {r: 1, g: 0.3, b: 0, a: 0}
+    - _FoamColor: {r: 0.95, g: 0.97, b: 1, a: 1}
+    - _ScrollA: {r: 0.02, g: 0.01, b: 0, a: 0}
+    - _ScrollB: {r: -0.015, g: 0.02, b: 0, a: 0}
+    - _SssColor: {r: 0.1, g: 0.55, b: 0.5, a: 1}
+    - _WaveA: {r: 1, g: 0.1, b: 0.07, a: 14}
+    - _WaveB: {r: 0.5, g: 1, b: 0.05, a: 8}
+    - _WaveC: {r: -0.7, g: 0.3, b: 0.04, a: 4.5}
+    - _WaveD: {r: 0.2, g: -1, b: 0.03, a: 2.6}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

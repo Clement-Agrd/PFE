@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 539f6e70e4b96e34b8f453d1398360be, type: 3}
+  m_Name: GroundFogPreset_Cour
+  m_EditorClassIdentifier: Assembly-CSharp::Core.GroundFog.GroundFogPreset
+  day:
+    color: {r: 0.95, g: 0.96, b: 1, a: 1}
+    density: 0.35
+    thickness: 0.5
+    noiseStrength: 0.412
+  night:
+    color: {r: 0.9, g: 0.93, b: 1, a: 1}
+    density: 1.4
+    thickness: 0.7
+    noiseStrength: 0.6
+  noiseScale: 1.17
+  windAngle: 94
+  layer1Speed: 0.61
+  layer2Speed: 0.04
+  waveAmplitude: 0.439
+  waveLength: 11.9
+  waveSpeed: 1.02
+  selfLight: 0.21
+  lightInfluence: 1.5
+  edgeFade: 0.25
