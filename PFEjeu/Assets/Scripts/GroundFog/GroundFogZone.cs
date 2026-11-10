@@ -63,7 +63,9 @@ namespace Core.GroundFog
         private void OnValidate()
         {
             _lastNight = -1f;
-            if (isActiveAndEnabled) Apply(CurrentNight());
+            if (!isActiveAndEnabled) return;
+            Cache();   // OnValidate peut passer avant Awake / OnEnable (recompilation) : on garantit le renderer et le block
+            Apply(CurrentNight());
         }
 
         private void LateUpdate()
