@@ -17,6 +17,10 @@ namespace BuildVFX
         public float buildTime = 4.5f;
         public float tremorTime = 0.35f;
         public bool playOnStart;
+        public bool useUnscaledTime;
+        Transform target;
+        Transform Model => target ? target : transform;
+        float Delta => useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
         [Header("Look")]
         [ColorUsage(false, true)] public Color teamColor = new Color(2.2f, 1.1f, 0.25f);
         public Color dustColor = new Color(0.72f, 0.64f, 0.52f);
@@ -59,7 +63,13 @@ namespace BuildVFX
         void OnDisable() { Cancel(); }
 
         public void Play(Color team) { teamColor = team; Play(); }
-        public void Play() { Cancel(); run = StartCoroutine(Run()); }
+        public void Play() => PlayFor(transform);
+        public void PlayFor(Transform building)
+        {
+            Cancel();
+            target = building;
+            run = StartCoroutine(Run());
+        }
 
         public void Cancel()
         {
@@ -67,7 +77,7 @@ namespace BuildVFX
             Restore();
             foreach (var g in spawned) if (g) Destroy(g);
             spawned.Clear();
-            if (baseScale != Vector3.zero) transform.localScale = baseScale;
+            if (baseScale != Vector3.zero && settleSquash) Model.localScale = baseScale;
             IsPlaying = false;
         }
 
@@ -79,6 +89,13 @@ namespace BuildVFX
             forced.Clear();
             foreach (var m in clones) if (m) Destroy(m);
             clones.Clear();
+        }
+
+        GameObject SpawnEffect(GameObject prefab)
+        {
+            var effect = Instantiate(prefab);
+            VFXCycle.EffectTime.ConfigureParticles(effect, useUnscaledTime);
+            return effect;
         }
 
         static float Ease(float p) { float s = p * p * (3f - 2f * p); return 0.35f * p + 0.65f * s; }
@@ -114,7 +131,7 @@ namespace BuildVFX
         List<Renderer> Collect()
         {
             var l = new List<Renderer>();
-            foreach (var r in GetComponentsInChildren<Renderer>(false)) if (r is MeshRenderer || r is SkinnedMeshRenderer) l.Add(r);
+            foreach (var r in Model.GetComponentsInChildren<Renderer>(false)) if (r is MeshRenderer || r is SkinnedMeshRenderer) l.Add(r);
             return l;
         }
 
@@ -202,12 +219,12 @@ namespace BuildVFX
 
         IEnumerator Run()
         {
-            IsPlaying = true; Progress = 0f; baseScale = transform.localScale; onStarted?.Invoke();
+            IsPlaying = true; Progress = 0f; baseScale = Model.localScale; onStarted?.Invoke();
             var rends = Collect(); if (rends.Count == 0 || !revealShader) { Debug.LogWarning("[BuildVFX] Aucun renderer ou shader BuildReveal manquant."); IsPlaying = false; yield break; }
-            if (forceLod0) foreach (var lg in GetComponentsInChildren<LODGroup>()) { lg.ForceLOD(0); forced.Add(lg); }
+            if (forceLod0) foreach (var lg in Model.GetComponentsInChildren<LODGroup>()) { lg.ForceLOD(0); forced.Add(lg); }
             Bounds b = rends[0].bounds; foreach (var r in rends) b.Encapsulate(r.bounds);
             float baseY = b.min.y, topY = b.max.y, h = topY - baseY;
-            float yaw = orientToBuilding ? transform.eulerAngles.y : 0f;
+            float yaw = orientToBuilding ? Model.eulerAngles.y : 0f;
             Vector3 c; Vector2 size; Frame(rends, yaw, out c, out size);
             if (preset != SizePreset.Custom) ApplyPreset(size, h);
             bool circle = footprint == Footprint.Circle || (footprint == Footprint.Auto && Mathf.Abs(size.x - size.y) < 0.12f * Mathf.Max(size.x, size.y) && h > 1.3f * Mathf.Max(size.x, size.y));
@@ -223,13 +240,13 @@ namespace BuildVFX
                 slab.transform.localScale = new Vector3(size.x * 0.53f, 1f, size.y * 0.53f);
             }
             BuildConstructFX cfx = null;
-            if (constructFx) { var g = Instantiate(constructFx); spawned.Add(g); cfx = g.GetComponent<BuildConstructFX>(); if (cfx) cfx.Setup(c, baseY, size, teamColor, dustColor, yaw); }
+            if (constructFx) { var g = SpawnEffect(constructFx); spawned.Add(g); cfx = g.GetComponent<BuildConstructFX>(); if (cfx) { cfx.UseUnscaledTime = useUnscaledTime; cfx.Setup(c, baseY, size, teamColor, dustColor, yaw); } }
             var pieces = scaffold ? BuildScaffold(c, size, yaw, baseY, h, circle) : new List<Piece>();
 
             float t = 0f;
             while (t < buildTime)
             {
-                t += Time.deltaTime; float p = Mathf.Clamp01(t / buildTime); Progress = p;
+                t += Delta; float p = Mathf.Clamp01(t / buildTime); Progress = p;
                 float y = Mathf.Lerp(lo, hi, Ease(p)); SetReveal(y);
                 if (cfx) cfx.SetRevealY(Mathf.Clamp(y - edgeWidth * 0.5f, baseY, topY));
                 foreach (var pc in pieces)
@@ -244,7 +261,7 @@ namespace BuildVFX
 
             // tremblement avant le démontage
             Vector3 center2 = new Vector3(c.x, baseY, c.z);
-            for (float tt = 0; tt < tremorTime; tt += Time.deltaTime)
+            for (float tt = 0; tt < tremorTime; tt += Delta)
             {
                 float a = 0.035f * (tt / tremorTime + 0.3f);
                 foreach (var pc in pieces) pc.t.localPosition += new Vector3(UnityEngine.Random.Range(-a, a), 0, UnityEngine.Random.Range(-a, a)) * 0.5f;
@@ -252,7 +269,7 @@ namespace BuildVFX
             }
 
             // impact
-            if (impactFx) { var g = Instantiate(impactFx); var bi = g.GetComponent<BuildImpact>(); if (bi) bi.Play(center2, radius, teamColor, dustColor, impactShake); }
+            if (impactFx) { var g = SpawnEffect(impactFx); var bi = g.GetComponent<BuildImpact>(); if (bi) { bi.UseUnscaledTime = useUnscaledTime; bi.Play(center2, radius, teamColor, dustColor, useUnscaledTime ? 0f : impactShake); } }
             if (slab && !keepFoundation) { spawned.Remove(slab); Destroy(slab, 0.05f); }
             foreach (var pc in pieces)
             {
@@ -263,7 +280,7 @@ namespace BuildVFX
             const float T = 1.9f;
             for (float tt = 0; tt < T; tt += Time.deltaTime)
             {
-                float dt = Time.deltaTime, fade = Mathf.Clamp01((T - tt) / 0.5f);
+                float dt = Delta, fade = Mathf.Clamp01((T - tt) / 0.5f);
                 foreach (var pc in pieces)
                 {
                     pc.vel.y -= 18f * dt; pc.t.position += pc.vel * dt; pc.t.Rotate(pc.ang * dt, Space.World);
@@ -273,11 +290,11 @@ namespace BuildVFX
                 if (settleSquash)
                 {
                     float s = Mathf.Exp(-7f * tt) * Mathf.Cos(20f * tt) * 0.022f;
-                    transform.localScale = new Vector3(baseScale.x * (1f + s * 0.5f), baseScale.y * (1f - s), baseScale.z * (1f + s * 0.5f));
+                    Model.localScale = new Vector3(baseScale.x * (1f + s * 0.5f), baseScale.y * (1f - s), baseScale.z * (1f + s * 0.5f));
                 }
                 yield return null;
             }
-            transform.localScale = baseScale;
+            if (settleSquash) Model.localScale = baseScale;
             foreach (var g in spawned) if (g) Destroy(g);
             spawned.Clear(); IsPlaying = false; run = null; onCompleted?.Invoke();
         }

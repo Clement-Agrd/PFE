@@ -12,6 +12,7 @@ namespace BuildVFX
     /// Particules pendant la construction : poussière au sol + particules incandescentes sur le front de révélation.
     public class BuildConstructFX : MonoBehaviour
     {
+        public bool UseUnscaledTime { get; set; }
         public ParticleSystem baseDust, motes;
         public void Setup(Vector3 center, float baseY, Vector2 size, Color team, Color dust, float yaw = 0f)
         {
@@ -30,6 +31,6 @@ namespace BuildVFX
         }
         internal static Color Mul(Color a, Color b) => new Color(a.r * b.r, a.g * b.g, a.b * b.b, a.a);
         public void SetRevealY(float y) { if (motes) { var p = motes.transform.position; p.y = y; motes.transform.position = p; } }
-        public void StopEmit() { foreach (var p in GetComponentsInChildren<ParticleSystem>()) p.Stop(true, ParticleSystemStopBehavior.StopEmitting); Destroy(gameObject, 8f); }
+        public void StopEmit() { foreach (var p in GetComponentsInChildren<ParticleSystem>()) p.Stop(true, ParticleSystemStopBehavior.StopEmitting); StartCoroutine(VFXCycle.EffectTime.DestroyAfter(gameObject, 8f, UseUnscaledTime)); }
     }
 }

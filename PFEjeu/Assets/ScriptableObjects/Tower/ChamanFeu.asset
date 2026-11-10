@@ -16,7 +16,7 @@ MonoBehaviour:
   detectionRange: 12
   armorPenetration: 0
   impactRadius: 3.5
-  impactPrefab: {fileID: 7419156130884461054, guid: 2105c9286e1c3ab4688ea82049b24434, type: 3}
+  impactPrefab: {fileID: 5087227509307448759, guid: 0ebf4babed966654cafebae07e482a1c, type: 3}
   effectDescription: "Explosion \xB7 Br\xFBlure magique pendant 4 s"
   towerType: 1
   etat: {fileID: 11400000, guid: 5abe6c901a0a3b347add4daad7381481, type: 2}

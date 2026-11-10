@@ -28,6 +28,9 @@ namespace SpiritVFX
         public float crackTime = 2f;
         public float buildTime = 0.9f, tearTime = 1.8f, closeTime = 1.3f;
         public bool playOnStart;
+        public bool useUnscaledTime;
+        float Delta => useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
+        float EffectTime => useUnscaledTime ? Time.unscaledTime : Time.time;
         [Header("Look")]
         [Range(0.2f, 2f)] public float intensity = 1f;
         [Range(0f, 2f)] public float parallax = 1f;
@@ -65,6 +68,7 @@ namespace SpiritVFX
                 var urp = GraphicsSettings.currentRenderPipeline as UnityEngine.Rendering.Universal.UniversalRenderPipelineAsset;
                 if (urp != null && !urp.supportsCameraOpaqueTexture) { Debug.LogWarning("[SpiritVFX] Opaque Texture désactivée dans l'URP Asset : distorsion thermique coupée (Tools/Spirit VFX/Setup URP)."); distortion = false; }
             }
+            VFXCycle.EffectTime.ConfigureParticles(gameObject, useUnscaledTime);
             Layout(); SetVisible(false);
         }
         void Start() { if (playOnStart) Open(); }
@@ -130,7 +134,7 @@ namespace SpiritVFX
             Fill(pbS, sz, pz); if (surface) surface.SetPropertyBlock(pbS);
             Fill(pbD, new Vector4(width * padding * 1.15f, height * padding * 1.15f, 0, 0), pz); if (distortionR) distortionR.SetPropertyBlock(pbD);
             float g = Mathf.Max(width, height) * 3.4f; Fill(pbG, new Vector4(g, g, 0, 0), pz); if (ground) ground.SetPropertyBlock(pbG);
-            float ob = Mathf.Clamp01(open), fl = 0.85f + 0.15f * Mathf.Sin(Time.time * 23f) * Mathf.Sin(Time.time * 7.3f);
+            float ob = Mathf.Clamp01(open), fl = 0.85f + 0.15f * Mathf.Sin(EffectTime * 23f) * Mathf.Sin(EffectTime * 7.3f);
             float k = Mathf.Max(0.2f, intensity);
             if (glow) glow.intensity = (crack * 4f * (1f - ob) + ob * 6f * fl + flash * 20f) * k;
             if (lowGlow) lowGlow.intensity = (crack * 0.5f + ob * 2.5f + flash * 8f) * fl * k;
@@ -156,26 +160,26 @@ namespace SpiritVFX
             foreach (var p in new[] { crackSparks, rimSparks, embers, ash, groundSparks, leaves }) Play(p);
             // 1. fissures
             State = SpiritState.Cracking;
-            for (float t = 0; t < crackTime; t += Time.deltaTime)
+            for (float t = 0; t < crackTime; t += Delta)
             { float p = t / crackTime; crack = Ease(p); Rumble(0.05f + 0.08f * p); Apply(); yield return null; }
             // 2. tension
             State = SpiritState.Building; crack = 1f;
-            for (float t = 0; t < buildTime; t += Time.deltaTime)
+            for (float t = 0; t < buildTime; t += Delta)
             { float p = t / buildTime; breath = p; flash = 0.2f * p * p + 0.12f * Mathf.Pow(Mathf.Max(0f, Mathf.Sin(t * 12f)), 4f) * p; Rumble(0.12f + 0.25f * p); Apply(); yield return null; }
             // 3. déchirure
             State = SpiritState.Tearing;
             if (burst) { burst.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear); burst.Play(true); }
             Rumble(0.7f); if (leaves) leaves.Emit(70);
-            for (float t = 0; t < tearTime; t += Time.deltaTime)
+            for (float t = 0; t < tearTime; t += Delta)
             { float p = t / tearTime; open = OutBack(p); flash = Mathf.Max(0f, 1f - p * 2.2f); wave = p; Apply(); yield return null; }
             open = 1f; wave = 0f; State = SpiritState.Open; onOpened?.Invoke();
             while (State == SpiritState.Open)
-            { flash = Mathf.Max(0f, flash - Time.deltaTime * 1.5f); breath = Mathf.Min(1f, breath + Time.deltaTime * 0.8f); Apply(); yield return null; }
+            { flash = Mathf.Max(0f, flash - Delta * 1.5f); breath = Mathf.Min(1f, breath + Delta * 0.8f); Apply(); yield return null; }
         }
         IEnumerator CloseRoutine()
         {
             State = SpiritState.Closing; float o0 = open, c0 = crack, b0 = breath;
-            for (float t = 0; t < closeTime; t += Time.deltaTime)
+            for (float t = 0; t < closeTime; t += Delta)
             {
                 float p = t / closeTime; open = o0 * (1f - p * p); flash = Mathf.Sin(p * Mathf.PI) * 0.9f; crack = c0 * (1f - Mathf.Max(0f, p - 0.5f) * 2f); breath = b0 * (1f - p); wave = p * 0.9f;
                 Rumble(0.5f * (1f - p)); Apply(); yield return null;

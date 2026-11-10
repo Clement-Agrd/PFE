@@ -12,6 +12,7 @@ namespace UpgradeVFX
     /// Impact final : flash, pilier de lumière, onde de choc, poussière, braises, chevrons, secousse. Référence : rayon 6 m.
     public class UpgradeBurst : MonoBehaviour
     {
+        public bool UseUnscaledTime { get; set; }
         public ParticleSystem[] dust, team; public ParticleSystem chevrons;
         public Light flash; public Transform pillar;
         public float refRadius = 6f, shake = 0.35f, shakeRadius = 40f, life = 8f, flashPeak = 6f, pillarLife = 1.6f;
@@ -33,11 +34,11 @@ namespace UpgradeVFX
             if (flash) { flash.color = Color.Lerp(new Color(1f, 0.9f, 0.7f), teamColor, 0.4f); flash.range = 20f * scale; flash.intensity = flashPeak * intensity; }
             if (pillar) { pillarR = pillar.GetComponent<Renderer>(); pb = new MaterialPropertyBlock(); pillar.gameObject.SetActive(true); }
             UpgradeCameraShake.Hit(pos, shake * shakeMul * intensity * (0.6f + 0.4f * scale), shakeRadius * scale);
-            Destroy(gameObject, life);
+            StartCoroutine(VFXCycle.EffectTime.DestroyAfter(gameObject, life, UseUnscaledTime));
         }
         void Update()
         {
-            age += Time.deltaTime;
+            age += UseUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
             if (flash) flash.intensity = flashPeak * intensity * Mathf.Exp(-age * 6f);
             if (!pillar || pb == null) return;
             float p = age / pillarLife;

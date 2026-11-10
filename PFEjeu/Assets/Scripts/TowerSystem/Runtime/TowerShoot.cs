@@ -25,6 +25,7 @@ public class TowerShoot : MonoBehaviour
     // Temps de vol estimé des flèches, utilisé pour anticiper le déplacement de la cible.
     [SerializeField] private float estimatedFlightTime = 1f;
     
+    private readonly RaycastHit[] groundHits = new RaycastHit[24];
     private readonly List<Health> healthsTouched = new List<Health>();
 
     public float GetImpactRadius(SOTower profile) => profile.ImpactRadius > 0f ? profile.ImpactRadius : zoneImpact;
@@ -201,10 +202,38 @@ public class TowerShoot : MonoBehaviour
             position =>
             {
                 if (this == null) return;
+                float radius = GetImpactRadius(profile);
+                Vector3 ground = FindImpactGround(position, out Vector3 normal);
                 if (profile.ImpactPrefab != null)
-                    Destroy(Instantiate(profile.ImpactPrefab, position, Quaternion.identity), 3f);
-                ApplyAreaDamage(position, GetImpactRadius(profile), finalDamage, profile);
+                {
+                    Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, normal);
+                    var effect = Instantiate(profile.ImpactPrefab, ground + normal * .025f, rotation);
+                    if (effect.TryGetComponent<TowerAreaImpact>(out var area))
+                        area.Play(radius);
+                    Destroy(effect, 3f);
+                }
+                ApplyAreaDamage(ground, radius, finalDamage, profile);
             });
+    }
+
+    private Vector3 FindImpactGround(Vector3 position, out Vector3 normal)
+    {
+        normal = Vector3.up;
+        Vector3 ground = position;
+        float closest = float.PositiveInfinity;
+        int groundLayer = LayerMask.NameToLayer("Ground");
+        int count = Physics.RaycastNonAlloc(position + Vector3.up * 3f, Vector3.down, groundHits, 15f,
+            LayerMask.GetMask("Ground", "Default"), QueryTriggerInteraction.Ignore);
+        for (int i = 0; i < count; i++)
+        {
+            RaycastHit hit = groundHits[i];
+            if (hit.distance >= closest ||
+                (hit.collider.gameObject.layer != groundLayer && hit.collider is not TerrainCollider)) continue;
+            closest = hit.distance;
+            ground = hit.point;
+            normal = hit.normal;
+        }
+        return ground;
     }
 
     private IEnumerator AreaDamageAfterDelay(Transform followTarget, Vector3 fallbackPosition, int finalDamage, float delay, SOTower profile)

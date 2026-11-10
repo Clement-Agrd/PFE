@@ -16,7 +16,7 @@ MonoBehaviour:
   detectionRange: 12
   armorPenetration: 0
   impactRadius: 3.5
-  impactPrefab: {fileID: 346245489437207968, guid: a1788c4fe9bd2cc4283f08caa54351b8, type: 3}
+  impactPrefab: {fileID: 4265458012487795892, guid: e369488d208a8174ca54da641f8a2b76, type: 3}
   effectDescription: "Explosion \xB7 \u221230 % vitesse et \u221225 % armure pendant 3 s"
   towerType: 1
   etat: {fileID: 11400000, guid: 1fa28e6b18f686047bd65d67cf4873ea, type: 2}

@@ -339,6 +339,8 @@ namespace Core.BarracksSystem
             }
         }
 
+        public static event System.Action<Barracks, Vector3> SoldierSpawned;
+
         private void SpawnSoldier(int slotIndex)
         {
             if (barracksData == null || barracksData.SoldierPrefab == null)
@@ -384,6 +386,7 @@ namespace Core.BarracksSystem
             slot.waitingRespawn = false;
 
             soldier.Initialize(this, slotIndex, GetCampPosition(slotIndex));
+            SoldierSpawned?.Invoke(this, spawnPosition);
         }
 
         private void ApplyStatsToAliveSoldiers()

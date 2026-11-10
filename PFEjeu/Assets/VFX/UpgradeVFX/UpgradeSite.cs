@@ -21,6 +21,9 @@ namespace UpgradeVFX
         [Header("Timing")]
         public float chargeTime = 0.9f, ascendTime = 1.9f, settleTime = 1.4f;
         public bool playOnStart;
+        public bool useUnscaledTime;
+        public bool animateScale = true;
+        float Delta => useUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime;
         [Header("Look")]
         [ColorUsage(false, true)] public Color teamColor = new Color(2.2f, 1.1f, 0.25f);
         public Color dustColor = new Color(0.72f, 0.64f, 0.52f);
@@ -81,6 +84,13 @@ namespace UpgradeVFX
             foreach (var m in clonesA) if (m) Destroy(m);
             foreach (var m in clonesB) if (m) Destroy(m);
             clonesA.Clear(); clonesB.Clear();
+        }
+
+        GameObject SpawnEffect(GameObject prefab)
+        {
+            var effect = Instantiate(prefab);
+            VFXCycle.EffectTime.ConfigureParticles(effect, useUnscaledTime);
+            return effect;
         }
 
         static float Ease(float p) { float s = p * p * (3f - 2f * p); return 0.35f * p + 0.65f * s; }
@@ -177,22 +187,22 @@ namespace UpgradeVFX
             Vector3 foot = new Vector3(c.x, baseY, c.z);
 
             UpgradeAura aura = null; UpgradeFront front = null;
-            if (auraFx) { var g = Instantiate(auraFx); spawned.Add(g); aura = g.GetComponent<UpgradeAura>(); if (aura) { aura.Setup(c, baseY, size, yaw, h, teamColor, dustColor, k); aura.BeginCharge(); } }
-            if (frontFx) { var g = Instantiate(frontFx); spawned.Add(g); front = g.GetComponent<UpgradeFront>(); if (front) { front.Setup(c, size, yaw, circle, teamColor, edgeWidth, k); front.SetY(lo); } }
+            if (auraFx) { var g = SpawnEffect(auraFx); spawned.Add(g); aura = g.GetComponent<UpgradeAura>(); if (aura) { aura.UseUnscaledTime = useUnscaledTime; aura.Setup(c, baseY, size, yaw, h, teamColor, dustColor, k); aura.BeginCharge(); } }
+            if (frontFx) { var g = SpawnEffect(frontFx); spawned.Add(g); front = g.GetComponent<UpgradeFront>(); if (front) { front.UseUnscaledTime = useUnscaledTime; front.Setup(c, size, yaw, circle, teamColor, edgeWidth, k); front.SetY(lo); } }
 
             // 1. charge
-            for (float t = 0; t < chargeTime; t += Time.deltaTime)
+            for (float t = 0; t < chargeTime; t += Delta)
             {
                 float p = t / chargeTime, e = Ease(p), s = Mathf.Sin(p * Mathf.PI);
                 SetF(clonesA, ChargeId, e); if (aura) aura.SetCharge(e);
-                A.transform.localScale = new Vector3(scaleA.x * (1f + 0.01f * s), scaleA.y * (1f - 0.02f * s), scaleA.z * (1f + 0.01f * s));
+                if (animateScale) A.transform.localScale = new Vector3(scaleA.x * (1f + 0.01f * s), scaleA.y * (1f - 0.02f * s), scaleA.z * (1f + 0.01f * s));
                 Progress = p * 0.25f; yield return null;
             }
             A.transform.localScale = scaleA; SetF(clonesA, ChargeId, 1f); SetF(clonesB, ChargeId, 1f);
 
             // 2. montée du front
             if (aura) aura.BeginAscend(); if (front) front.Show(true);
-            for (float t = 0; t < ascendTime; t += Time.deltaTime)
+            for (float t = 0; t < ascendTime; t += Delta)
             {
                 float p = Mathf.Clamp01(t / ascendTime), y = Mathf.Lerp(lo, hi, Ease(p));
                 if (swap) { SetF(clonesA, RevealY, y); SetF(clonesB, RevealY, y); }
@@ -204,12 +214,12 @@ namespace UpgradeVFX
 
             // 3. impact
             if (swap && deactivateOld) A.SetActive(false);
-            if (burstFx) { var g = Instantiate(burstFx); var bu = g.GetComponent<UpgradeBurst>(); if (bu) bu.Play(foot, size, h, teamColor, dustColor, k, impactShake); }
-            for (float t = 0; t < settleTime; t += Time.deltaTime)
+            if (burstFx) { var g = SpawnEffect(burstFx); var bu = g.GetComponent<UpgradeBurst>(); if (bu) { bu.UseUnscaledTime = useUnscaledTime; bu.Play(foot, size, h, teamColor, dustColor, k, useUnscaledTime ? 0f : impactShake); } }
+            for (float t = 0; t < settleTime; t += Delta)
             {
                 float p = t / settleTime, s = 0.04f * Mathf.Exp(-6f * t) * Mathf.Cos(18f * t);
                 var target = swap ? B : A; var bs = swap ? scaleB : scaleA;
-                target.transform.localScale = new Vector3(bs.x * (1f - s * 0.5f), bs.y * (1f + s), bs.z * (1f - s * 0.5f));
+                if (animateScale) target.transform.localScale = new Vector3(bs.x * (1f - s * 0.5f), bs.y * (1f + s), bs.z * (1f - s * 0.5f));
                 float ch = Mathf.Clamp01(1f - p * 1.3f); SetF(clonesA, ChargeId, ch); SetF(clonesB, ChargeId, ch);
                 Progress = 0.85f + p * 0.15f; yield return null;
             }

@@ -1,0 +1,133 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &4963674547441051555
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8761748005602229607}
+  - component: {fileID: 9027338331705859670}
+  - component: {fileID: 473715539240238901}
+  - component: {fileID: 2997878738021124959}
+  m_Layer: 0
+  m_Name: BuildingEffects
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8761748005602229607
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4963674547441051555}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &9027338331705859670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4963674547441051555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a36d0ce7c3e49745a8f140344ec2748, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildVFX.BuildSite
+  buildTime: 4.5
+  tremorTime: 0.35
+  playOnStart: 0
+  useUnscaledTime: 1
+  teamColor: {r: 2.2, g: 1.1, b: 0.25, a: 1}
+  dustColor: {r: 0.72, g: 0.64, b: 0.52, a: 1}
+  edgeWidth: 0.7
+  edgeGlow: 4
+  noiseAmp: 0.35
+  scaffold: 1
+  settleSquash: 0
+  keepFoundation: 0
+  preset: 1
+  footprint: 0
+  orientToBuilding: 1
+  forceLod0: 1
+  impactShake: 1
+  revealShader: {fileID: 4800000, guid: 9e8526052dc07104a9cdcd9ad8f09929, type: 3}
+  constructFx: {fileID: 8904515764162850694, guid: 252e8063400d0da4a86469ad8e98ff83, type: 3}
+  impactFx: {fileID: 2500757465385844478, guid: d514e7643c6be0b46aa5d71e695fd0d1, type: 3}
+  poleMesh: {fileID: -2432090755550338912, guid: 902f0c42d11495342819477cbcc15a07, type: 3}
+  plankMesh: {fileID: -2432090755550338912, guid: 43903fc7b08f4d94795096d2a52e8602, type: 3}
+  foundationMesh: {fileID: -2432090755550338912, guid: e7d2ee7d048ab76439b9faf449391cc2, type: 3}
+  scaffoldMat: {fileID: 2100000, guid: 03e45cb73eca17941819f48b0c6c26a0, type: 2}
+  foundationMat: {fileID: 2100000, guid: e97760ba34901f343beacc9c2cfd67bf, type: 2}
+  onStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &473715539240238901
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4963674547441051555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7425886cf601c2d4b89a93c5f7512861, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::UpgradeVFX.UpgradeSite
+  stateA: {fileID: 0}
+  stateB: {fileID: 0}
+  deactivateOld: 1
+  chargeTime: 0.9
+  ascendTime: 1.9
+  settleTime: 1.4
+  playOnStart: 0
+  useUnscaledTime: 1
+  animateScale: 0
+  teamColor: {r: 2.2, g: 1.1, b: 0.25, a: 1}
+  dustColor: {r: 0.72, g: 0.64, b: 0.52, a: 1}
+  edgeWidth: 0.6
+  edgeGlow: 4
+  noiseAmp: 0.3
+  tier: 1
+  preset: 1
+  footprint: 0
+  orientToBuilding: 1
+  forceLod0: 1
+  impactShake: 1
+  swapShader: {fileID: 4800000, guid: 33d8af42c430c7946a3cb2d8437f112d, type: 3}
+  auraFx: {fileID: 3448279888490596583, guid: 5dd4a335da85d854596251db97816ac0, type: 3}
+  frontFx: {fileID: 4509577312554023692, guid: 56735316643ec224ab39583413a26c4e, type: 3}
+  burstFx: {fileID: 1693681642854066767, guid: 576daefd1dfe9ca4e8870c7ee6e9e107, type: 3}
+  onStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  onCompleted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &2997878738021124959
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4963674547441051555}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4f40fec7994ae3d428ac5b960e7db0eb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Vfx.BuildingEffects

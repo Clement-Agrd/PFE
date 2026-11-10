@@ -93,9 +93,9 @@ namespace Core.DisintegrationVFX
             return c;
         }
 
-        public bool Disintegrate(float duration = -1f)
+        public bool Disintegrate(float duration = -1f, bool disableHitboxImmediately = false)
         {
-            return Begin(false, default, duration);
+            return Begin(false, default, duration, disableHitboxImmediately);
         }
 
         public bool Disintegrate(Vector3 hitPoint, float duration = -1f)
@@ -116,7 +116,7 @@ namespace Core.DisintegrationVFX
                 Reset();
         }
 
-        private bool Begin(bool fromHit, Vector3 hit, float duration)
+        private bool Begin(bool fromHit, Vector3 hit, float duration, bool disableHitboxImmediately = false)
         {
             if (_state == State.Playing)
                 return true;
@@ -154,6 +154,12 @@ namespace Core.DisintegrationVFX
             BuildMaterials(cfg.template);
             ApplyStyleToMaterials();
             SwapMaterials(true);
+
+            if (disableHitboxImmediately)
+            {
+                foreach (var collider in _colliders)
+                    if (collider != null) collider.enabled = false;
+            }
 
             if (freezeAnimators)
             {

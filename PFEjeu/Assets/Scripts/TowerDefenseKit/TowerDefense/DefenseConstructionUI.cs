@@ -24,6 +24,7 @@ namespace Core.TowerDefense
         public bool CanBuildNow=>spawner!=null&&!spawner.IsWaveActive&&!spawner.IsDefeated;
         public bool IsOpen=>_canvas!=null&&_canvas.activeSelf;
         public IReadOnlyList<DefenseBuildingDefinition> Catalog=>catalog;
+        public event System.Action<Building> OnBuildingConstructed;
         private void OnEnable(){if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnExitedVillageView+=Close;}}
         private void OnDisable(){if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
         private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
@@ -86,6 +87,7 @@ namespace Core.TowerDefense
             obstacle.shape=UnityEngine.AI.NavMeshObstacleShape.Box;obstacle.size=def.footprint;obstacle.center=Vector3.up*(def.footprint.y*.5f);obstacle.carving=true;obstacle.carveOnlyStationary=false;
             foreach(var c in Costs(def))village.HdvInventory.Remove(c.Key,c.Value);
             slot.Occupy(building);
+            if(building.TryGetComponent<Building>(out var constructed)) OnBuildingConstructed?.Invoke(constructed);
             Close();
             if(building.TryGetComponent<Core.BarracksSystem.BarracksFlagPlacement>(out var placement))
             {

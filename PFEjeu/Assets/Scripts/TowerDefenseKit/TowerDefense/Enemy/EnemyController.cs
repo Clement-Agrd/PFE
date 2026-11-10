@@ -99,6 +99,9 @@ namespace Core.TowerDefense
         private bool _finished;
         private Health _defenseObjective;
         private Collider _objectiveCollider;
+        private bool _restoreAgentOnEnable;
+        private readonly System.Collections.Generic.List<Collider> _fallbackHitboxes = new();
+        [SerializeField, Min(.1f)] private float deathDisintegrationDuration = .85f;
         private bool _assaultingObjective;
         public void SetDefenseObjective(Health target, Collider surface)
         { _defenseObjective = target; _objectiveCollider = surface; _assaultingObjective = false; }
@@ -188,6 +191,11 @@ namespace Core.TowerDefense
 
         private void OnEnable()
         {
+            if (_restoreAgentOnEnable && _agent != null) _agent.enabled = true;
+            _restoreAgentOnEnable = false;
+            foreach (var collider in _fallbackHitboxes)
+                if (collider != null) collider.enabled = true;
+            _fallbackHitboxes.Clear();
             if (_health != null)
             {
                 _health.OnDeath +=
@@ -216,6 +224,7 @@ namespace Core.TowerDefense
             }
 
             attackModule?.Cancel();
+            if (TryGetComponent(out DisintegrationController dis)) dis.OnDisintegrated -= ReleaseAfterBurn;
 
             Target = null;
         }
@@ -694,22 +703,36 @@ namespace Core.TowerDefense
                     true;
             }
 
-            Defeated?.Invoke(
-                this
-            );
+            bool playingDeath = false;
             if (burn)
             {
-                DisintegrationController dis = DisintegrationController.GetOrAdd(gameObject);
+                if (_agent != null && _agent.enabled)
+                {
+                    _restoreAgentOnEnable = true;
+                    _agent.enabled = false;
+                }
+
+                var dis = DisintegrationController.GetOrAdd(gameObject);
                 if (dis != null)
                 {
                     dis.OnDisintegrated += ReleaseAfterBurn;
-                    if (dis.Disintegrate())
-                        return;
-                    dis.OnDisintegrated -= ReleaseAfterBurn;
+                    playingDeath = dis.Disintegrate(deathDisintegrationDuration, disableHitboxImmediately: true);
+                    if (!playingDeath) dis.OnDisintegrated -= ReleaseAfterBurn;
+                }
+
+                if (!playingDeath)
+                {
+                    foreach (var collider in GetComponentsInChildren<Collider>(true))
+                    {
+                        if (!collider.enabled) continue;
+                        _fallbackHitboxes.Add(collider);
+                        collider.enabled = false;
+                    }
                 }
             }
 
-            ReleaseSelf();
+            Defeated?.Invoke(this);
+            if (!playingDeath) ReleaseSelf();
         }
 
         private void ReleaseAfterBurn()

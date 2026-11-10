@@ -12,6 +12,7 @@ namespace UpgradeVFX
     /// Phase de charge (particules aspirées, pulsation au sol) et chevrons ascendants pendant la montée.
     public class UpgradeAura : MonoBehaviour
     {
+        public bool UseUnscaledTime { get; set; }
         public ParticleSystem baseDust, motesIn, chevrons, groundPulse; public Light glow;
         float k = 1, target;
         public void Setup(Vector3 center, float baseY, Vector2 size, float yaw, float height, Color team, Color dust, float k)
@@ -49,9 +50,9 @@ namespace UpgradeVFX
         public void SetCharge(float c) { target = 5f * k * c; }
         public void BeginAscend() { Stop(motesIn); Play(chevrons); }
         public void EndRise() { Stop(chevrons); Stop(groundPulse); Stop(baseDust); Stop(motesIn); }
-        public void Finish() { EndRise(); target = 0f; Destroy(gameObject, 6f); }
+        public void Finish() { EndRise(); target = 0f; StartCoroutine(VFXCycle.EffectTime.DestroyAfter(gameObject, 6f, UseUnscaledTime)); }
         static void Play(ParticleSystem p) { if (p) p.Play(true); }
         static void Stop(ParticleSystem p) { if (p) p.Stop(true, ParticleSystemStopBehavior.StopEmitting); }
-        void Update() { if (glow) glow.intensity = Mathf.MoveTowards(glow.intensity, target * (0.88f + 0.12f * Mathf.Sin(Time.time * 20f)), 30f * Time.deltaTime); }
+        void Update() { if (glow) glow.intensity = Mathf.MoveTowards(glow.intensity, target * (0.88f + 0.12f * Mathf.Sin(Time.time * 20f)), 30f * (UseUnscaledTime ? Time.unscaledDeltaTime : Time.deltaTime)); }
     }
 }

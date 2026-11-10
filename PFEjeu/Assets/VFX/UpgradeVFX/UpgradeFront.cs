@@ -12,6 +12,7 @@ namespace UpgradeVFX
     /// Front d'énergie : bande lumineuse + anneau + étincelles + lumière, qui monte le long du bâtiment.
     public class UpgradeFront : MonoBehaviour
     {
+        public bool UseUnscaledTime { get; set; }
         public Transform band, ring; public ParticleSystem sparks; public Light glow;
         Renderer bandR, ringR; MaterialPropertyBlock pb; float bandH, k = 1; Color team;
         static readonly int ColorId = Shader.PropertyToID("_Color"), FadeId = Shader.PropertyToID("_Fade");
@@ -42,6 +43,6 @@ namespace UpgradeVFX
             var p = transform.position; p.y = y; transform.position = p;
             if (glow) glow.intensity = 6f * k * (0.85f + 0.15f * Mathf.Sin(Time.time * 30f));
         }
-        public void Finish() { Show(false); Destroy(gameObject, 2f); }
+        public void Finish() { Show(false); StartCoroutine(VFXCycle.EffectTime.DestroyAfter(gameObject, 2f, UseUnscaledTime)); }
     }
 }

@@ -1,4 +1,9 @@
+using System.Collections;
 using System.Collections.Generic;
+using Core.TowerDefense;
+using Core.BarracksSystem;
+using Core.Village;
+using SpiritVFX;
 using Core.HealthSystem;
 using Core.PoolingSystem;
 using Core.WaveSystem;
@@ -23,11 +28,18 @@ namespace Core.Vfx
 
         [Header("Prefabs d'effets (nouveaux, poolables)")]
         [SerializeField] private GameObject spawnPortalPrefab;
+        [SerializeField] private SpiritGate spiritPortalPrefab;
+
+        [Header("Bâtiments")]
+        [SerializeField] private DefenseConstructionUI construction;
+        [SerializeField] private VillageManager village;
+        [SerializeField] private BuildingEffects buildingEffectsPrefab;
         [SerializeField] private GameObject enemyBindingPrefab;
         [SerializeField] private GameObject hitPrefab;
         [SerializeField] private GameObject deathPrefab;
 
         private readonly Dictionary<string, Transform> _zoneById = new Dictionary<string, Transform>();
+        private readonly Dictionary<Barracks, SpiritGate> _portals = new();
         private int _activeBindings;
         private PoolManager _pool;
         private System.Action _onBindingReleased;
@@ -54,16 +66,30 @@ namespace Core.Vfx
 
         private void OnEnable()
         {
-            if (waveSpawner == null) return;
-            waveSpawner.OnZoneSpawnStarted += HandleZonePreview;
-            waveSpawner.OnEnemySpawned += HandleEnemySpawned;
+            if (waveSpawner != null)
+            {
+                waveSpawner.OnZoneSpawnStarted += HandleZonePreview;
+                waveSpawner.OnEnemySpawned += HandleEnemySpawned;
+            }
+            Barracks.SoldierSpawned += HandleSoldierSpawned;
+            if (construction != null) construction.OnBuildingConstructed += HandleConstruction;
+            if (village != null) village.OnBuildingUpgraded += HandleUpgrade;
         }
 
         private void OnDisable()
         {
-            if (waveSpawner == null) return;
-            waveSpawner.OnZoneSpawnStarted -= HandleZonePreview;
-            waveSpawner.OnEnemySpawned -= HandleEnemySpawned;
+            if (waveSpawner != null)
+            {
+                waveSpawner.OnZoneSpawnStarted -= HandleZonePreview;
+                waveSpawner.OnEnemySpawned -= HandleEnemySpawned;
+            }
+            Barracks.SoldierSpawned -= HandleSoldierSpawned;
+            if (construction != null) construction.OnBuildingConstructed -= HandleConstruction;
+            if (village != null) village.OnBuildingUpgraded -= HandleUpgrade;
+            StopAllCoroutines();
+            foreach (var portal in _portals.Values)
+                if (portal != null) Destroy(portal.gameObject);
+            _portals.Clear();
         }
 
         /// <summary>Prechauffe le pool (instances creees au chargement, pas pendant la vague).</summary>
@@ -82,11 +108,45 @@ namespace Core.Vfx
 
         private void HandleZonePreview(string zoneId, GameObject enemyPrefab, int count)
         {
-            if (spawnPortalPrefab == null || !_zoneById.TryGetValue(zoneId, out Transform zone)) return;
-
+            if (!_zoneById.TryGetValue(zoneId, out Transform zone)) return;
+            if (spawnPortalPrefab == null) return;
             GameObject fx = _pool.Spawn(spawnPortalPrefab, zone.position, Quaternion.identity);
             if (fx != null && fx.TryGetComponent(out PooledParticleFx player)) player.SetLifetime(profile.SpawnPortalDuration);
         }
+
+        private void HandleSoldierSpawned(Barracks barracks, Vector3 position)
+        {
+            if (spiritPortalPrefab == null || barracks.gameObject.scene != gameObject.scene ||
+                _portals.ContainsKey(barracks)) return;
+
+            var rotation = Quaternion.Euler(0f, barracks.transform.eulerAngles.y, 0f);
+            var portal = Instantiate(spiritPortalPrefab, position, rotation, transform);
+            _portals.Add(barracks, portal);
+            StartCoroutine(PlayPortal(barracks, portal));
+        }
+
+        private IEnumerator PlayPortal(Barracks barracks, SpiritGate portal)
+        {
+            portal.Open();
+            yield return new WaitForSecondsRealtime(1.1f);
+            if (portal != null)
+            {
+                portal.Close();
+                yield return new WaitUntil(() => portal == null || portal.State == SpiritState.Closed);
+                if (portal != null) Destroy(portal.gameObject);
+            }
+            _portals.Remove(barracks);
+        }
+
+        private BuildingEffects GetBuildingEffects(Building building)
+        {
+            if (building == null || buildingEffectsPrefab == null) return null;
+            var effects = building.GetComponentInChildren<BuildingEffects>();
+            return effects != null ? effects : Instantiate(buildingEffectsPrefab, building.transform);
+        }
+
+        private void HandleConstruction(Building building) => GetBuildingEffects(building)?.PlayBuild();
+        private void HandleUpgrade(Building building, int level) => GetBuildingEffects(building)?.PlayUpgrade(level);
 
         private void HandleEnemySpawned(GameObject enemy, SpawnZone zone)
         {
