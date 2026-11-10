@@ -15,9 +15,13 @@ MonoBehaviour:
   towerName: Test
   detectionRange: 9
   towerType: 0
-  targetCondition1: 5
+  etat: {fileID: 0}
+  targetCondition1: 6
   targetCondition2: 0
   targetDistance: 0
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 8
   projectileType: 0
   projectileMovement: 0
   shootMode: 0
