@@ -1,0 +1,213 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7093367016694207329
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3858002669529910213}
+  m_Layer: 0
+  m_Name: Model
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3858002669529910213
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7093367016694207329}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7561889302650178914}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8743156393210898755
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7561889302650178914}
+  - component: {fileID: 4988519299867468106}
+  - component: {fileID: 1586954550074773566}
+  - component: {fileID: 4968210506553218375}
+  - component: {fileID: 3836453349899813639}
+  - component: {fileID: 2236195891170485019}
+  - component: {fileID: 8542806672554129989}
+  - component: {fileID: 8484049186551131935}
+  m_Layer: 0
+  m_Name: Constructible_TourArcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7561889302650178914
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3858002669529910213}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4988519299867468106
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2ff5ad68d81b34daecdf7a1495ddd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tower
+  towerData: {fileID: 11400000, guid: 61e87be35daca104d95c6054860e565c, type: 2}
+  heroData: {fileID: 0}
+  currentLevel: 0
+  modelParent: {fileID: 3858002669529910213}
+  firePoint: {fileID: 0}
+  poolManager: {fileID: 0}
+  iaTower: {fileID: 4968210506553218375}
+  towerShoot: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!114 &1586954550074773566
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b30f0a7f66f42558d0d76d81b074357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.StatsSystem.EntityStats
+  baseStats:
+  - type: 0
+    baseValue: 100
+  - type: 1
+    baseValue: 100
+  - type: 2
+    baseValue: 50
+  - type: 3
+    baseValue: 10
+  - type: 4
+    baseValue: 0
+  - type: 5
+    baseValue: 0
+  - type: 6
+    baseValue: 5.5
+  - type: 7
+    baseValue: 1
+--- !u!114 &4968210506553218375
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70e955991314fe047a7dd65a4bf34848, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IATower
+  tower: {fileID: 0}
+--- !u!114 &3836453349899813639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b915bbc29225a1d40843fae88d916c4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerShoot
+  tower: {fileID: 0}
+  stats: {fileID: 0}
+  poolManager: {fileID: 0}
+  zoneImpact: 3
+  arrowCount: 10
+  predictMovement: 1
+  estimatedFlightTime: 1
+--- !u!114 &2236195891170485019
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2268ebdedec94b3caa248ffdef2c28e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.Building
+  definition: {fileID: 11400000, guid: 336d5dd15473745488bf9a57c8b4044c, type: 2}
+  currentLevel: 1
+  visualRoot: {fileID: 0}
+--- !u!114 &8542806672554129989
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c75cccccde5a21649adfef597b84811e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerHeroStation
+  prompt: Interagir
+  family: 1
+  specializations:
+  - heroClass: 3
+    profile: {fileID: 11400000, guid: fed5798e4a478a14fa19a6b5a28fd859, type: 2}
+  - heroClass: 4
+    profile: {fileID: 11400000, guid: 2545802632933ff469f5e64793470e7d, type: 2}
+  - heroClass: 5
+    profile: {fileID: 11400000, guid: f652ad58488f546429925452df3b9af9, type: 2}
+--- !u!65 &8484049186551131935
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.2, y: 5.6, z: 3.2}
+  m_Center: {x: 0, y: 2.8, z: 0}

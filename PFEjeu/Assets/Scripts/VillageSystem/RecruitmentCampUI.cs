@@ -94,10 +94,10 @@ namespace Core.Village
             SetEnabled(_dismiss,canDismiss);
             _heroStatus.text=_selectedHero==null?"Sélectionne un héros pour voir son affectation.":canDismiss?$"{_selectedHero.HeroName} est disponible.\nLe renvoi ne rembourse pas le recrutement.":dismissReason;
         }
-        private static string ClassName(ClasseHeros type)=>type==ClasseHeros.Degats?"Dégâts":type.ToString();
+        private static string ClassName(ClasseHeros type)=>heros.ClassName(type);
         private static string Assignment(heros hero)
         {
-            if(hero.AssignedBarracks!=null)return "Caserne : "+hero.AssignedBarracks.name;
+            if(hero.DefenseAssignment!=null)return hero.DefenseAssignment.name;
             if(hero.IsOnExpedition)return (hero.IsExpeditionPending?"Expédition prévue : ":"En expédition : ")+hero.ExpeditionName;
             return "Disponible";
         }
@@ -136,10 +136,16 @@ namespace Core.Village
             var left=NewRect("Recruitment",card.transform);Anchor(left,new Vector2(0,1),new Vector2(0,1),new Vector2(38,-105),new Vector2(740,710));
             var right=NewRect("VillageHeroes",card.transform);Anchor(right,new Vector2(1,1),new Vector2(1,1),new Vector2(-38,-105),new Vector2(770,710));
             _summary=NewText("Summary",left,"",25,TextMain,TextAlignmentOptions.TopLeft);Anchor(_summary.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),Vector2.zero,new Vector2(710,125));
-            var choices=NewRect("Classes",left);Anchor(choices,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-145),new Vector2(710,330));VStack(choices.gameObject,14);
-            foreach(var type in new[]{ClasseHeros.Tank,ClasseHeros.Degats,ClasseHeros.Invocateur})
+            var choices=NewScroll(left,"Classes",10,new RectOffset(8,8,8,8),out var classScroll);
+            Anchor((RectTransform)classScroll.transform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-145),new Vector2(710,330));
+            foreach(ClasseHeros type in System.Enum.GetValues(typeof(ClasseHeros)))
             {
-                string description=type==ClasseHeros.Tank?"Plus résistants, moins de dégâts":type==ClasseHeros.Degats?"Plus de dégâts, moins résistants":"Plus de soldats, statistiques réduites";
+                string description=heros.FamilyOf(type) switch
+                {
+                    HeroFamily.Archer => "Tour d’archer",
+                    HeroFamily.Chaman => "Tour de chaman",
+                    _ => "Caserne"
+                };
                 var choice=NewButton(choices,ClassName(type)+"\n"+description,()=>{_selectedClass=type;Refresh();},fontSize:25);
                 choice.name="Recruit_"+type;Layout(choice.gameObject,height:96);_buttons.Add(choice);
             }

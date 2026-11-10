@@ -58,6 +58,7 @@ namespace Core.Village
                 QueueRefresh();
             }
         }
+        public void RefreshModel() { if (isActiveAndEnabled) QueueRefresh(); }
         private void LevelChanged(int _) => QueueRefresh();
         private void QueueRefresh()
         {

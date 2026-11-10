@@ -168,7 +168,7 @@ namespace Core.BarracksSystem
             if (_summaryLabel != null) _summaryLabel.text = summary;
             if (_heroesSummary != null) _heroesSummary.text = name;
             if (_standardLabel != null) _standardLabel.text = "Sans héros\nCaserne standard";
-            _displayHeroes = heroRoster != null ? heroRoster.OrderedHeroes.ToArray() : System.Array.Empty<heros>();
+            _displayHeroes = heroRoster != null ? heroRoster.OrderedHeroes.Where(hero => hero != null && hero.Family == HeroFamily.Barracks).ToArray() : System.Array.Empty<heros>();
             int count = _displayHeroes.Length;
             if (_emptyHeroesLabel != null) _emptyHeroesLabel.gameObject.SetActive(count == 0);
             while (_heroRows != null && _heroLabels.Count < count)

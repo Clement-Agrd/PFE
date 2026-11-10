@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Core.StatsSystem;
-using NUnit.Framework;
+using Core.HealthSystem;
 using StatType = Core.StatsSystem.EnumStats.StatTypes;
 
 public class IATower : MonoBehaviour
@@ -19,6 +19,13 @@ public class IATower : MonoBehaviour
     private List<Collider> allTargets = new List<Collider>();
     public List<Collider> AllTargets => allTargets;
     
+    public void ClearTargets()
+    {
+        currentTarget = null;
+        allTargets.Clear();
+        timer = 0f;
+    }
+
     private void Awake()
     {
         tower = GetComponent<Tower>();
@@ -34,6 +41,7 @@ public class IATower : MonoBehaviour
     {
         // On ne cherche une cible que toutes les 0.1s (pas chaque frame) :
         // largement suffisant pour du gameplay, et bien moins coûteux en performance.
+        if (tower == null || tower.TowerData == null) return;
         timer += Time.deltaTime;
         if (timer < 0.1f) return;
         timer = 0f;
@@ -44,7 +52,15 @@ public class IATower : MonoBehaviour
             tower.TowerData.DetectionRange,
             tower.TowerData.TargetLayer);
         
-        SelectTarget(targets);
+        bool healing = tower.TowerData.ShootMode == EnumShootType.ShootMode.Heal;
+        SelectTarget(Array.FindAll(targets, target =>
+        {
+            var health = target.GetComponentInParent<Health>();
+            if (healing)
+                return health != null && !health.IsDead && health.CurrentHealth < health.MaxHealth &&
+                    (health.GetComponentInParent<Core.TowerDefense.EnemyController>() == null);
+            return health == null || !health.IsDead;
+        }));
         
     }
     
@@ -77,14 +93,12 @@ public class IATower : MonoBehaviour
                 // Cible simple : le premier trouvé.
                 if (currentTarget == null)
                 currentTarget = target.Length > 0 ? target[0] : null;
-                Debug.Log(currentTarget != null
-                    ? "IATower : cible trouvée - " + currentTarget.name
-                    : "IATower : aucune cible trouvée");
+
                 break;
             
             case EnumTargetPriority.TargetPriority.HighDefPhy:
                 
-                Debug.Log("Cible la plus grande defense physique");
+
                 
                 if (currentTarget == null &&  target.Length > 0)
                 {
@@ -108,7 +122,7 @@ public class IATower : MonoBehaviour
             
             case EnumTargetPriority.TargetPriority.HighDefMag:
                 
-                Debug.Log("Cible la plus grande defense magic");
+
 
                 if (currentTarget == null && target.Length > 0)
                 {
@@ -132,7 +146,7 @@ public class IATower : MonoBehaviour
             
             case EnumTargetPriority.TargetPriority.Tank:
                 
-                Debug.Log("Cible qui a plus de point de vie");
+
 
                 if (currentTarget == null && target.Length > 0)
                 {

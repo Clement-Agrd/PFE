@@ -102,8 +102,8 @@ namespace Core.BarracksSystem
                 var barracks = hero.AssignedBarracks;
                 row.Assignment.text = hero.IsOnExpedition ? $"{(hero.IsExpeditionPending ? "Départ en attente" : "En expédition")} : {hero.ExpeditionName}" : barracks != null
                     ? $"Affecté à : {barracks.name}\nCaserne niveau {barracks.CurrentLevel}"
-                    : "Disponible · Aucune affectation";
-                row.Assignment.color = barracks != null || hero.IsOnExpedition ? Accent : Good;
+                    : hero.AssignedTower != null ? $"Affecté à : {hero.AssignedTower.name}" : "Disponible · Aucune affectation";
+                row.Assignment.color = hero.HasAssignment ? Accent : Good;
             }
         }
     }

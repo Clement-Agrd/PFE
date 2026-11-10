@@ -3,8 +3,9 @@ using UnityEngine;
 
 namespace Core.BarracksSystem
 {
-    public enum ClasseHeros { Tank, Degats, Invocateur }
-    public enum TypeCaserne { Standard, Tank, Degats, Invocateur }
+    public enum ClasseHeros { Tank, Degats, Invocateur, ArcLong, ArcCourt, Arbalete, ChamanFeu, ChamanGlace, ChamanVie }
+    public enum HeroFamily { Barracks, Archer, Chaman }
+    public enum TypeCaserne { Standard, Tank, Degats, Invocateur, ArcLong, ArcCourt, Arbalete, ChamanFeu, ChamanGlace, ChamanVie }
 
     [DisallowMultipleComponent]
     [AddComponentMenu("Caserne/Héros")]
@@ -25,18 +26,35 @@ namespace Core.BarracksSystem
         public string HeroName => string.IsNullOrWhiteSpace(heroName) ? ClasseName : heroName;
         public ClasseHeros Classe => classe;
         public int Level => Mathf.Clamp(level, 1, 5);
+        public static HeroFamily FamilyOf(ClasseHeros type) => type switch
+        {
+            ClasseHeros.ArcLong or ClasseHeros.ArcCourt or ClasseHeros.Arbalete => HeroFamily.Archer,
+            ClasseHeros.ChamanFeu or ClasseHeros.ChamanGlace or ClasseHeros.ChamanVie => HeroFamily.Chaman,
+            _ => HeroFamily.Barracks
+        };
+
+        public HeroFamily Family => FamilyOf(classe);
+        public TowerHeroStation AssignedTower { get; private set; }
+        public MonoBehaviour DefenseAssignment => AssignedTower != null ? AssignedTower : AssignedBarracks;
         public Barracks AssignedBarracks { get; private set; }
         public Core.Village.Exploration.ExplorationManager AssignedExpedition { get; private set; }
         public string ExpeditionName { get; private set; }
         public bool IsOnExpedition => AssignedExpedition != null;
         public bool IsExpeditionPending => IsOnExpedition && AssignedExpedition.CanCancelMission(this);
-        public bool HasAssignment => AssignedBarracks != null || IsOnExpedition;
+        public bool HasAssignment => DefenseAssignment != null || IsOnExpedition;
         internal void NotifyExpeditionStateChanged() => Changed?.Invoke();
-        public string ClasseName => classe switch
+        public string ClasseName => ClassName(classe);
+        public static string ClassName(ClasseHeros type) => type switch
         {
             ClasseHeros.Tank => "Tank",
             ClasseHeros.Degats => "Dégâts",
             ClasseHeros.Invocateur => "Invocateur",
+            ClasseHeros.ArcLong => "Arc long",
+            ClasseHeros.ArcCourt => "Arc court",
+            ClasseHeros.Arbalete => "Arbalète",
+            ClasseHeros.ChamanFeu => "Feu",
+            ClasseHeros.ChamanGlace => "Glace",
+            ClasseHeros.ChamanVie => "Vie",
             _ => "Héros"
         };
 
@@ -45,7 +63,7 @@ namespace Core.BarracksSystem
 
         public void Initialize(string displayName, ClasseHeros heroClass, int heroLevel)
         {
-            if (AssignedBarracks != null || IsOnExpedition) throw new InvalidOperationException("Un héros affecté ne peut pas être réinitialisé.");
+            if (DefenseAssignment != null || IsOnExpedition) throw new InvalidOperationException("Un héros affecté ne peut pas être réinitialisé.");
             heroName = displayName;
             classe = heroClass;
             level = Mathf.Clamp(heroLevel, 1, 5);
@@ -82,7 +100,7 @@ namespace Core.BarracksSystem
 
         internal bool TryClaim(Barracks barracks)
         {
-            if (barracks == null || !isActiveAndEnabled || (AssignedBarracks != null && AssignedBarracks != barracks)) return false;
+            if (barracks == null || Family != HeroFamily.Barracks || AssignedTower != null || !isActiveAndEnabled || (AssignedBarracks != null && AssignedBarracks != barracks)) return false;
             if (IsOnExpedition && !AssignedExpedition.TryCancelMission(this)) return false;
             if (AssignedBarracks != barracks)
             {
@@ -101,12 +119,30 @@ namespace Core.BarracksSystem
             }
         }
 
+        internal bool TryClaimTower(TowerHeroStation tower)
+        {
+            if (tower == null || AssignedBarracks != null || !isActiveAndEnabled ||
+                (AssignedTower != null && AssignedTower != tower)) return false;
+            if (IsOnExpedition && !AssignedExpedition.TryCancelMission(this)) return false;
+            AssignedTower = tower;
+            Changed?.Invoke();
+            return true;
+        }
+
+        internal void ReleaseTower(TowerHeroStation tower)
+        {
+            if (AssignedTower != tower) return;
+            AssignedTower = null;
+            Changed?.Invoke();
+        }
+
         internal bool TryClaimExpedition(Core.Village.Exploration.ExplorationManager owner, string missionName)
         {
             if (owner == null || !isActiveAndEnabled || IsOnExpedition) return false;
             AssignedExpedition = owner;
             ExpeditionName = missionName;
             if (AssignedBarracks != null) AssignedBarracks.AssignHero(null);
+            if (AssignedTower != null) AssignedTower.ClearHero();
             Changed?.Invoke();
             return true;
         }
@@ -122,6 +158,7 @@ namespace Core.BarracksSystem
         private void OnDisable()
         {
             if (AssignedBarracks != null) AssignedBarracks.AssignHero(null);
+            if (AssignedTower != null) AssignedTower.ClearHero();
             if (AssignedExpedition != null) AssignedExpedition.CancelHero(this);
         }
 

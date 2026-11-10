@@ -40,7 +40,7 @@ namespace Core.Village
         {
             reason="";
             if(!isActiveAndEnabled||!Building.IsAvailable)reason="Camp indisponible.";
-            else if((int)type<0||(int)type>2)reason="Classe invalide.";
+            else if(!System.Enum.IsDefined(typeof(ClasseHeros),type))reason="Classe invalide.";
             else if(spawner!=null&&(spawner.IsWaveActive||spawner.IsDefeated))reason="Recrutement disponible entre les défenses.";
             else if(roster==null||roster.Count>=Capacity||!roster.HasRecruitmentSpace)reason=$"Capacité atteinte : {Capacity} héros. Améliore le camp.";
             else if(village==null||village.HdvInventory==null)reason="Stockage HDV indisponible.";

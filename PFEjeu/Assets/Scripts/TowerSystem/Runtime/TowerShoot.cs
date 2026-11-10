@@ -32,6 +32,7 @@ public class TowerShoot : MonoBehaviour
     private void Awake()
     {
         tower = GetComponent<Tower>();
+        if (stats == null) stats = GetComponent<EntityStats>();
 
         if (tower == null)
         {
@@ -44,6 +45,8 @@ public class TowerShoot : MonoBehaviour
         if (tower == null) return;
         if (tower.TowerData == null) return;
         
+        if (tower.TowerData.ShootMode != EnumShootType.ShootMode.Heal && tower.TowerData.DamageType == null) return;
+
         switch (tower.TowerData.ShootMode)
         {
             case EnumShootType.ShootMode.Classic:
@@ -171,7 +174,7 @@ public class TowerShoot : MonoBehaviour
         }
 
         // La zone reste fixe : c'est là que les flèches tombent visuellement.
-        StartCoroutine(AreaDamageAfterDelay(null, impactPosition, finalDamage, duration));
+        StartCoroutine(AreaDamageAfterDelay(null, impactPosition, finalDamage, duration, tower.TowerData));
     }
 
     private void MagicPower()
@@ -195,17 +198,17 @@ public class TowerShoot : MonoBehaviour
         );
 
         // on passe la cible, pour lire sa position au moment de l'impact.
-        StartCoroutine(AreaDamageAfterDelay(target, impactPosition, finalDamage, duration));
+        StartCoroutine(AreaDamageAfterDelay(target, impactPosition, finalDamage, duration, tower.TowerData));
     }
     
-    private IEnumerator AreaDamageAfterDelay(Transform followTarget, Vector3 fallbackPosition, int finalDamage, float delay)
+    private IEnumerator AreaDamageAfterDelay(Transform followTarget, Vector3 fallbackPosition, int finalDamage, float delay, SOTower profile)
     {
         yield return new WaitForSeconds(delay);
 
         bool targetStillValid = followTarget != null && followTarget.gameObject.activeInHierarchy;
         Vector3 position = targetStillValid ? followTarget.position : fallbackPosition;
 
-        ApplyAreaDamage(position, zoneImpact, finalDamage);
+        ApplyAreaDamage(position, zoneImpact, finalDamage, profile);
     }
 
     // Position estimée de la cible dans "time" secondes.
@@ -229,10 +232,12 @@ public class TowerShoot : MonoBehaviour
     // Action spécial
     private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
     {
-        GameObject arrow = PoolManager.Instance.Spawn(
-            tower.TowerData.ProjectilePrefab,
-            firePoint.position,
-            firePoint.rotation);
+        var prefab = tower.TowerData.ProjectilePrefab;
+        if (prefab == null || firePoint == null) return 0f;
+        var pool = poolManager != null ? poolManager : PoolManager.Instance;
+        GameObject arrow = pool != null
+            ? pool.Spawn(prefab, firePoint.position, firePoint.rotation)
+            : Instantiate(prefab, firePoint.position, firePoint.rotation);
 
         if (arrow == null) return 0f;
 
@@ -252,16 +257,15 @@ public class TowerShoot : MonoBehaviour
     private void ApplyAreaDamage(
         Vector3 impactPosition,
         float radius,
-        int finalDamage)
+        int finalDamage,
+        SOTower profile)
     {
-        if (tower == null) return;
-        if (tower.IATower == null) return;
-        if (tower.TowerData == null) return;
+        if (profile == null) return;
 
         Collider[] enemiesInZone = Physics.OverlapSphere(
             impactPosition,
             radius,
-            tower.TowerData.TargetLayer
+            profile.TargetLayer
         );
 
         healthsTouched.Clear();
@@ -280,16 +284,16 @@ public class TowerShoot : MonoBehaviour
             // Appliquer l'état défini dans le SOTower
             EtatManager etatManager = enemy.GetComponentInParent<EtatManager>();
 
-            if (etatManager != null && tower.TowerData.ETAT != null)
+            if (etatManager != null && profile.ETAT != null)
             {
-                etatManager.AddEtat(tower.TowerData.ETAT);
+                etatManager.AddEtat(profile.ETAT);
             }
 
             // Infliger les dégâts
             health.TakeDamage(
                 new DamageInfo(
                     finalDamage,
-                    tower.TowerData.DamageType
+                    profile.DamageType
                 )
             );
         }

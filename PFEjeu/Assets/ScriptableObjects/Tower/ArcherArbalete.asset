@@ -12,12 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c062dfa8b7175ff41ae8e8048a012460, type: 3}
   m_Name: ArcherArbalete
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
-  towerName: Test
-  detectionRange: 9
+  towerName: "Arbal\xE8te"
+  detectionRange: 13
   towerType: 0
-  targetCondition1: 5
+  etat: {fileID: 0}
+  targetCondition1: 1
   targetCondition2: 0
   targetDistance: 0
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 8
   projectileType: 0
   projectileMovement: 0
   shootMode: 0
@@ -33,7 +37,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 20
+      baseValue: 32
     - type: 3
       baseValue: 0
     - type: 4
@@ -43,7 +47,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 2
+      baseValue: 0.65
   - level: 2
     stats:
     - type: 0
@@ -51,7 +55,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 0
+      baseValue: 40
     - type: 3
       baseValue: 0
     - type: 4
@@ -61,7 +65,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0
+      baseValue: 0.715
   - level: 3
     stats:
     - type: 0
@@ -69,7 +73,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 0
+      baseValue: 48
     - type: 3
       baseValue: 0
     - type: 4
@@ -79,6 +83,8 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0
+      baseValue: 0.78
   models:
-  - {fileID: 3604618397877428115, guid: 1446b2a4a67be3646a45cfc242bf407d, type: 3}
+  - {fileID: 8400440785846764891, guid: 0d847cea63c53d14abb282f5779f1524, type: 3}
+  - {fileID: 8400440785846764891, guid: 0d847cea63c53d14abb282f5779f1524, type: 3}
+  - {fileID: 8400440785846764891, guid: 0d847cea63c53d14abb282f5779f1524, type: 3}

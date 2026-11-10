@@ -133,7 +133,6 @@ public class TowerProjectil : MonoBehaviour
                 float t = Mathf.Clamp01(elapsedTime / travelDuration);
                 Vector3 currentPosition = Vector3.Lerp(startPosition, targetPosition, t);
                 float height = 4f * arcHeight * t * (1f - t);
-                Debug.Log($"Arc Height : {arcHeight} | Hauteur calculée : {height}");
                 Vector3 arcPosition = new Vector3(currentPosition.x, currentPosition.y + height, currentPosition.z);
 
                 transform.position = arcPosition;
@@ -155,7 +154,7 @@ public class TowerProjectil : MonoBehaviour
     /// <summary>Inflige les dégâts à la cible (si elle a un Health), puis despawn.</summary>
     private void HitTarget()
     {
-        if (dealsDamage && target != null && target.TryGetComponent(out Health health))
+        if (dealsDamage && target != null && target.GetComponentInParent<Health>() is Health health)
             health.TakeDamage(new DamageInfo(damage, damageType));
 
         Despawn();

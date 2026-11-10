@@ -15,7 +15,7 @@ namespace Core.BarracksSystem
         [Header("Expérience de défense")]
         [SerializeField, Min(0)] private int experiencePerWaveNumber = 20;
         private Core.WaveSystem.WaveSpawner _experienceSpawner;
-        private readonly Dictionary<heros, Barracks> _defenders = new();
+        private readonly Dictionary<heros, MonoBehaviour> _defenders = new();
         private int _rewardWave;
         private bool _rewardPending;
         private readonly List<string> _lastWaveExperience = new();
@@ -50,8 +50,8 @@ namespace Core.BarracksSystem
             _lastWaveExperience.Clear();
             _defenders.Clear(); _rewardWave = wave; _rewardPending = true;
             foreach (var hero in _heroes)
-                if (hero != null && hero.isActiveAndEnabled && hero.AssignedBarracks != null && hero.AssignedBarracks.isActiveAndEnabled)
-                    _defenders[hero] = hero.AssignedBarracks;
+                if (hero != null && hero.isActiveAndEnabled && hero.DefenseAssignment != null && hero.DefenseAssignment.isActiveAndEnabled)
+                    _defenders[hero] = hero.DefenseAssignment;
         }
         private void RewardDefenders(int wave)
         {
@@ -61,7 +61,7 @@ namespace Core.BarracksSystem
             {
                 var hero = entry.Key;
                 if (hero == null || !_heroes.Contains(hero) || !hero.isActiveAndEnabled || hero.IsOnExpedition ||
-                    entry.Value == null || !entry.Value.isActiveAndEnabled || hero.AssignedBarracks != entry.Value) continue;
+                    entry.Value == null || !entry.Value.isActiveAndEnabled || hero.DefenseAssignment != entry.Value) continue;
                 int before = hero.Level;
                 int gained = hero.AddExperience(DefenseExperience(wave));
                 _lastWaveExperience.Add($"{hero.HeroName} · Défense : +{gained} XP · " +
@@ -90,14 +90,14 @@ namespace Core.BarracksSystem
         }
 
         public heros RecruitDebugHero()
-            => Recruit((ClasseHeros)UnityEngine.Random.Range(0, 3), 1);
+            => Recruit((ClasseHeros)UnityEngine.Random.Range(0, Enum.GetValues(typeof(ClasseHeros)).Length), 1);
 
         public heros Recruit(ClasseHeros classe, int level)
         {
-            if ((int)classe < 0 || (int)classe > 2)
+            if (!Enum.IsDefined(typeof(ClasseHeros), classe))
                 throw new ArgumentOutOfRangeException(nameof(classe));
             if (!HasRecruitmentSpace) return null;
-            string label = classe == ClasseHeros.Degats ? "Dégâts" : classe.ToString();
+            string label = heros.ClassName(classe);
             var go = new GameObject($"Héros {label} #{_nextId++}");
             go.transform.SetParent(transform, false);
             var hero = go.AddComponent<heros>();
@@ -118,6 +118,7 @@ namespace Core.BarracksSystem
             hero.Changed -= HandleHeroChanged;
             hero.Destroyed -= RemoveDestroyedHero;
             if (hero.AssignedBarracks != null) hero.AssignedBarracks.AssignHero(null);
+            if (hero.AssignedTower != null) hero.AssignedTower.ClearHero();
             if (hero.AssignedExpedition != null) hero.AssignedExpedition.CancelHero(hero);
             Changed?.Invoke();
             Destroy(hero.gameObject);

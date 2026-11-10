@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c062dfa8b7175ff41ae8e8048a012460, type: 3}
+  m_Name: ArcherBase
+  m_EditorClassIdentifier: Assembly-CSharp::SOTower
+  towerName: "Tour d\u2019archer"
+  detectionRange: 10
+  towerType: 0
+  etat: {fileID: 0}
+  targetCondition1: 0
+  targetCondition2: 0
+  targetDistance: 0
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  projectileType: 0
+  projectileMovement: 0
+  shootMode: 0
+  projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
+  damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
+  minLevel: 1
+  maxLevel: 3
+  towerStats:
+  - level: 1
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 14
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 1
+  - level: 2
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 18
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 1.1
+  - level: 3
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 21
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 1.2
+  models:
+  - {fileID: 1588397231414283764, guid: 22609c8f93c8d8643984e07e74c0a3dd, type: 3}
+  - {fileID: 1588397231414283764, guid: 22609c8f93c8d8643984e07e74c0a3dd, type: 3}
+  - {fileID: 1588397231414283764, guid: 22609c8f93c8d8643984e07e74c0a3dd, type: 3}

@@ -74,6 +74,7 @@ namespace Core.TowerDefense
             var building=Instantiate(def.prefab,anchor.position+anchor.rotation*def.placementOffset,anchor.rotation,buildingsRoot);
             building.name=def.displayName+" · "+slot.name;
             if(building.TryGetComponent<Core.BarracksSystem.BarracksVillageUpgrade>(out var upgrade))upgrade.Configure(upgradePanel);
+            if(building.TryGetComponent<TowerHeroStation>(out var tower))tower.Configure(this, upgradePanel);
             if(building.TryGetComponent<Building>(out _))
             {
                 var highlight=building.GetComponent<BuildingHighlight>();

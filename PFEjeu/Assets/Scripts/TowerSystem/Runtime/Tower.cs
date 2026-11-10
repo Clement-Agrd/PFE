@@ -17,7 +17,9 @@ public class Tower : MonoBehaviour
     // La fiche de données de cette tour (portée, cadence de tir, dégâts, modèles par niveau...).
     // Voir SOTower.cs pour le détail des champs.
     [SerializeField] private SOTower towerData;
-    public SOTower TowerData => towerData ;
+    private SOTower specialization;
+    public SOTower TowerData => specialization != null ? specialization : towerData;
+    public int CurrentLevel => currentLevel;
     
     // Donné du héro qui va modifier la tour
     [SerializeField] private SoHero heroData;
@@ -67,7 +69,7 @@ public class Tower : MonoBehaviour
 
     private void Update()
     {
-        if (!HasTarget()) return;
+        if (TowerData == null || stats == null || towerShoot == null || iaTower == null || !HasTarget()) return;
 
         // Le compteur de cadence avance par pas de 0.1s (le rythme de ce bloc),
         // pas par Time.deltaTime : cohérent avec la fréquence de détection ci-dessus.
@@ -92,6 +94,8 @@ public class Tower : MonoBehaviour
         // Démarre toujours au niveau minimum défini dans la fiche de données.
         currentLevel = towerData.MinLevel;
         stats = GetComponent<EntityStats>();
+        if (iaTower == null) iaTower = GetComponent<IATower>();
+        if (towerShoot == null) towerShoot = GetComponent<TowerShoot>();
         towerData.ApplyStatsTo(stats, currentLevel);
         UpdateModel();
     }
@@ -115,12 +119,24 @@ public class Tower : MonoBehaviour
     }
 
     /// <summary>Fait monter la tour d'un niveau (borné entre MinLevel et MaxLevel), et met à jour son modèle.</summary>
-    public void LevelUp()
+    public void LevelUp() => SetLevel(currentLevel + 1);
+
+    public void SetSpecialization(SOTower profile)
     {
+        if (specialization == profile) return;
+        specialization = profile;
+        shootTimer = 0f;
+        if (iaTower != null) iaTower.ClearTargets();
+        ApplyProfile();
+    }
+
+    public void SetLevel(int level)
+    {
+        if (TowerData == null) return;
         int newLevel = Mathf.Clamp(
-            currentLevel + 1,
-            towerData.MinLevel,
-            towerData.MaxLevel
+            level,
+            TowerData.MinLevel,
+            TowerData.MaxLevel
         );
 
         if (newLevel == currentLevel)
@@ -128,8 +144,13 @@ public class Tower : MonoBehaviour
 
         currentLevel = newLevel;
 
-        towerData.ApplyStatsTo(stats, currentLevel);
+        ApplyProfile();
+    }
 
+    private void ApplyProfile()
+    {
+        if (TowerData == null || stats == null) return;
+        TowerData.ApplyStatsTo(stats, Mathf.Clamp(currentLevel, TowerData.MinLevel, TowerData.MaxLevel));
         UpdateModel();
     }
 
@@ -139,20 +160,24 @@ public class Tower : MonoBehaviour
     /// </summary>
     private void UpdateModel()
     {
-        if (towerData.models == null || towerData.models.Length == 0) return;
+        var models = TowerData.models;
+        if (models == null || models.Length == 0) return;
 
         // Les niveaux sont 1-indexés (niveau 1, 2, 3...) mais le tableau est
         // 0-indexé : d'où le -1.
-        int modelIndex = currentLevel - 1;
-        if (modelIndex < 0 || modelIndex >= towerData.models.Length) return;
+        int modelIndex = Mathf.Clamp(currentLevel, TowerData.MinLevel, TowerData.MaxLevel) - 1;
+        if (modelIndex < 0 || modelIndex >= models.Length) return;
 
-        GameObject model = towerData.models[modelIndex];
+        GameObject model = models[modelIndex];
         if (model == null) return;
         if (modelParent == null) return;
 
         // Détruit l'ancien modèle avant d'instancier le nouveau (évite les doublons).
         if (currentModel != null)
+        {
+            currentModel.SetActive(false);
             Destroy(currentModel);
+        }
 
         currentModel = Instantiate(model, modelParent);
         currentModel.transform.localPosition = Vector3.zero;
@@ -171,7 +196,7 @@ public class Tower : MonoBehaviour
     
     private bool HasTarget()
     {
-        if (towerData.TargetPriority == EnumTargetPriority.TargetPriority.All)
+        if (TowerData.TargetPriority == EnumTargetPriority.TargetPriority.All)
             return iaTower.AllTargets.Count > 0;
         return iaTower.CurrentTarget != null;
     }

@@ -144,7 +144,7 @@ namespace Core.Village.Exploration.UI
                 choice.transform.SetSiblingIndex(index++);
                 string status = hero.IsOnExpedition
                     ? (cancellable ? $"Départ en attente : {hero.ExpeditionName} · Cliquer pour annuler" : $"En expédition : {hero.ExpeditionName}")
-                    : hero.AssignedBarracks != null ? "Affecté à une caserne"
+                    : hero.DefenseAssignment != null ? $"Affecté à {hero.DefenseAssignment.name}"
                     : selectable ? "Disponible" : manager.GetHeroUnavailableReason(hero);
                 choice.Label.text = $"{hero.HeroName} · {hero.ClasseName} · Nv {hero.Level}\n{hero.ExperienceLabel} · {status}";
                 choice.SetActive(_selectedHeroes.Contains(hero));

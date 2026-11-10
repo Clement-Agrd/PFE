@@ -159,6 +159,12 @@ namespace Core.Village.UI
 
         private void HandleBuildingClicked(Building building)
         {
+            if (building != null && building.TryGetComponent<TowerHeroStation>(out var tower))
+            {
+                Hide();
+                tower.Show();
+                return;
+            }
             // Ces services proposent leur propre bouton d'amélioration.
             if (building != null && (building.GetComponent<Core.TavernSystem.Tavern>() != null ||
                 building.GetComponent<Core.Village.Exploration.ExplorationPostTrigger>() != null || building.GetComponent<Core.Village.RecruitmentCamp>() != null)) { Hide(); return; }
