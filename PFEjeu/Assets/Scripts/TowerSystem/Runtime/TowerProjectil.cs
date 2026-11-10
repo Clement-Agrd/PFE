@@ -1,3 +1,4 @@
+using System;
 using Core.HealthSystem;
 using Core.PoolingSystem;
 using UnityEngine;
@@ -18,6 +19,8 @@ public class TowerProjectil : MonoBehaviour
     private Transform target;
     // Le type de dégâts à infliger (utilisé par le Health de la cible pour les résistances).
     private DamageType damageType;
+    private float armorPenetration;
+    private Action<Vector3> onImpact;
 
     private bool dealsDamage = true;
     
@@ -67,6 +70,7 @@ public class TowerProjectil : MonoBehaviour
         // true → il ne ferait plus jamais rien de la partie).
         _hasDespawned = false;
         target = null;
+        onImpact = null;
     }
 
     /// <summary>Appelé par Tower juste après avoir spawné ce projectile.</summary>
@@ -76,11 +80,15 @@ public class TowerProjectil : MonoBehaviour
         int newDamage, 
         EnumProjectilSetting.projectileMovement movement,
         Vector3 impactPosition,
-        bool damageEnable)
+        bool damageEnable,
+        float penetration = 0f,
+        Action<Vector3> impact = null)
     {
         target = newTarget;
         damageType = newDamageType;
         damage = newDamage;
+        armorPenetration = penetration;
+        onImpact = impact;
         projectileMovement = movement;
         
         startPosition = transform.position;
@@ -104,13 +112,20 @@ public class TowerProjectil : MonoBehaviour
                 // on ne reste pas planté à viser du vide, on disparaît proprement.
                 if (target == null || !target.gameObject.activeInHierarchy)
                 {
-                    Despawn();
+                    if (onImpact != null)
+                    {
+                        transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+                        if ((transform.position - targetPosition).sqrMagnitude <= hitDistance * hitDistance)
+                            HitTarget();
+                    }
+                    else Despawn();
                     return;
                 }
 
                 // La distance que le projectile va parcourir CETTE frame.
                 float step = speed * Time.deltaTime;
-                float distance = Vector3.Distance(transform.position, target.position);
+                targetPosition = target.position;
+                float distance = Vector3.Distance(transform.position, targetPosition);
 
                 // Le seuil d'impact effectif est le plus grand entre hitDistance (réglage
                 // manuel) et step (le pas de cette frame). Ça garantit qu'un projectile
@@ -155,7 +170,9 @@ public class TowerProjectil : MonoBehaviour
     private void HitTarget()
     {
         if (dealsDamage && target != null && target.GetComponentInParent<Health>() is Health health)
-            health.TakeDamage(new DamageInfo(damage, damageType));
+            health.TakeDamage(new DamageInfo(damage, damageType, armorPenetration: armorPenetration));
+
+        onImpact?.Invoke(targetPosition);
 
         Despawn();
     }
@@ -168,6 +185,7 @@ public class TowerProjectil : MonoBehaviour
     {
         if (_hasDespawned) return; // sécurité anti double-appel
         _hasDespawned = true;
+        onImpact = null;
 
         target = null;
 

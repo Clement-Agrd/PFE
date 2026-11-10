@@ -21,11 +21,14 @@ namespace Core.BarracksSystem
         public bool HasChanges { get; private set; }
 
         public BarracksStatsPreview(Transform parent, string name)
+            : this(parent, name, "Statistiques des troupes", null) { }
+
+        public BarracksStatsPreview(Transform parent, string name, string titleText, string[] labels)
         {
             var card = NewImage(name, parent, CardRaised, 16);
             card.raycastTarget = true;
             Root = card.rectTransform;
-            var title = NewText("Title", Root, "Statistiques des troupes", 29, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
+            var title = NewText("Title", Root, titleText, 29, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
             Anchor(title.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -20), new Vector2(630, 45));
             _subtitle = NewText("ComparisonTarget", Root, "", 21, TextMuted);
             Anchor(_subtitle.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -68), new Vector2(630, 58));
@@ -40,10 +43,15 @@ namespace Core.BarracksSystem
             list.pivot = new Vector2(.5f, 1); list.anchoredPosition = new Vector2(0, -177); list.sizeDelta = new Vector2(-52, 460);
             VStack(list.gameObject, 6);
             _types = (EnumStats.StatTypes[])Enum.GetValues(typeof(EnumStats.StatTypes));
-            _rows = new Row[_types.Length + 2];
-            for (int i = 0; i < _types.Length; i++) _rows[i] = CreateRow(list, _types[i].ToString(), Label(_types[i]));
-            _rows[_types.Length] = CreateRow(list, "SoldierCount", "Nombre de soldats");
-            _rows[_types.Length + 1] = CreateRow(list, "RespawnTime", "Réapparition (s)");
+            if (labels == null)
+            {
+                labels = new string[_types.Length + 2];
+                for (int i = 0; i < _types.Length; i++) labels[i] = Label(_types[i]);
+                labels[_types.Length] = "Nombre de soldats";
+                labels[_types.Length + 1] = "Réapparition (s)";
+            }
+            _rows = new Row[labels.Length];
+            for (int i = 0; i < labels.Length; i++) _rows[i] = CreateRow(list, $"Stat_{i}", labels[i]);
             var legend = NewText("ComparisonLegend", Root, "Vert : hausse · Rouge : baisse · Gris : identique", 18, TextMuted, TextAlignmentOptions.Center);
             Anchor(legend.rectTransform, new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 18), new Vector2(650, 32));
         }
@@ -84,6 +92,13 @@ namespace Core.BarracksSystem
                 SetRow(_rows[i], data.GetSoldierStat(current, _types[i], barracks.AssignedHero), data.GetSoldierStat(futureLevel, _types[i], futureHero));
             SetRow(_rows[_types.Length], data.GetSoldierCount(current, barracks.AssignedHero), data.GetSoldierCount(futureLevel, futureHero));
             SetRow(_rows[_types.Length + 1], data.GetRespawnTime(current, barracks.AssignedHero), data.GetRespawnTime(futureLevel, futureHero));
+        }
+
+        public void Compare(string description, float[] current, float[] future)
+        {
+            _subtitle.text = description;
+            HasChanges = false;
+            for (int i = 0; i < _rows.Length; i++) SetRow(_rows[i], current[i], future[i]);
         }
 
         private void SetRow(Row row, float current, float future)

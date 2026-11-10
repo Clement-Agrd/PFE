@@ -13,10 +13,14 @@ MonoBehaviour:
   m_Name: ArcherBase
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: "Tour d\u2019archer"
-  detectionRange: 10
+  detectionRange: 12
+  armorPenetration: 0
+  impactRadius: 0
+  impactPrefab: {fileID: 0}
+  effectDescription: "Fl\xE8che \xB7 Ennemi en t\xEAte"
   towerType: 0
   etat: {fileID: 0}
-  targetCondition1: 0
+  targetCondition1: 8
   targetCondition2: 0
   targetDistance: 0
   targetLayer:
@@ -37,7 +41,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 14
+      baseValue: 17
     - type: 3
       baseValue: 0
     - type: 4
@@ -55,7 +59,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 18
+      baseValue: 21
     - type: 3
       baseValue: 0
     - type: 4
@@ -73,7 +77,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 21
+      baseValue: 26
     - type: 3
       baseValue: 0
     - type: 4

@@ -16,5 +16,6 @@ public class EnumTargetPriority
         squishy,
         
         All,
+        FirstOnPath,
     }
 }

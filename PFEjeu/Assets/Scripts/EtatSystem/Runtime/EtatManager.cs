@@ -15,7 +15,7 @@ public class EtatManager : MonoBehaviour
 
     private void Awake()
     {
-        entityStats = GetComponent<EntityStats>();
+        entityStats = GetComponentInParent<EntityStats>();
         health = GetComponent<Health>();
     }
 
@@ -33,6 +33,20 @@ public class EtatManager : MonoBehaviour
                 etatsActifs.RemoveAt(i);
             }
         }
+    }
+
+    private void OnDisable()
+    {
+        foreach (var etat in etatsActifs) etat.RemoveEtat();
+        etatsActifs.Clear();
+    }
+
+    public static void ApplyTo(Health target, SOEtat data)
+    {
+        if (data == null || target == null || target.IsDead || !target.isActiveAndEnabled) return;
+        if (!target.TryGetComponent<EtatManager>(out var manager))
+            manager = target.gameObject.AddComponent<EtatManager>();
+        manager.AddEtat(data);
     }
 
     public void AddEtat(SOEtat etatData)

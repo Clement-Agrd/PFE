@@ -19,6 +19,16 @@ public class SOTower : ScriptableObject
     [SerializeField] private string towerName;
     [SerializeField] private float detectionRange;
     public float DetectionRange => detectionRange;
+    public string TowerName => string.IsNullOrWhiteSpace(towerName) ? name : towerName;
+
+    [SerializeField, Range(0, 1)] private float armorPenetration;
+    public float ArmorPenetration => Mathf.Clamp01(armorPenetration);
+    [SerializeField, Min(0)] private float impactRadius;
+    public float ImpactRadius => impactRadius;
+    [SerializeField] private GameObject impactPrefab;
+    public GameObject ImpactPrefab => impactPrefab;
+    [SerializeField] private string effectDescription;
+    public string EffectDescription => effectDescription;
     
     [SerializeField] private TypeTower towerType;
     public TypeTower TowerType => towerType;
@@ -82,7 +92,26 @@ public class SOTower : ScriptableObject
     [Header("Tower Stats")]
     [SerializeField] private List<TowerLevelStats> towerStats = new List<TowerLevelStats>();
     
-    public void ApplyStatsTo(EntityStats target, int level)
+    public float GetStat(int level, StatType type, int heroLevel)
+    {
+        int index = Mathf.Clamp(level, MinLevel, MaxLevel) - MinLevel;
+        if (index < 0 || index >= towerStats.Count) return 0f;
+        foreach (var entry in towerStats[index].stats)
+            if (entry.type == type) return ScaleStat(entry, heroLevel);
+        return 0f;
+    }
+
+    public float GetRange(int heroLevel) => detectionRange * (1f + .03f * Mathf.Clamp(heroLevel, 0, 5));
+
+    private static float ScaleStat(TowerStatEntry entry, int heroLevel) => entry.type switch
+    {
+        StatType.PhysicDamage or StatType.MagicDamage =>
+            Mathf.RoundToInt(entry.baseValue * (1f + .08f * Mathf.Clamp(heroLevel, 0, 5))),
+        StatType.AttackSpeed => entry.baseValue * (1f + .04f * Mathf.Clamp(heroLevel, 0, 5)),
+        _ => entry.baseValue
+    };
+
+    public void ApplyStatsTo(EntityStats target, int level, int heroLevel = 0)
     {
         int index = level - minLevel;
 
@@ -94,7 +123,7 @@ public class SOTower : ScriptableObject
 
         foreach (TowerStatEntry entry in towerStats[index].stats)
         {
-            target.SetBaseStat(entry.type, entry.baseValue);
+            target.SetBaseStat(entry.type, ScaleStat(entry, heroLevel));
         }
     }
     

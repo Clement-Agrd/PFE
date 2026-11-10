@@ -77,6 +77,17 @@ namespace Core.TowerDefense
 
         public bool ReachedEnd { get; private set; }
 
+        public float DistanceRemaining
+        {
+            get
+            {
+                if (!HasValidPath || _pathIndex < 0) return float.PositiveInfinity;
+                if (ReachedEnd || _pathIndex >= _path.Count) return 0f;
+                return GetPlanarDistance(transform.position, _path.GetPoint(_pathIndex)) +
+                    _path.GetRemainingDistance(_pathIndex);
+            }
+        }
+
 
         private void Awake()
         {

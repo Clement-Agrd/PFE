@@ -12,11 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c062dfa8b7175ff41ae8e8048a012460, type: 3}
   m_Name: ChamanBase
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
-  towerName: Tour de chaman
-  detectionRange: 9
+  towerName: Tour de magie
+  detectionRange: 12
+  armorPenetration: 0
+  impactRadius: 0
+  impactPrefab: {fileID: 0}
+  effectDescription: "Projectile magique \xB7 Ennemi en t\xEAte"
   towerType: 1
   etat: {fileID: 0}
-  targetCondition1: 0
+  targetCondition1: 8
   targetCondition2: 0
   targetDistance: 0
   targetLayer:
@@ -25,7 +29,7 @@ MonoBehaviour:
   projectileType: 1
   projectileMovement: 0
   shootMode: 0
-  projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
+  projectilePrefab: {fileID: 816133389546998239, guid: 54740cfec187e7941b399dd6939679be, type: 3}
   damageType: {fileID: 11400000, guid: 32ce24f6e882d4a46b70e7ae451132ad, type: 2}
   minLevel: 1
   maxLevel: 3
@@ -39,7 +43,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 0
     - type: 3
-      baseValue: 16
+      baseValue: 17
     - type: 4
       baseValue: 0
     - type: 5
@@ -47,7 +51,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.85
+      baseValue: 0.9
   - level: 2
     stats:
     - type: 0
@@ -57,7 +61,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 0
     - type: 3
-      baseValue: 20
+      baseValue: 21
     - type: 4
       baseValue: 0
     - type: 5
@@ -65,7 +69,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.935
+      baseValue: 0.98999995
   - level: 3
     stats:
     - type: 0
@@ -75,7 +79,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 0
     - type: 3
-      baseValue: 24
+      baseValue: 26
     - type: 4
       baseValue: 0
     - type: 5
@@ -83,7 +87,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 1.02
+      baseValue: 1.0799999
   models:
   - {fileID: 3864869857901706188, guid: 36f9ebd42101ec64fa04a13e0e1afce6, type: 3}
   - {fileID: 3864869857901706188, guid: 36f9ebd42101ec64fa04a13e0e1afce6, type: 3}

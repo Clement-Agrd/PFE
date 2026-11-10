@@ -20,6 +20,9 @@ public class Tower : MonoBehaviour
     private SOTower specialization;
     public SOTower TowerData => specialization != null ? specialization : towerData;
     public int CurrentLevel => currentLevel;
+    public SOTower BaseProfile => towerData;
+    private int heroLevel;
+    public float DetectionRange => TowerData != null ? TowerData.GetRange(heroLevel) : 0f;
     
     // Donné du héro qui va modifier la tour
     [SerializeField] private SoHero heroData;
@@ -121,13 +124,15 @@ public class Tower : MonoBehaviour
     /// <summary>Fait monter la tour d'un niveau (borné entre MinLevel et MaxLevel), et met à jour son modèle.</summary>
     public void LevelUp() => SetLevel(currentLevel + 1);
 
-    public void SetSpecialization(SOTower profile)
+    public void SetSpecialization(SOTower profile, int level = 0)
     {
-        if (specialization == profile) return;
+        if (specialization == profile && heroLevel == level) return;
+        bool profileChanged = specialization != profile;
+        heroLevel = profile != null ? level : 0;
         specialization = profile;
         shootTimer = 0f;
         if (iaTower != null) iaTower.ClearTargets();
-        ApplyProfile();
+        ApplyProfile(profileChanged);
     }
 
     public void SetLevel(int level)
@@ -147,11 +152,11 @@ public class Tower : MonoBehaviour
         ApplyProfile();
     }
 
-    private void ApplyProfile()
+    private void ApplyProfile(bool updateModel = true)
     {
         if (TowerData == null || stats == null) return;
-        TowerData.ApplyStatsTo(stats, Mathf.Clamp(currentLevel, TowerData.MinLevel, TowerData.MaxLevel));
-        UpdateModel();
+        TowerData.ApplyStatsTo(stats, Mathf.Clamp(currentLevel, TowerData.MinLevel, TowerData.MaxLevel), heroLevel);
+        if (updateModel) UpdateModel();
     }
 
     /// <summary>
@@ -191,7 +196,7 @@ public class Tower : MonoBehaviour
     private void OnDrawGizmosSelected()
     {
         if (towerData == null) return;
-        Gizmos.DrawWireSphere(transform.position, towerData.DetectionRange);
+        Gizmos.DrawWireSphere(transform.position, DetectionRange);
     }
     
     private bool HasTarget()

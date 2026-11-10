@@ -83,6 +83,10 @@ namespace Core.TowerDefense
             Array.Empty<Vector3>();
 
 
+        private float[] _remainingDistances = Array.Empty<float>();
+
+        public float GetRemainingDistance(int index) => _remainingDistances[index];
+
         public int Count =>
             _points != null
                 ? _points.Length
@@ -124,6 +128,7 @@ namespace Core.TowerDefense
             {
                 _points =
                     Array.Empty<Vector3>();
+                _remainingDistances = Array.Empty<float>();
 
                 return;
             }
@@ -176,6 +181,14 @@ namespace Core.TowerDefense
 
                 _points[i] =
                     point;
+            }
+
+            _remainingDistances = new float[count];
+            for (int i = count - 2; i >= 0; i--)
+            {
+                Vector3 step = _points[i + 1] - _points[i];
+                step.y = 0f;
+                _remainingDistances[i] = _remainingDistances[i + 1] + step.magnitude;
             }
         }
 

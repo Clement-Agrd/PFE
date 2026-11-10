@@ -9,9 +9,12 @@ public class SOEtat : ScriptableObject
     public float Duration => duration;
     
     [SerializeField] private StatModifierData[] statModifiers;
-    public StatModifierData[] StatModifiers => statModifiers;
+    public StatModifierData[] StatModifiers => statModifiers ?? System.Array.Empty<StatModifierData>();
 
     [Header("Damage")]
+    [SerializeField] private Core.HealthSystem.DamageType damageType;
+    public Core.HealthSystem.DamageType DamageType => damageType;
+
     [SerializeField, Min(0)] private int damage;
     public int Damage => Mathf.Max(0, damage);
     

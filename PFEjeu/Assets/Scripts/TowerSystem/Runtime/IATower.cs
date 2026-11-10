@@ -1,7 +1,9 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 using Core.StatsSystem;
+using Core.TowerDefense;
+using Core.BarracksSystem;
+using Priority = EnumTargetPriority.TargetPriority;
 using Core.HealthSystem;
 using StatType = Core.StatsSystem.EnumStats.StatTypes;
 
@@ -49,158 +51,73 @@ public class IATower : MonoBehaviour
         // Cherche tous les colliders ennemis dans le rayon de détection de la tour.
         Collider[] targets = Physics.OverlapSphere(
             transform.position,
-            tower.TowerData.DetectionRange,
+            tower.DetectionRange,
             tower.TowerData.TargetLayer);
         
-        bool healing = tower.TowerData.ShootMode == EnumShootType.ShootMode.Heal;
-        SelectTarget(Array.FindAll(targets, target =>
+        SelectTarget(targets);
+    }
+
+    private void SelectTarget(Collider[] targets)
+    {
+        SOTower profile = tower.TowerData;
+        Priority priority = profile.TargetPriority;
+        Collider previous = currentTarget;
+        currentTarget = null;
+        allTargets.Clear();
+        float best = float.PositiveInfinity;
+
+        foreach (var target in targets)
         {
             var health = target.GetComponentInParent<Health>();
-            if (healing)
-                return health != null && !health.IsDead && health.CurrentHealth < health.MaxHealth &&
-                    (health.GetComponentInParent<Core.TowerDefense.EnemyController>() == null);
-            return health == null || !health.IsDead;
-        }));
-        
-    }
-    
-    // Récupére les stats des ennemis
-    private float GetEnemyStat(Collider enemy, StatType statType)
-    {
-        EntityStats enemyStats = enemy.GetComponentInParent<EntityStats>();
+            if (health != null && (health.IsDead || !health.isActiveAndEnabled)) continue;
 
-        if (enemyStats == null)
-            return 0f;
+            if (profile.ShootMode == EnumShootType.ShootMode.Heal)
+            {
+                if (health == null || health.GetComponentInParent<EnemyController>() != null ||
+                    health.GetComponentInParent<NavEnemy>() != null) continue;
+                if (profile.ETAT == null && health.CurrentHealth >= health.MaxHealth) continue;
+                if (profile.ETAT != null && target.gameObject.layer != LayerMask.NameToLayer("Player") &&
+                    health.GetComponentInParent<BarracksSoldier>() == null) continue;
+            }
+            else if (health == null && priority == Priority.FirstOnPath)
+            {
+                continue;
+            }
 
-        return enemyStats.GetStat(statType);
-    }
+            if (priority == Priority.All)
+            {
+                allTargets.Add(target);
+                continue;
+            }
 
-    // Selectionne la cible en fonction du Target priority du SOTower
-    private void SelectTarget(Collider[]target)
-    {
-        // vide la selection
-        if (Array.IndexOf(target, currentTarget) == -1)
-        {
-            currentTarget = null;
-        }
-        
-        allTargets.RemoveAll(enemy => Array.IndexOf(target, enemy) == -1);
-        
-        switch (tower.TowerData.TargetPriority)
-        {
-            case EnumTargetPriority.TargetPriority.None:
-                
-                // Cible simple : le premier trouvé.
-                if (currentTarget == null)
-                currentTarget = target.Length > 0 ? target[0] : null;
-
-                break;
-            
-            case EnumTargetPriority.TargetPriority.HighDefPhy:
-                
-
-                
-                if (currentTarget == null &&  target.Length > 0)
-                {
-                    currentTarget = target[0];
-                    
-                    float HighDefense = GetEnemyStat(currentTarget, StatType.DefensePhysic);
-                    
-                    for (int i = 1; i < target.Length; i++)
-                    {
-                        Collider enemy = target[i];
-                        float enemyDef = GetEnemyStat(enemy, StatType.DefensePhysic);
-
-                        if (HighDefense < enemyDef)
-                        {
-                            HighDefense = enemyDef;
-                            currentTarget = enemy;
-                        }
-                    }
-                }
-                break;
-            
-            case EnumTargetPriority.TargetPriority.HighDefMag:
-                
-
-
-                if (currentTarget == null && target.Length > 0)
-                {
-                    currentTarget = target[0];
-                    
-                    float HighDefMag = GetEnemyStat(currentTarget, StatType.DefenseMagic);
-
-                    for (int i = 1; i < target.Length; i++)
-                    {
-                        Collider ennemy = target[i];
-                        float DefMag = GetEnemyStat(ennemy, StatType.DefenseMagic);
-
-                        if (HighDefMag < DefMag)
-                        {
-                            HighDefMag = DefMag;
-                            currentTarget = ennemy;
-                        }
-                    }
-                }
-                break;
-            
-            case EnumTargetPriority.TargetPriority.Tank:
-                
-
-
-                if (currentTarget == null && target.Length > 0)
-                {
-                    currentTarget = target[0];
-                    
-                    float HighHp = GetEnemyStat(currentTarget, StatType.Life);
-
-                    for (int i = 1; i < target.Length; i++)
-                    {
-                        Collider ennemy = target[i];
-                        float TankEnnemy = GetEnemyStat(ennemy, StatType.Life);
-
-                        if (HighHp < TankEnnemy)
-                        {
-                            HighHp = TankEnnemy;
-                            currentTarget = ennemy;
-                        }
-                    }
-                }
-                break;
-            
-            case EnumTargetPriority.TargetPriority.squishy :
-                
-                if (currentTarget == null && target.Length > 0)
-                {
-                    currentTarget = target[0];
-                    
-                    float LowHp = GetEnemyStat(currentTarget, StatType.Life);
-
-                    for (int i = 1; i < target.Length; i++)
-                    {
-                        Collider ennemy = target[i];
-                        float SquishyEnnemy = GetEnemyStat(ennemy, StatType.Life);
-
-                        if (LowHp > SquishyEnnemy)
-                        {
-                            LowHp = SquishyEnnemy;
-                            currentTarget = ennemy;
-                        }
-                    }
-                }
-                break;
-            
-            case EnumTargetPriority.TargetPriority.All:
-                
-                for (int i = 0; i < target.Length; i++)
-                {
-                    if (!allTargets.Contains(target[i]))
-                    {
-                        allTargets.Add(target[i]);
-                    }
-                }
-                break;
+            float score = priority switch
+            {
+                Priority.FirstOnPath => FirstScore(target),
+                Priority.Tank => -(health != null ? health.MaxHealth : GetEnemyStat(target, StatType.Life)),
+                Priority.squishy => health != null ? health.CurrentHealth : GetEnemyStat(target, StatType.Life),
+                Priority.HighDefPhy => -GetEnemyStat(target, StatType.DefensePhysic),
+                Priority.HighDefMag => -GetEnemyStat(target, StatType.DefenseMagic),
+                _ => target == previous ? -1f : 0f
+            };
+            if (currentTarget == null || score < best)
+            {
+                currentTarget = target;
+                best = score;
+            }
         }
     }
- }
 
+    private float FirstScore(Collider target)
+    {
+        var path = target.GetComponentInParent<EnemyPathFollower>();
+        if (path != null && !float.IsPositiveInfinity(path.DistanceRemaining))
+            return path.DistanceRemaining;
+        return 100000f + (target.transform.position - transform.position).sqrMagnitude;
+    }
+
+    private static float GetEnemyStat(Collider enemy, StatType type)
+    {
+        var stats = enemy.GetComponentInParent<EntityStats>();
+        return stats != null ? stats.GetStat(type) : 0f;
+    }
+}

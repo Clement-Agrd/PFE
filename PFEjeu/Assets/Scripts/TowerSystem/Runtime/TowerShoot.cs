@@ -27,6 +27,8 @@ public class TowerShoot : MonoBehaviour
     
     private readonly List<Health> healthsTouched = new List<Health>();
 
+    public float GetImpactRadius(SOTower profile) => profile.ImpactRadius > 0f ? profile.ImpactRadius : zoneImpact;
+
     public Transform firePoint => tower.FirePoint;
 
     private void Awake()
@@ -140,6 +142,7 @@ public class TowerShoot : MonoBehaviour
             healthsTouched.Add(allyHealth);
 
             allyHealth.Heal(healAmount);
+            EtatManager.ApplyTo(allyHealth, tower.TowerData.ETAT);
         }
     }
 
@@ -152,7 +155,10 @@ public class TowerShoot : MonoBehaviour
         if (tower.IATower.CurrentTarget == null) return;
 
         // on vise l'endroit où l'ennemi SERA, pas où il est au moment du tir.
-        Vector3 impactPosition = PredictPosition(tower.IATower.CurrentTarget, estimatedFlightTime);
+        float flightTime = tower.TowerData.ProjectilePrefab != null &&
+            tower.TowerData.ProjectilePrefab.TryGetComponent<TowerProjectil>(out var arrow)
+            ? arrow.TravelDuration : estimatedFlightTime;
+        Vector3 impactPosition = PredictPosition(tower.IATower.CurrentTarget, flightTime);
 
         int finalDamage = GetFinalDamage();
 
@@ -160,7 +166,7 @@ public class TowerShoot : MonoBehaviour
 
         for (int i = 0; i < arrowCount; i++)
         {
-            Vector2 offset = UnityEngine.Random.insideUnitCircle * zoneImpact;
+            Vector2 offset = UnityEngine.Random.insideUnitCircle * GetImpactRadius(tower.TowerData);
             Vector3 randomOffset = new Vector3(offset.x, 0f, offset.y);
 
             Vector3 arrowImpactPosition = impactPosition + randomOffset;
@@ -190,17 +196,17 @@ public class TowerShoot : MonoBehaviour
 
         int finalDamage = GetFinalDamage();
 
-        float duration = SpawnArrow(
-            target,
-            impactPosition,
-            finalDamage,
-            false
-        );
-
-        // on passe la cible, pour lire sa position au moment de l'impact.
-        StartCoroutine(AreaDamageAfterDelay(target, impactPosition, finalDamage, duration, tower.TowerData));
+        SOTower profile = tower.TowerData;
+        SpawnArrow(target, impactPosition, finalDamage, false,
+            position =>
+            {
+                if (this == null) return;
+                if (profile.ImpactPrefab != null)
+                    Destroy(Instantiate(profile.ImpactPrefab, position, Quaternion.identity), 3f);
+                ApplyAreaDamage(position, GetImpactRadius(profile), finalDamage, profile);
+            });
     }
-    
+
     private IEnumerator AreaDamageAfterDelay(Transform followTarget, Vector3 fallbackPosition, int finalDamage, float delay, SOTower profile)
     {
         yield return new WaitForSeconds(delay);
@@ -208,7 +214,7 @@ public class TowerShoot : MonoBehaviour
         bool targetStillValid = followTarget != null && followTarget.gameObject.activeInHierarchy;
         Vector3 position = targetStillValid ? followTarget.position : fallbackPosition;
 
-        ApplyAreaDamage(position, zoneImpact, finalDamage, profile);
+        ApplyAreaDamage(position, GetImpactRadius(profile), finalDamage, profile);
     }
 
     // Position estimée de la cible dans "time" secondes.
@@ -230,7 +236,7 @@ public class TowerShoot : MonoBehaviour
     }
 
     // Action spécial
-    private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable)
+    private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable, Action<Vector3> onImpact = null)
     {
         var prefab = tower.TowerData.ProjectilePrefab;
         if (prefab == null || firePoint == null) return 0f;
@@ -249,7 +255,9 @@ public class TowerShoot : MonoBehaviour
             finalDamage,
             tower.TowerData.ProjectileMovement,
             impactPosition,
-            damageEnable);
+            damageEnable,
+            tower.TowerData.ArmorPenetration,
+            onImpact);
 
         return projectile.TravelDuration;
     }
@@ -281,21 +289,15 @@ public class TowerShoot : MonoBehaviour
             if (health == null || healthsTouched.Contains(health)) continue;
             healthsTouched.Add(health);
 
-            // Appliquer l'état défini dans le SOTower
-            EtatManager etatManager = enemy.GetComponentInParent<EtatManager>();
-
-            if (etatManager != null && profile.ETAT != null)
-            {
-                etatManager.AddEtat(profile.ETAT);
-            }
-
             // Infliger les dégâts
             health.TakeDamage(
                 new DamageInfo(
                     finalDamage,
-                    profile.DamageType
+                    profile.DamageType,
+                    armorPenetration: profile.ArmorPenetration
                 )
             );
+            EtatManager.ApplyTo(health, profile.ETAT);
         }
     }
 }

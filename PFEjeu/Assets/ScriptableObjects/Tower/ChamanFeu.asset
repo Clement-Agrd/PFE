@@ -12,11 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c062dfa8b7175ff41ae8e8048a012460, type: 3}
   m_Name: ChamanFeu
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
-  towerName: Feu
-  detectionRange: 10
+  towerName: Tour de feu
+  detectionRange: 12
+  armorPenetration: 0
+  impactRadius: 3.5
+  impactPrefab: {fileID: 7419156130884461054, guid: 2105c9286e1c3ab4688ea82049b24434, type: 3}
+  effectDescription: "Explosion \xB7 Br\xFBlure magique pendant 4 s"
   towerType: 1
-  etat: {fileID: 0}
-  targetCondition1: 0
+  etat: {fileID: 11400000, guid: 5abe6c901a0a3b347add4daad7381481, type: 2}
+  targetCondition1: 8
   targetCondition2: 0
   targetDistance: 0
   targetLayer:
@@ -25,7 +29,7 @@ MonoBehaviour:
   projectileType: 2
   projectileMovement: 0
   shootMode: 3
-  projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
+  projectilePrefab: {fileID: 5311609955673601765, guid: a4ffc81d28dbaff409458d0c7ce81a56, type: 3}
   damageType: {fileID: 11400000, guid: 32ce24f6e882d4a46b70e7ae451132ad, type: 2}
   minLevel: 1
   maxLevel: 3
@@ -39,7 +43,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 0
     - type: 3
-      baseValue: 23
+      baseValue: 19
     - type: 4
       baseValue: 0
     - type: 5
@@ -47,7 +51,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.8
+      baseValue: 0.9
   - level: 2
     stats:
     - type: 0
@@ -57,7 +61,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 0
     - type: 3
-      baseValue: 29
+      baseValue: 24
     - type: 4
       baseValue: 0
     - type: 5
@@ -65,7 +69,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.88
+      baseValue: 0.98999995
   - level: 3
     stats:
     - type: 0
@@ -75,7 +79,7 @@ MonoBehaviour:
     - type: 2
       baseValue: 0
     - type: 3
-      baseValue: 34
+      baseValue: 28
     - type: 4
       baseValue: 0
     - type: 5
@@ -83,7 +87,7 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.96000004
+      baseValue: 1.0799999
   models:
   - {fileID: 4367716860572773864, guid: fd7cfa8fa71cd9848ac5efa76ea2c76b, type: 3}
   - {fileID: 4367716860572773864, guid: fd7cfa8fa71cd9848ac5efa76ea2c76b, type: 3}

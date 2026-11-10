@@ -31,6 +31,9 @@ public sealed class TowerHeroStation : InteractableBase
     private GameObject _canvas;
     private RectTransform _rows;
     private TMP_Text _title;
+    private TowerStatsPreview _preview;
+    private heros _candidate;
+    private Button _confirm;
 
     public heros AssignedHero { get; private set; }
     public override string Prompt => "Gérer la tour";
@@ -69,6 +72,10 @@ public sealed class TowerHeroStation : InteractableBase
         return null;
     }
 
+    public SOTower GetProfile(heros hero) => ProfileFor(hero) ?? _tower.BaseProfile;
+
+    public int CurrentLevel => _tower.CurrentLevel;
+
     private bool CanAssign(heros hero)
         => CanManage && hero != null && hero.isActiveAndEnabled && ProfileFor(hero) != null &&
            (hero.DefenseAssignment == null || hero.AssignedTower == this) &&
@@ -86,15 +93,24 @@ public sealed class TowerHeroStation : InteractableBase
         if (!CanAssign(hero) || !hero.TryClaimTower(this)) return false;
         var previous = AssignedHero;
         AssignedHero = hero;
-        ApplyProfile(ProfileFor(hero));
-        if (previous != null) previous.ReleaseTower(this);
+        if (previous != null)
+        {
+            previous.Changed -= ApplyHeroLevel;
+            previous.ReleaseTower(this);
+        }
+        AssignedHero.Changed += ApplyHeroLevel;
+        ApplyHeroLevel();
         Refresh();
         return true;
     }
 
-    private void ApplyProfile(SOTower profile)
+    private void ApplyHeroLevel() => ApplyProfile(ProfileFor(AssignedHero), AssignedHero != null ? AssignedHero.Level : 0);
+
+    private void ApplyProfile(SOTower profile, int heroLevel = 0)
     {
-        _tower.SetSpecialization(profile);
+        bool changedModel = _tower.TowerData != (profile != null ? profile : _tower.BaseProfile);
+        _tower.SetSpecialization(profile, heroLevel);
+        if (!changedModel) return;
         if (TryGetComponent<BuildingHighlight>(out var highlight)) highlight.RefreshModel();
     }
 
@@ -103,7 +119,12 @@ public sealed class TowerHeroStation : InteractableBase
         var previous = AssignedHero;
         AssignedHero = null;
         if (_tower != null) ApplyProfile(null);
-        if (previous != null) previous.ReleaseTower(this);
+        if (previous != null)
+        {
+            previous.Changed -= ApplyHeroLevel;
+            previous.ReleaseTower(this);
+        }
+        Refresh();
     }
 
     public override bool CanInteract(GameObject interactor) => CanManage;
@@ -114,6 +135,7 @@ public sealed class TowerHeroStation : InteractableBase
         if (!CanManage || (_canvas != null && _canvas.activeSelf)) return;
         _roster = FindFirstObjectByType<HeroRoster>();
         if (_canvas == null) BuildUI();
+        _candidate = AssignedHero;
         _canvas.SetActive(true);
         if (_roster != null) _roster.Changed += Refresh;
         Refresh();
@@ -138,6 +160,9 @@ public sealed class TowerHeroStation : InteractableBase
     private void Refresh()
     {
         if (_canvas == null || !_canvas.activeSelf) return;
+        if (_candidate != null && !CanAssign(_candidate)) _candidate = AssignedHero;
+        _preview.Refresh(this, _tower.CurrentLevel, _candidate, "Affectation");
+        _confirm.interactable = _candidate != AssignedHero && (_candidate == null || CanAssign(_candidate));
         _title.text = $"{_building.Definition.DisplayName} · Niveau {_building.CurrentLevel}\n" +
                       (AssignedHero != null ? AssignedHero.HeroName : "Forme de base · Sans héros");
         foreach (Transform row in _rows)
@@ -170,9 +195,9 @@ public sealed class TowerHeroStation : InteractableBase
 
     private void AddChoice(string label, heros hero, bool enabled)
     {
-        var button = NewButton(_rows, label, () => AssignHero(hero), fontSize: 24);
+        var button = NewButton(_rows, label, () => { _candidate = hero; Refresh(); }, fontSize: 24);
         Layout(button.gameObject, height: 78);
-        button.SetActive(hero == AssignedHero);
+        button.SetActive(hero == _candidate);
         button.GetComponent<Button>().interactable = enabled;
     }
 
@@ -193,11 +218,16 @@ public sealed class TowerHeroStation : InteractableBase
         Stretch(backdrop.rectTransform);
         var panel = NewImage("Tower", backdrop.transform, Card, 16);
         Anchor(panel.rectTransform, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-40, 0), new Vector2(650, 670));
+        _preview = new TowerStatsPreview(backdrop.transform, "TowerAssignmentStats");
+        Anchor(_preview.Root, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-722, 0), new Vector2(730, 670));
         VStack(panel.gameObject, 12, new RectOffset(24, 24, 24, 24));
         _title = NewText("Title", panel.transform, "", 28, Accent);
         Layout(_title.gameObject, height: 100);
         _rows = NewScroll(panel.transform, "Heroes", 8, new RectOffset(6, 6, 6, 6), out var scroll);
         Layout(scroll.gameObject, flexH: 1);
+        var confirm = NewButton(panel.transform, "Valider l’affectation", () => AssignHero(_candidate), ButtonStyle.Primary, 25);
+        _confirm = confirm.GetComponent<Button>();
+        Layout(confirm.gameObject, height: 55);
         if (_upgradePanel != null)
         {
             var upgrade = NewButton(panel.transform, "Améliorer la tour", () =>

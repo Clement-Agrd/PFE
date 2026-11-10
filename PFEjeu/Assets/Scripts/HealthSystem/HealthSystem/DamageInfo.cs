@@ -32,6 +32,8 @@ namespace Core.HealthSystem
 
         public readonly DamageType Type;
 
+        public readonly float ArmorPenetration;
+
         public readonly GameObject Source;
 
         public readonly DamageSourceKind SourceKind;
@@ -41,11 +43,13 @@ namespace Core.HealthSystem
             int amount,
             DamageType type = null,
             GameObject source = null,
-            DamageSourceKind sourceKind = DamageSourceKind.None)
+            DamageSourceKind sourceKind = DamageSourceKind.None,
+            float armorPenetration = 0f)
         {
             Amount = amount;
 
             Type = type;
+            ArmorPenetration = Mathf.Clamp01(armorPenetration);
 
             Source = source;
 

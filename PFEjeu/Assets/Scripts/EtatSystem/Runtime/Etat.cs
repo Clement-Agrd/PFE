@@ -17,15 +17,16 @@ public class Etat
 
     public void UpdateEtat(float deltaTime)
     {
-        durationTimer += deltaTime;
-        damageTimer += deltaTime;
+        float activeTime = UnityEngine.Mathf.Min(deltaTime, etatData.Duration - durationTimer);
+        durationTimer += activeTime;
+        damageTimer += activeTime;
 
         while (damageTimer >= etatData.Interval) 
         {
             damageTimer -= etatData.Interval;
             if (health != null && etatData.Damage > 0)
             {
-                health.TakeDamage(etatData.Damage);
+                health.TakeDamage(new DamageInfo(etatData.Damage, etatData.DamageType));
             }
         }
     }

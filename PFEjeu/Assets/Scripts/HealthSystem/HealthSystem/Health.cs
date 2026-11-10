@@ -309,7 +309,7 @@ namespace Core.HealthSystem
 
             float multiplier =
                 GetDamageMultiplier(
-                    info.Type
+                    info.Type, info.ArmorPenetration
                 );
 
 
@@ -405,7 +405,7 @@ namespace Core.HealthSystem
 
 
         private float GetDamageMultiplier(
-            DamageType type)
+            DamageType type, float armorPenetration)
         {
             if (type == null ||
                 stats == null)
@@ -447,7 +447,7 @@ namespace Core.HealthSystem
                     stats.GetStat(
                         defenseStat
                     )
-                );
+                ) * (1f - armorPenetration);
 
 
             return defenseConstant /

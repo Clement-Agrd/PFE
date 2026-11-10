@@ -74,6 +74,8 @@ namespace Core.Village.UI
         private bool _ownsFreeze;
         private Core.BarracksSystem.Barracks _previewBarracks;
         private Core.BarracksSystem.BarracksStatsPreview _statsPreview;
+        private TowerStatsPreview _towerPreview;
+        private TowerHeroStation _previewTower;
         private Vector2 _panelAnchorMin, _panelAnchorMax, _panelPivot, _panelPosition;
 
         public bool IsOpen => _current != null;
@@ -131,6 +133,7 @@ namespace Core.Village.UI
         private void OnDestroy()
         {
             if (_statsPreview != null && _statsPreview.Root != null) Destroy(_statsPreview.Root.gameObject);
+            if (_towerPreview != null && _towerPreview.Root != null) Destroy(_towerPreview.Root.gameObject);
         }
 
         #region Ouverture / fermeture
@@ -178,6 +181,7 @@ namespace Core.Village.UI
             bool wasOpen = _current != null;
             _current = building;
             SetPreviewBuilding(building.GetComponent<Core.BarracksSystem.Barracks>());
+            SetTowerPreview(building.GetComponent<TowerHeroStation>());
             _successUntil = 0f;
             WatchInventory(villageManager != null ? villageManager.HdvInventory : null);
 
@@ -192,6 +196,7 @@ namespace Core.Village.UI
             if (_current == null) return;
             _current = null;
             SetPreviewBuilding(null, false);
+            SetTowerPreview(null);
             ReleaseFreeze();
             WatchInventory(null);
             CancelInvoke(nameof(Refresh));
@@ -214,6 +219,7 @@ namespace Core.Village.UI
         {
             _current = null;
             SetPreviewBuilding(null);
+            SetTowerPreview(null);
             ReleaseFreeze();
             WatchInventory(null);
             if (panel != null) panel.SetActive(false);
@@ -326,6 +332,21 @@ namespace Core.Village.UI
             }
         }
 
+        private void SetTowerPreview(TowerHeroStation tower)
+        {
+            _previewTower = tower;
+            if (tower == null)
+            {
+                if (_towerPreview != null) _towerPreview.Root.gameObject.SetActive(false);
+                return;
+            }
+            if (panel == null || panel.transform is not RectTransform rect) return;
+            _towerPreview ??= new TowerStatsPreview(panel.transform.parent, "TowerUpgradeStats");
+            Core.PauseMenu.PauseUiKit.Anchor(_towerPreview.Root, new Vector2(1f, .5f), new Vector2(1f, .5f),
+                _panelPosition + new Vector2(-rect.rect.width - 32f, 0f), new Vector2(730, 670));
+            _towerPreview.Root.gameObject.SetActive(true);
+        }
+
         private void RefreshBarracksPreview()
         {
             if (_previewBarracks == null || _statsPreview == null || _current == null) return;
@@ -347,6 +368,9 @@ namespace Core.Village.UI
             BuildingLevelData next = _current.GetNextLevelData();
             bool isMax = next == null;
             RefreshBarracksPreview();
+            if (_previewTower != null && _towerPreview != null)
+                _towerPreview.Refresh(_previewTower, isMax ? level : level + 1, _previewTower.AssignedHero,
+                    isMax ? "Niveau maximum" : $"Amélioration {level} → {level + 1}");
 
             if (iconImage != null)
             {

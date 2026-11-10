@@ -12,11 +12,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c062dfa8b7175ff41ae8e8048a012460, type: 3}
   m_Name: ArcherArbalete
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
-  towerName: "Arbal\xE8te"
-  detectionRange: 13
+  towerName: "Tour \xE0 arbal\xE8te"
+  detectionRange: 17
+  armorPenetration: 0.5
+  impactRadius: 0
+  impactPrefab: {fileID: 0}
+  effectDescription: "Plus de PV max \xB7 Ignore 50 % de l\u2019armure"
   towerType: 0
   etat: {fileID: 0}
-  targetCondition1: 1
+  targetCondition1: 5
   targetCondition2: 0
   targetDistance: 0
   targetLayer:
@@ -37,7 +41,7 @@ MonoBehaviour:
     - type: 1
       baseValue: 0
     - type: 2
-      baseValue: 32
+      baseValue: 38
     - type: 3
       baseValue: 0
     - type: 4
@@ -47,26 +51,8 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.65
+      baseValue: 0.68
   - level: 2
-    stats:
-    - type: 0
-      baseValue: 0
-    - type: 1
-      baseValue: 0
-    - type: 2
-      baseValue: 40
-    - type: 3
-      baseValue: 0
-    - type: 4
-      baseValue: 0
-    - type: 5
-      baseValue: 0
-    - type: 6
-      baseValue: 0
-    - type: 7
-      baseValue: 0.715
-  - level: 3
     stats:
     - type: 0
       baseValue: 0
@@ -83,7 +69,25 @@ MonoBehaviour:
     - type: 6
       baseValue: 0
     - type: 7
-      baseValue: 0.78
+      baseValue: 0.748
+  - level: 3
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 57
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 0.816
   models:
   - {fileID: 8400440785846764891, guid: 0d847cea63c53d14abb282f5779f1524, type: 3}
   - {fileID: 8400440785846764891, guid: 0d847cea63c53d14abb282f5779f1524, type: 3}
