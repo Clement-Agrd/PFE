@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Core.DamageNumberSystem;
 
 public class SimpleDamageSpawner : MonoBehaviour
@@ -11,6 +11,9 @@ public class SimpleDamageSpawner : MonoBehaviour
     private void Awake() => Instance = this;
 
     public void Show(Vector3 worldPos, int amount, string text, Color color, bool isCrit = false)
+        => ShowAt(worldPos + offset, amount, text, color, isCrit);
+
+    public void ShowAt(Vector3 worldPos, int amount, string text, Color color, bool isCrit = false)
     {
         if (prefab == null)
         {
@@ -18,7 +21,7 @@ public class SimpleDamageSpawner : MonoBehaviour
             return;
         }
 
-        GameObject go = Instantiate(prefab, worldPos + offset, Quaternion.identity);
+        GameObject go = Instantiate(prefab, worldPos, Quaternion.identity);
 
         if (go.TryGetComponent(out DamageNumber damageNumber))
         {

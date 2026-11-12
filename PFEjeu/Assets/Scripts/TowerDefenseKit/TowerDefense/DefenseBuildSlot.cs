@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Core.InteractionSystem;
+using Core.InventorySystem;
 using UnityEngine;
 namespace Core.TowerDefense
 {
@@ -8,6 +10,10 @@ namespace Core.TowerDefense
         [SerializeField] private Transform buildAnchor;
         [SerializeField] private GameObject marker;
         private GameObject _occupant;
+        private Collider[] _colliders;
+        private bool[] _colliderStates;
+        private bool _markerWasActive;
+        internal Dictionary<ItemDefinition, int> Investment { get; } = new();
         public GameObject Occupant=>_occupant;
         public bool IsOccupied=>_occupant!=null;
         public Transform BuildAnchor=>buildAnchor!=null?buildAnchor:transform;
@@ -19,8 +25,24 @@ namespace Core.TowerDefense
         public void Occupy(GameObject building)
         {
             _occupant=building;
-            if(marker!=null)marker.SetActive(false);
-            foreach(var c in GetComponents<Collider>())c.enabled=false;
+            _markerWasActive = marker != null && marker.activeSelf;
+            if (marker != null) marker.SetActive(false);
+            _colliders = GetComponents<Collider>();
+            _colliderStates = new bool[_colliders.Length];
+            for (int i = 0; i < _colliders.Length; i++)
+            {
+                _colliderStates[i] = _colliders[i].enabled;
+                _colliders[i].enabled = false;
+            }
+        }
+
+        internal void Release()
+        {
+            _occupant = null;
+            Investment.Clear();
+            if (marker != null) marker.SetActive(_markerWasActive);
+            for (int i = 0; i < _colliders.Length; i++)
+                if (_colliders[i] != null) _colliders[i].enabled = _colliderStates[i];
         }
     }
 }

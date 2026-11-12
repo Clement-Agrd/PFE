@@ -80,10 +80,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b7635fda3d27c6046b4844f571044d38, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TowerProjectil
-  speed: 10
+  speed: 24
   hitDistance: 0.3
   arcHeight: 10
-  travelDuration: 2
+  travelDuration: 0.85
 --- !u!1001 &7667860461246969654
 PrefabInstance:
   m_ObjectHideFlags: 0

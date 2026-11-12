@@ -16,17 +16,19 @@ namespace Core.TowerDefense
         [SerializeField] private DefenseBuildingDefinition[] catalog;
         [SerializeField] private Transform buildingsRoot;
         [SerializeField] private Core.Village.UI.BuildingPanelUI upgradePanel;
+        [SerializeField] private bool trainingMode;
         private GameObject _canvas;
         private RectTransform _rows;
         private TMP_Text _feedback;
         private DefenseBuildSlot _slot;
+        private readonly Dictionary<Building, DefenseBuildSlot> _towerSlots = new();
         private readonly List<GameObject> _choices=new();
-        public bool CanBuildNow=>spawner!=null&&!spawner.IsWaveActive&&!spawner.IsDefeated;
+        public bool CanBuildNow=>trainingMode||(spawner!=null&&!spawner.IsWaveActive&&!spawner.IsDefeated);
         public bool IsOpen=>_canvas!=null&&_canvas.activeSelf;
         public IReadOnlyList<DefenseBuildingDefinition> Catalog=>catalog;
         public event System.Action<Building> OnBuildingConstructed;
-        private void OnEnable(){if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnExitedVillageView+=Close;}}
-        private void OnDisable(){if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
+        private void OnEnable(){if(village!=null)village.OnBuildingUpgraded+=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnExitedVillageView+=Close;}}
+        private void OnDisable(){if(village!=null)village.OnBuildingUpgraded-=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
         private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
         private void Update(){if(IsOpen&&Input.GetKeyDown(KeyCode.Escape))Close();}
         private void OnDefenseStarted(int _){Core.BarracksSystem.BarracksFlagPlacement.CancelActivePlacement();Close();}
@@ -49,6 +51,7 @@ namespace Core.TowerDefense
         private Dictionary<ItemDefinition,int> Costs(DefenseBuildingDefinition def)
         {
             var result=new Dictionary<ItemDefinition,int>();
+            if(trainingMode)return result;
             if(def.costs!=null)foreach(var c in def.costs)
                 if(c.item!=null&&c.amount>0)result[c.item]=result.GetValueOrDefault(c.item)+c.amount;
             return result;
@@ -59,6 +62,7 @@ namespace Core.TowerDefense
             if(!CanBuildNow)reason="Construction disponible entre les défenses.";
             else if(slot==null||!slot.isActiveAndEnabled||!slot.BelongsTo(this)||slot.IsOccupied)reason="Emplacement indisponible.";
             else if(def==null||catalog==null||!catalog.Contains(def)||def.prefab==null)reason="Défense indisponible.";
+            else if(trainingMode)return true;
             else if(village==null||village.HdvInventory==null)reason="Stockage HDV indisponible.";
             else if(village.TownHallLevel<def.requiredTownHallLevel)reason=$"HDV niveau {def.requiredTownHallLevel} requis.";
             else
@@ -85,9 +89,15 @@ namespace Core.TowerDefense
             var obstacle=building.GetComponent<UnityEngine.AI.NavMeshObstacle>();
             if(obstacle==null)obstacle=building.AddComponent<UnityEngine.AI.NavMeshObstacle>();
             obstacle.shape=UnityEngine.AI.NavMeshObstacleShape.Box;obstacle.size=def.footprint;obstacle.center=Vector3.up*(def.footprint.y*.5f);obstacle.carving=true;obstacle.carveOnlyStationary=false;
-            foreach(var c in Costs(def))village.HdvInventory.Remove(c.Key,c.Value);
+            slot.Investment.Clear();
+            foreach(var c in Costs(def))
+                slot.Investment[c.Key] = village.HdvInventory.Remove(c.Key,c.Value);
             slot.Occupy(building);
-            if(building.TryGetComponent<Building>(out var constructed)) OnBuildingConstructed?.Invoke(constructed);
+            if(building.TryGetComponent<Building>(out var constructed))
+            {
+                if(tower != null) _towerSlots[constructed] = slot;
+                OnBuildingConstructed?.Invoke(constructed);
+            }
             Close();
             if(building.TryGetComponent<Core.BarracksSystem.BarracksFlagPlacement>(out var placement))
             {
@@ -96,16 +106,94 @@ namespace Core.TowerDefense
             }
             return true;
         }
+        private void RecordTowerUpgrade(Building building, int level)
+        {
+            if (!_towerSlots.TryGetValue(building, out var slot)) return;
+            var costs = building.Definition.GetLevelData(level)?.upgradeCost;
+            if (costs == null) return;
+            foreach (var cost in costs)
+                if (cost.item != null && cost.amount > 0)
+                    slot.Investment[cost.item] = slot.Investment.GetValueOrDefault(cost.item) + cost.amount;
+        }
+
+        private Dictionary<ItemDefinition, int> GetRefund(Building building)
+        {
+            var refund = new Dictionary<ItemDefinition, int>();
+            if (!_towerSlots.TryGetValue(building, out var slot)) return refund;
+            foreach (var cost in slot.Investment)
+                if (cost.Value >= 2) refund[cost.Key] = cost.Value / 2;
+            return refund;
+        }
+
+        public bool CanDemolish(Building building)
+            => CanBuildNow && building != null && _towerSlots.TryGetValue(building, out var slot) &&
+                slot.Occupant == building.gameObject;
+
+        public string RefundLabel(Building building)
+        {
+            var refund = GetRefund(building);
+            return refund.Count > 0
+                ? string.Join(" · ", refund.Select(entry => $"{entry.Value} {entry.Key.DisplayName}"))
+                : "Aucun remboursement";
+        }
+
+        public bool TryDemolish(Building building, out string reason)
+        {
+            reason = "Cette tour ne peut pas être démolie maintenant.";
+            if (!CanDemolish(building)) return false;
+
+            var refund = GetRefund(building);
+            var inventory = village != null ? village.HdvInventory : null;
+            if (refund.Count > 0 && (inventory == null || !RefundFits(inventory, refund)))
+            {
+                reason = "Le stockage de l’hôtel de ville manque de place pour le remboursement.";
+                return false;
+            }
+
+            var slot = _towerSlots[building];
+            _towerSlots.Remove(building);
+            building.gameObject.SetActive(false);
+            Destroy(building.gameObject);
+            slot.Release();
+            foreach (var entry in refund) inventory.Add(entry.Key, entry.Value);
+            reason = "";
+            return true;
+        }
+
+        private static bool RefundFits(Inventory inventory, Dictionary<ItemDefinition, int> refund)
+        {
+            int freeSlots = 0;
+            int requiredSlots = 0;
+            for (int i = inventory.ReservedCount; i < inventory.Capacity; i++)
+                if (inventory.GetSlot(i) == null) freeSlots++;
+
+            foreach (var entry in refund)
+            {
+                int remaining = entry.Value;
+                if (entry.Key.IsStackable)
+                    for (int i = inventory.ReservedCount; i < inventory.Capacity && remaining > 0; i++)
+                    {
+                        var stack = inventory.GetSlot(i);
+                        if (stack != null && stack.Matches(entry.Key) && stack.UpgradeLevel == 0)
+                            remaining -= stack.SpaceLeft;
+                    }
+
+                if (remaining > 0) requiredSlots += 1 + (remaining - 1) / entry.Key.MaxStackSize;
+            }
+            return requiredSlots <= freeSlots;
+        }
+
         private void Refresh()
         {
             foreach(var c in _choices){c.SetActive(false);Destroy(c);}_choices.Clear();
-            _feedback.text="Ressources prélevées dans le stockage de l’hôtel de ville.";
+            _feedback.text=trainingMode?"Construction gratuite pour les essais.":"Ressources prélevées dans le stockage de l’hôtel de ville.";
             if(catalog==null)return;
             foreach(var def in catalog.Where(d=>d!=null))
             {
                 bool enabled=CanBuild(_slot,def,out var reason);
                 string cost=string.Join(" · ",Costs(def).Select(c=>$"{c.Value} {c.Key.DisplayName}"));
-                var button=NewButton(_rows,$"{def.displayName}\n{(cost.Length>0?cost:"Gratuit")} · HDV {def.requiredTownHallLevel}"+(enabled?"":$"\n{reason}"),()=>
+                string requirements=trainingMode?"Gratuit":$"{(cost.Length>0?cost:"Gratuit")} · HDV {def.requiredTownHallLevel}";
+                var button=NewButton(_rows,$"{def.displayName}\n{requirements}"+(enabled?"":$"\n{reason}"),()=>
                 {
                     if(!TryBuild(_slot,def,out var failure)){Refresh();_feedback.text=failure;}
                 },fontSize:24);

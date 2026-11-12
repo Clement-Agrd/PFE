@@ -109,11 +109,8 @@ public class TowerShoot : MonoBehaviour
 
         int finalDamage = GetFinalDamage();
 
-        SpawnArrow(
-            tower.IATower.CurrentTarget.transform,
-            tower.IATower.CurrentTarget.transform.position,
-            finalDamage,
-            true);
+        Collider body = GetAimCollider(tower.IATower.CurrentTarget);
+        SpawnArrow(body.transform, body.bounds.center, finalDamage, true, aimCollider: body);
     }
     
     public void HealAllies()
@@ -192,28 +189,29 @@ public class TowerShoot : MonoBehaviour
         if (stats == null) return;
         if (tower.IATower.CurrentTarget == null) return;
 
-        Transform target = tower.IATower.CurrentTarget.transform;
-        Vector3 impactPosition = target.position;
+        Collider body = GetAimCollider(tower.IATower.CurrentTarget);
+        Vector3 impactPosition = body.bounds.center;
+        float heightAboveFeet = body.bounds.extents.y;
 
         int finalDamage = GetFinalDamage();
 
         SOTower profile = tower.TowerData;
-        SpawnArrow(target, impactPosition, finalDamage, false,
+        SpawnArrow(body.transform, impactPosition, finalDamage, false,
             position =>
             {
                 if (this == null) return;
                 float radius = GetImpactRadius(profile);
-                Vector3 ground = FindImpactGround(position, out Vector3 normal);
+                Vector3 ground = FindImpactGround(position - Vector3.up * heightAboveFeet, out Vector3 normal);
                 if (profile.ImpactPrefab != null)
                 {
                     Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, normal);
-                    var effect = Instantiate(profile.ImpactPrefab, ground + normal * .025f, rotation);
+                    var effect = Instantiate(profile.ImpactPrefab, ground + normal * .01f, rotation);
                     if (effect.TryGetComponent<TowerAreaImpact>(out var area))
                         area.Play(radius);
                     Destroy(effect, 3f);
                 }
                 ApplyAreaDamage(ground, radius, finalDamage, profile);
-            });
+            }, body);
     }
 
     private Vector3 FindImpactGround(Vector3 position, out Vector3 normal)
@@ -222,13 +220,17 @@ public class TowerShoot : MonoBehaviour
         Vector3 ground = position;
         float closest = float.PositiveInfinity;
         int groundLayer = LayerMask.NameToLayer("Ground");
-        int count = Physics.RaycastNonAlloc(position + Vector3.up * 3f, Vector3.down, groundHits, 15f,
+        int count = Physics.RaycastNonAlloc(position + Vector3.up * .65f, Vector3.down, groundHits, 15f,
             LayerMask.GetMask("Ground", "Default"), QueryTriggerInteraction.Ignore);
         for (int i = 0; i < count; i++)
         {
             RaycastHit hit = groundHits[i];
-            if (hit.distance >= closest ||
-                (hit.collider.gameObject.layer != groundLayer && hit.collider is not TerrainCollider)) continue;
+            if (hit.distance >= closest || hit.normal.y < .35f) continue;
+            Collider surface = hit.collider;
+            bool levelSurface = surface.gameObject.layer == groundLayer || surface is TerrainCollider ||
+                (surface.attachedRigidbody == null && surface.GetComponentInParent<Health>() == null &&
+                    surface.GetComponentInParent<Core.Village.Building>() == null);
+            if (!levelSurface) continue;
             closest = hit.distance;
             ground = hit.point;
             normal = hit.normal;
@@ -264,8 +266,16 @@ public class TowerShoot : MonoBehaviour
         return position;
     }
 
-    // Action spécial
-    private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable, Action<Vector3> onImpact = null)
+    private static Collider GetAimCollider(Collider detected)
+    {
+        var health = detected.GetComponentInParent<Health>();
+        if (health != null && health.TryGetComponent<Collider>(out var body) && body.enabled && !body.isTrigger)
+            return body;
+        return detected;
+    }
+
+    private float SpawnArrow(Transform target, Vector3 impactPosition, int finalDamage, bool damageEnable,
+        Action<Vector3> onImpact = null, Collider aimCollider = null)
     {
         var prefab = tower.TowerData.ProjectilePrefab;
         if (prefab == null || firePoint == null) return 0f;
@@ -286,7 +296,8 @@ public class TowerShoot : MonoBehaviour
             impactPosition,
             damageEnable,
             tower.TowerData.ArmorPenetration,
-            onImpact);
+            onImpact,
+            aimCollider);
 
         return projectile.TravelDuration;
     }

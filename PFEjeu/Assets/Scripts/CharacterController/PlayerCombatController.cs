@@ -230,6 +230,8 @@ namespace ProfessionalTPS
             input.SelectMagicPressed -=
                 SelectMagic;
             
+            input.SelectPickaxePressed -= SelectPickaxe;
+            _active?.Cancel();
             input.SelectAxePressed -=
                 SelectAxe;
 

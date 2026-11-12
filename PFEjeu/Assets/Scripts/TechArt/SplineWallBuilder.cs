@@ -71,6 +71,9 @@ public class SplineWallBuilder : MonoBehaviour
              "Si désactivé : le mur reste droit et est simplement étiré/tourné entre les deux tours.")]
     [SerializeField] private bool bendMeshAlongSpline = false;
 
+    [Tooltip("Suit la pente par marches : chaque module reste vertical et reçoit un BoxCollider ajusté.")]
+    [SerializeField] private bool uprightSteppedSegments;
+
     [Header("Précision")]
     [Tooltip("Nombre d'échantillons utilisés pour mesurer la spline et convertir distance → position. " +
              "Augmente cette valeur si ta spline a peu de knots très espacés (grandes courbes) et que les segments " +
@@ -154,17 +157,21 @@ public class SplineWallBuilder : MonoBehaviour
                 SplineUtility.Evaluate(spline, t, out float3 localPos, out float3 tangent, out float3 upVector);
 
                 Vector3 worldPos = splineContainer.transform.TransformPoint(localPos);
-                Quaternion rotation = Quaternion.LookRotation(
-                    splineContainer.transform.TransformDirection((Vector3)tangent),
-                    splineContainer.transform.TransformDirection((Vector3)upVector));
+                Vector3 forward = splineContainer.transform.TransformDirection((Vector3)tangent);
+                Quaternion rotation = uprightSteppedSegments
+                    ? UprightRotation(forward)
+                    : Quaternion.LookRotation(forward, splineContainer.transform.TransformDirection((Vector3)upVector));
 
-                SpawnPrefab(towerPrefab, worldPos, rotation);
+                var tower = SpawnPrefab(towerPrefab, worldPos, rotation);
+                if (uprightSteppedSegments) FitBoxCollider(tower, 0f);
             }
         }
 
         for (int i = 0; i < towerDistances.Count - 1; i++)
         {
-            if (bendMeshAlongSpline)
+            if (uprightSteppedSegments)
+                BuildUprightWallSegment(spline, distanceMap, towerDistances[i], towerDistances[i + 1]);
+            else if (bendMeshAlongSpline)
                 BuildBentWallSegment(spline, distanceMap, towerDistances[i], towerDistances[i + 1]);
             else
                 BuildStraightWallSegment(spline, distanceMap, towerDistances[i], towerDistances[i + 1]);
@@ -225,6 +232,68 @@ public class SplineWallBuilder : MonoBehaviour
             // pointe plus forcément le long de la spline une fois XAxisCorrection appliquée.
             instance.transform.position = worldPos - worldTangentDir * (segmentLength * 0.5f);
         }
+    }
+
+    private void BuildUprightWallSegment(Spline spline, SplineDistanceMap distanceMap, float distanceA, float distanceB)
+    {
+        Vector3 a = splineContainer.transform.TransformPoint((Vector3)SplineUtility.EvaluatePosition(spline, distanceMap.DistanceToT(distanceA)));
+        Vector3 b = splineContainer.transform.TransformPoint((Vector3)SplineUtility.EvaluatePosition(spline, distanceMap.DistanceToT(distanceB)));
+        Vector3 planar = Vector3.ProjectOnPlane(b - a, Vector3.up);
+        if (planar.sqrMagnitude < .0001f) return;
+
+        float length = planar.magnitude;
+        Vector3 position = (a + b) * .5f;
+        if (wallPivotAtStart) position -= planar * .5f;
+        Quaternion rotation = UprightRotation(planar);
+        if (wallLengthAxis == SplineLengthAxis.X) rotation *= XAxisCorrection;
+        var segment = SpawnPrefab(wallSegmentPrefab, position, rotation);
+        Vector3 scale = Vector3.one;
+        float stretch = (length + .12f) / wallSegmentNativeLength;
+        if (wallLengthAxis == SplineLengthAxis.X) scale.x = stretch;
+        else scale.z = stretch;
+        segment.transform.localScale = scale;
+        FitBoxCollider(segment, Mathf.Abs(b.y - a.y) * .5f + .15f);
+#if UNITY_EDITOR
+        if (!Application.isPlaying) UnityEditor.PrefabUtility.RecordPrefabInstancePropertyModifications(segment.transform);
+#endif
+    }
+
+    private static Quaternion UprightRotation(Vector3 direction)
+    {
+        direction.y = 0f;
+        return direction.sqrMagnitude > .0001f ? Quaternion.LookRotation(direction, Vector3.up) : Quaternion.identity;
+    }
+
+    private static void FitBoxCollider(GameObject segment, float depthBelow)
+    {
+        Bounds bounds = default;
+        bool hasBounds = false;
+        foreach (var mesh in segment.GetComponentsInChildren<MeshFilter>())
+        {
+            if (mesh.sharedMesh == null) continue;
+            Bounds local = mesh.sharedMesh.bounds;
+            Matrix4x4 toRoot = segment.transform.worldToLocalMatrix * mesh.transform.localToWorldMatrix;
+            for (int corner = 0; corner < 8; corner++)
+            {
+                Vector3 p = toRoot.MultiplyPoint3x4(new Vector3(
+                    (corner & 1) == 0 ? local.min.x : local.max.x,
+                    (corner & 2) == 0 ? local.min.y : local.max.y,
+                    (corner & 4) == 0 ? local.min.z : local.max.z));
+                if (hasBounds) bounds.Encapsulate(p);
+                else { bounds = new Bounds(p, Vector3.zero); hasBounds = true; }
+            }
+        }
+        if (!hasBounds) return;
+
+        var box = segment.GetComponent<BoxCollider>();
+        foreach (var collider in segment.GetComponentsInChildren<Collider>(true))
+            if (collider != box) collider.enabled = false;
+        if (box == null) box = segment.AddComponent<BoxCollider>();
+        float localDepth = depthBelow / Mathf.Max(.001f, Mathf.Abs(segment.transform.lossyScale.y));
+        box.center = bounds.center - Vector3.up * (localDepth * .5f);
+        box.size = bounds.size + Vector3.up * localDepth;
+        box.enabled = true;
+        box.isTrigger = false;
     }
 
     /// <summary>

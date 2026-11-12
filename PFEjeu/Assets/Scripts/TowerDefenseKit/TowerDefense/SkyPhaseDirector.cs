@@ -8,11 +8,11 @@ namespace Core.TowerDefense
     /// Fait le lien entre le gameplay (WaveSpawner) et le ciel (SkyController, Layered Sky v3).
     ///
     ///   WaveSpawner ── OnWaveStarted ────────▶ SkyPhaseDirector ──▶ SkyController.TransitionTo(...)
-    ///               ── OnAllWavesCompleted ──▶
+    ///               ── OnDefenseCompleted ──────▶
     ///
     ///   Hub / exploration (jour)        -> preset Jour        (état de départ du SkyController)
     ///   Le joueur lance la 1re vague    -> preset Nuit        (fondu continu, traverse le Crépuscule)
-    ///   Toutes les vagues terminées     -> preset Jour        (traverse le Crépuscule : aube/soir)
+    ///   Retour en phase village     -> preset Jour        (traverse le Crépuscule : aube/soir)
     ///   Option : phase de préparation   -> StartPreparationPhase() -> preset Crépuscule (fixe)
     ///
     /// Aucun Singleton, aucun Find : toutes les références sont branchées dans l'Inspector.
@@ -50,14 +50,14 @@ namespace Core.TowerDefense
         {
             if (waveSpawner == null) return;
             waveSpawner.OnWaveStarted += HandleWaveStarted;
-            waveSpawner.OnAllWavesCompleted += HandleAllWavesCompleted;
+            waveSpawner.OnDefenseCompleted += HandleDefenseCompleted;
         }
 
         private void OnDisable()
         {
             if (waveSpawner == null) return;
             waveSpawner.OnWaveStarted -= HandleWaveStarted;
-            waveSpawner.OnAllWavesCompleted -= HandleAllWavesCompleted;
+            waveSpawner.OnDefenseCompleted -= HandleDefenseCompleted;
         }
         #endregion
 
@@ -70,7 +70,7 @@ namespace Core.TowerDefense
             Go(nightPreset, toNightSeconds);
         }
 
-        private void HandleAllWavesCompleted()
+        private void HandleDefenseCompleted()
         {
             _defenseActive = false;
             Go(dayPreset, toDaySeconds);

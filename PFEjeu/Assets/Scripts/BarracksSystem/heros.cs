@@ -119,11 +119,13 @@ namespace Core.BarracksSystem
             }
         }
 
-        internal bool TryClaimTower(TowerHeroStation tower)
+        internal bool TryClaimTower(TowerHeroStation tower, bool allowTransfer)
         {
-            if (tower == null || AssignedBarracks != null || !isActiveAndEnabled ||
-                (AssignedTower != null && AssignedTower != tower)) return false;
+            if (tower == null || AssignedBarracks != null || !isActiveAndEnabled) return false;
+            var previousTower = AssignedTower != tower ? AssignedTower : null;
+            if (previousTower != null && !allowTransfer) return false;
             if (IsOnExpedition && !AssignedExpedition.TryCancelMission(this)) return false;
+            if (previousTower != null) previousTower.ClearHero();
             AssignedTower = tower;
             Changed?.Invoke();
             return true;

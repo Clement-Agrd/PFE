@@ -17,6 +17,7 @@ public class TowerProjectil : MonoBehaviour
 {
     // La cible visée (fournie par Tower.Shoot() via SetTarget).
     private Transform target;
+    private Collider aimCollider;
     // Le type de dégâts à infliger (utilisé par le Health de la cible pour les résistances).
     private DamageType damageType;
     private float armorPenetration;
@@ -70,6 +71,7 @@ public class TowerProjectil : MonoBehaviour
         // true → il ne ferait plus jamais rien de la partie).
         _hasDespawned = false;
         target = null;
+        aimCollider = null;
         onImpact = null;
     }
 
@@ -82,9 +84,11 @@ public class TowerProjectil : MonoBehaviour
         Vector3 impactPosition,
         bool damageEnable,
         float penetration = 0f,
-        Action<Vector3> impact = null)
+        Action<Vector3> impact = null,
+        Collider body = null)
     {
         target = newTarget;
+        aimCollider = body;
         damageType = newDamageType;
         damage = newDamage;
         armorPenetration = penetration;
@@ -124,7 +128,7 @@ public class TowerProjectil : MonoBehaviour
 
                 // La distance que le projectile va parcourir CETTE frame.
                 float step = speed * Time.deltaTime;
-                targetPosition = target.position;
+                targetPosition = aimCollider != null && aimCollider.enabled ? aimCollider.bounds.center : target.position;
                 float distance = Vector3.Distance(transform.position, targetPosition);
 
                 // Le seuil d'impact effectif est le plus grand entre hitDistance (réglage
@@ -138,7 +142,7 @@ public class TowerProjectil : MonoBehaviour
                     return;
                 }
 
-                transform.position = Vector3.MoveTowards(transform.position, target.position, step);
+                transform.position = Vector3.MoveTowards(transform.position, targetPosition, step);
                 
                 break;
             
@@ -188,6 +192,7 @@ public class TowerProjectil : MonoBehaviour
         onImpact = null;
 
         target = null;
+        aimCollider = null;
 
         if (_pooled != null) _pooled.Release();
         else Destroy(gameObject);

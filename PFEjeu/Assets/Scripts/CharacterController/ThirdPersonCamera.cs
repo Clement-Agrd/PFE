@@ -137,6 +137,24 @@ namespace ProfessionalTPS
             Core.GameFreeze.RequestCursorUnlock(this);
         }
 
+        private bool _recoveryCameraActive;
+        private float _recoveryZoom;
+
+        public void SetRecoveryCamera(bool down, float zoom)
+        {
+            _recoveryCameraActive = down;
+            _recoveryZoom = zoom;
+            ApplyCinemachineSettings();
+        }
+
+        public void RecenterAfterTeleport(float yaw, Vector3 displacement)
+        {
+            _yaw = yaw;
+            if (target == null) return;
+            UpdateTrackingTarget();
+            CinemachineCore.OnTargetObjectWarped(target, displacement);
+        }
+
         private void LateUpdate()
         {
             if (input == null ||
@@ -148,8 +166,13 @@ namespace ProfessionalTPS
             if (Core.GameFreeze.IsCursorUnlocked)
                 return;
 
-            UpdateLook();
-            UpdateAimBlend();
+            if (_recoveryCameraActive)
+                _aimBlend = Mathf.MoveTowards(_aimBlend, 0f, aimBlendSpeed * Time.unscaledDeltaTime);
+            else
+            {
+                UpdateLook();
+                UpdateAimBlend();
+            }
             UpdateTrackingTarget();
             ApplyCinemachineSettings();
         }
@@ -443,7 +466,7 @@ namespace ProfessionalTPS
                 followDamping;
 
             thirdPersonFollow.CameraDistance =
-                currentDistance;
+                currentDistance + _recoveryZoom;
 
             thirdPersonFollow.ShoulderOffset =
                 currentOffset;

@@ -58,11 +58,15 @@ namespace Core.Village
 
             // Un CharacterController bloque toute modification directe de la
             // position s'il reste actif : on le coupe le temps du saut.
-            if (playerController != null) playerController.enabled = false;
+            bool wasEnabled = playerController != null && playerController.enabled;
+            if (wasEnabled) playerController.enabled = false;
 
+            Vector3 displacement = defenseSpawnPoint.position - player.position;
             player.SetPositionAndRotation(defenseSpawnPoint.position, defenseSpawnPoint.rotation);
 
-            if (playerController != null) playerController.enabled = true;
+            if (wasEnabled) playerController.enabled = true;
+            var cameraRig = player.GetComponentInChildren<ProfessionalTPS.ThirdPersonCamera>(true);
+            if (cameraRig != null) cameraRig.RecenterAfterTeleport(defenseSpawnPoint.eulerAngles.y, displacement);
         }
     }
 }

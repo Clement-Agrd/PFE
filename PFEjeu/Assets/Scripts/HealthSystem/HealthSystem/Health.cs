@@ -164,8 +164,15 @@ namespace Core.HealthSystem
         // UNITY
         // ============================================================
 
+        private SimpleDamageSpawner _damageSpawner;
+        private Collider[] _damageNumberColliders;
+        private SkinnedMeshRenderer[] _damageNumberMeshes;
+        private HealthBarLink _damageBar;
+
         private void Awake()
         {
+            TryGetComponent(out _damageSpawner);
+            TryGetComponent(out _damageBar);
             ResolveStats();
 
             CacheDamageFilters();
@@ -462,8 +469,9 @@ namespace Core.HealthSystem
         // HEAL
         // ============================================================
 
-        public void Heal(
-            int amount)
+        public void Heal(int amount) => Heal(amount, showNumber: true);
+
+        public void Heal(int amount, bool showNumber)
         {
             if (IsDead ||
                 amount <= 0)
@@ -504,7 +512,7 @@ namespace Core.HealthSystem
             );
 
 
-            ShowNumber(
+            if (showNumber) ShowNumber(
                 actualHeal,
                 healColor,
                 "+",
@@ -796,20 +804,30 @@ namespace Core.HealthSystem
                 return;
 
 
-            if (SimpleDamageSpawner.Instance ==
-                null)
+            var spawner = _damageSpawner != null ? _damageSpawner : SimpleDamageSpawner.Instance;
+            if (spawner == null) return;
+
+            Vector3 position = transform.position;
+            _damageNumberColliders ??= GetComponentsInChildren<Collider>(true);
+            _damageNumberMeshes ??= GetComponentsInChildren<SkinnedMeshRenderer>(true);
+            float top = position.y;
+            foreach (var collider in _damageNumberColliders)
+                if (collider != null && collider.enabled && !collider.isTrigger && collider.gameObject.activeInHierarchy)
+                    top = Mathf.Max(top, collider.bounds.max.y);
+
+            foreach (var mesh in _damageNumberMeshes)
+                if (mesh != null && mesh.enabled && mesh.gameObject.activeInHierarchy)
+                    top = Mathf.Max(top, mesh.bounds.max.y);
+
+            Transform bar = _damageBar != null ? _damageBar.BarAnchor : null;
+            if (bar != null && bar.gameObject.activeInHierarchy) top = Mathf.Max(top, bar.position.y);
+
+            if (top > position.y)
             {
-                return;
+                position.y = top + .55f;
+                spawner.ShowAt(position, amount, prefix + amount, color, isCrit);
             }
-
-
-            SimpleDamageSpawner.Instance.Show(
-                transform.position,
-                amount,
-                prefix + amount,
-                color,
-                isCrit
-            );
+            else spawner.Show(position, amount, prefix + amount, color, isCrit);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using Core.HealthSystem;
 using Core.UIBarSystem;
 
@@ -9,6 +9,8 @@ public class HealthBarLink : MonoBehaviour
     [SerializeField] private UIBar healthBar;
 
     private Health _health;
+
+    public Transform BarAnchor => healthBar != null ? healthBar.transform : null;
 
     private void Awake()
     {

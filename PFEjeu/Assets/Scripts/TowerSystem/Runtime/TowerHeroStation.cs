@@ -34,6 +34,8 @@ public sealed class TowerHeroStation : InteractableBase
     private TowerStatsPreview _preview;
     private heros _candidate;
     private Button _confirm;
+    private TMP_Text _feedback;
+    private GameObject _confirmation;
 
     public heros AssignedHero { get; private set; }
     public override string Prompt => "Gérer la tour";
@@ -78,10 +80,11 @@ public sealed class TowerHeroStation : InteractableBase
 
     private bool CanAssign(heros hero)
         => CanManage && hero != null && hero.isActiveAndEnabled && ProfileFor(hero) != null &&
-           (hero.DefenseAssignment == null || hero.AssignedTower == this) &&
-           (!hero.IsOnExpedition || hero.IsExpeditionPending);
+           hero.AssignedBarracks == null && (!hero.IsOnExpedition || hero.IsExpeditionPending);
 
-    public bool AssignHero(heros hero)
+    public bool AssignHero(heros hero) => AssignHero(hero, false);
+
+    private bool AssignHero(heros hero, bool allowTransfer)
     {
         if (!CanManage) return false;
         if (hero == AssignedHero) return true;
@@ -90,7 +93,7 @@ public sealed class TowerHeroStation : InteractableBase
             ClearHero();
             return true;
         }
-        if (!CanAssign(hero) || !hero.TryClaimTower(this)) return false;
+        if (!CanAssign(hero) || !hero.TryClaimTower(this, allowTransfer)) return false;
         var previous = AssignedHero;
         AssignedHero = hero;
         if (previous != null)
@@ -118,7 +121,7 @@ public sealed class TowerHeroStation : InteractableBase
     {
         var previous = AssignedHero;
         AssignedHero = null;
-        if (_tower != null) ApplyProfile(null);
+        if (previous != null && _tower != null) ApplyProfile(null);
         if (previous != null)
         {
             previous.Changed -= ApplyHeroLevel;
@@ -136,6 +139,7 @@ public sealed class TowerHeroStation : InteractableBase
         _roster = FindFirstObjectByType<HeroRoster>();
         if (_canvas == null) BuildUI();
         _candidate = AssignedHero;
+        _feedback.text = "";
         _canvas.SetActive(true);
         if (_roster != null) _roster.Changed += Refresh;
         Refresh();
@@ -146,6 +150,7 @@ public sealed class TowerHeroStation : InteractableBase
     private void Hide()
     {
         if (_canvas == null || !_canvas.activeSelf) return;
+        CloseConfirmation();
         _canvas.SetActive(false);
         if (_roster != null) _roster.Changed -= Refresh;
         GameFreeze.ReleasePause(this);
@@ -154,7 +159,13 @@ public sealed class TowerHeroStation : InteractableBase
 
     private void Update()
     {
-        if (_canvas != null && _canvas.activeSelf && (!CanManage || Input.GetKeyDown(KeyCode.Escape))) Hide();
+        if (_canvas == null || !_canvas.activeSelf) return;
+        if (!CanManage) Hide();
+        else if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            if (_confirmation != null) CloseConfirmation();
+            else Hide();
+        }
     }
 
     private void Refresh()
@@ -201,6 +212,61 @@ public sealed class TowerHeroStation : InteractableBase
         button.GetComponent<Button>().interactable = enabled;
     }
 
+    private void ConfirmAssignment()
+    {
+        var hero = _candidate;
+        var previousTower = hero != null ? hero.AssignedTower : null;
+        var expedition = hero != null ? hero.AssignedExpedition : null;
+        bool transfer = previousTower != null && previousTower != this;
+        if (!transfer && expedition == null)
+        {
+            if (!AssignHero(hero)) _feedback.text = "Affectation indisponible.";
+            return;
+        }
+
+        string source = transfer ? previousTower.name : hero.ExpeditionName;
+        ShowConfirmation($"{hero.HeroName} est déjà affecté à {source}. Veux-tu changer son affectation ?", "Transférer", () =>
+        {
+            if (hero == null || hero.AssignedTower != previousTower || hero.AssignedExpedition != expedition ||
+                !AssignHero(hero, true))
+                _feedback.text = "L’affectation a changé. Sélectionne à nouveau le héros.";
+        });
+    }
+
+    private void ConfirmDemolition()
+    {
+        ShowConfirmation($"Démolir cette tour ? L’emplacement et le héros seront libérés.\nRemboursement · {_construction.RefundLabel(_building)}",
+            "Démolir", () =>
+            {
+                if (!_construction.TryDemolish(_building, out var reason)) _feedback.text = reason;
+            });
+    }
+
+    private void ShowConfirmation(string message, string actionLabel, Action action)
+    {
+        CloseConfirmation();
+        var overlay = NewImage("Confirmation", _canvas.transform, Dim);
+        Stretch(overlay.rectTransform);
+        _confirmation = overlay.gameObject;
+        var card = NewImage("Dialogue", overlay.transform, CardRaised, 16);
+        Anchor(card.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, new Vector2(650, 275));
+        VStack(card.gameObject, 14, new RectOffset(24, 24, 20, 20));
+        Layout(NewText("Message", card.transform, message, 26, TextMain).gameObject, flexH: 1);
+        var actions = NewRect("Actions", card.transform);
+        Layout(actions.gameObject, height: 55);
+        HStack(actions.gameObject, 12);
+        Layout(NewButton(actions, "Annuler", CloseConfirmation, fontSize: 23).gameObject, flexW: 1);
+        Layout(NewButton(actions, actionLabel, () => { CloseConfirmation(); action(); }, ButtonStyle.Primary, 23).gameObject, flexW: 1);
+    }
+
+    private void CloseConfirmation()
+    {
+        if (_confirmation == null) return;
+        _confirmation.SetActive(false);
+        Destroy(_confirmation);
+        _confirmation = null;
+    }
+
     private void BuildUI()
     {
         _canvas = new GameObject("TowerHeroCanvas", typeof(RectTransform), typeof(Canvas),
@@ -225,17 +291,27 @@ public sealed class TowerHeroStation : InteractableBase
         Layout(_title.gameObject, height: 100);
         _rows = NewScroll(panel.transform, "Heroes", 8, new RectOffset(6, 6, 6, 6), out var scroll);
         Layout(scroll.gameObject, flexH: 1);
-        var confirm = NewButton(panel.transform, "Valider l’affectation", () => AssignHero(_candidate), ButtonStyle.Primary, 25);
+        var confirm = NewButton(panel.transform, "Valider l’affectation", ConfirmAssignment, ButtonStyle.Primary, 25);
         _confirm = confirm.GetComponent<Button>();
         Layout(confirm.gameObject, height: 55);
-        if (_upgradePanel != null)
+        _feedback = NewText("Feedback", panel.transform, "", 21, Danger);
+        Layout(_feedback.gameObject, height: 45);
+        if (_upgradePanel != null || (_construction != null && _construction.CanDemolish(_building)))
         {
-            var upgrade = NewButton(panel.transform, "Améliorer la tour", () =>
+            var actions = NewRect("TowerActions", panel.transform);
+            Layout(actions.gameObject, height: 55);
+            HStack(actions.gameObject, 12);
+            if (_upgradePanel != null)
             {
-                Hide();
-                _upgradePanel.ShowStandalone(_building);
-            }, fontSize: 25);
-            Layout(upgrade.gameObject, height: 55);
+                var upgrade = NewButton(actions, "Améliorer la tour", () =>
+                {
+                    Hide();
+                    _upgradePanel.ShowStandalone(_building);
+                }, fontSize: 23);
+                Layout(upgrade.gameObject, flexW: 1);
+            }
+            if (_construction != null && _construction.CanDemolish(_building))
+                Layout(NewButton(actions, "Démolir", ConfirmDemolition, ButtonStyle.Danger, 23).gameObject, flexW: 1);
         }
         var close = NewButton(panel.transform, "Fermer", Hide, fontSize: 25);
         Layout(close.gameObject, height: 55);
