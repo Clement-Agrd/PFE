@@ -219,6 +219,7 @@ GameObject:
   - component: {fileID: 1321158618693972812}
   - component: {fileID: 1012452113517853746}
   - component: {fileID: 8155211255134977568}
+  - component: {fileID: 8446649927568486815}
   m_Layer: 6
   m_Name: Player
   m_TagString: Player
@@ -1133,6 +1134,33 @@ MonoBehaviour:
   experiencePerWaveNumber: 20
   enableDebugRecruitment: 1
   debugRecruitKey: 101
+--- !u!114 &8446649927568486815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1602151265126596277}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 805c9d44a7644de4bab1866d2ac92bee, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ProfessionalTPS.PlayerRecovery
+  regenerationDelay: 5
+  regenerationFractionPerSecond: 0.04
+  recoveryDelay: 35
+  extraCameraDistance: 5
+  cameraRig: {fileID: 1543637796717967254}
+  controls:
+  - {fileID: 5696852118197156800}
+  - {fileID: 6145931558672038888}
+  - {fileID: 634414795037399987}
+  - {fileID: 5701256607540694788}
+  - {fileID: 6982812934528912454}
+  - {fileID: 7421993000000000001}
+  - {fileID: 7475338212896042435}
+  - {fileID: 7330000000000000001}
+  - {fileID: 0}
 --- !u!1 &2147884700698473205
 GameObject:
   m_ObjectHideFlags: 0
