@@ -4,10 +4,10 @@
 
 | Route | Longueur 3D (m) | Pente max (deg) | Pente moy. des segments > 5 deg | Ecart max au terrain (m) | Fin -> herse (m) |
 |---|---|---|---|---|---|
-| Spline  | 185,9 | 11,1 | 8,7 | 0,05 | 8,0 |
-| Spline (1)  | 181,8 | 10,5 | 9,1 | 0,08 | 6,6 |
-| Spline (2)  | 160,3 | 11,0 | 9,4 | 0,08 | 10,0 |
-| Spline (3)  | 201,3 | 11,0 | 8,6 | 0,07 | 8,7 |
+| Spline (ECHEC) | 187,1 | 33,5 | 10,3 | 0,25 | 8,0 |
+| Spline (1) (ECHEC) | 182,9 | 31,0 | 10,1 | 0,58 | 6,6 |
+| Spline (2) (ECHEC) | 161,3 | 27,8 | 10,7 | 0,65 | 10,0 |
+| Spline (3) (ECHEC) | 202,5 | 33,8 | 10,1 | 0,20 | 8,7 |
 
 ## Objets
 
@@ -16,9 +16,9 @@
 
 ## Carte de pentes globale (zone sculptee + marge)
 
-- Surface modifiee : 120084 m2 ; part > 20 deg dans le terrain d'origine sur ces memes cellules : 38,6 %
-- Nouvelle surface > 15 deg : 27,2 %, > 20 deg : 28,5 %, > 30 deg : 31,2 %
-- Pente max : 84,2 deg en (-26.75, -3.00)
+- Surface modifiee : 140331 m2 ; part > 20 deg dans le terrain d'origine sur ces memes cellules : 39,2 %
+- Nouvelle surface > 15 deg : 25,8 %, > 20 deg : 26,9 %, > 30 deg : 29,5 %
+- Pente max : 83,0 deg en (-32.75, -4.00)
 - Marche max a la frontiere (courant vs origine) : 110,13 m
 - **ECHEC global** (criteres : < 2 % > 20 deg, 0 % > 30 deg, marche <= 0,2 m)
 - Cellules de trou (Terrain Holes) : 0
@@ -78,20 +78,20 @@
 | 60 - 80 | 11,88 -> 14,65 | 7,9 | 7,9 | 10,2 |
 | 40 - 60 | 14,65 -> 18,37 | 10,5 | 10,5 | 11,7 |
 | 20 - 40 | 18,37 -> 20,95 | 7,3 | 8,0 | 10,5 |
-| 0 - 20 | 20,95 -> 20,99 | 0,1 | 0,0 | 0,5 |
+| 0 - 20 | 20,95 -> 26,43 | 14,5 | 18,0 | 34,5 |
 
-- Pente max sur les 4 lanes : 11,9 deg (limite 12) OK
-- Pente croissante vers la herse (pente moyenne hors plat, tolerance 1 deg) : OK
+- Pente max sur les 4 lanes : 34,6 deg (limite 12) ECHEC
+- Pente croissante vers la herse (pente moyenne hors plat, tolerance 1 deg) : NON
 
 ## Plateformes de slots : surelevation selon la distance (tri : du plus pres de la base au plus pres des spawns)
 
 | Slot | Dist. depuis spawn (m) | Dist. a la herse (m) | Plateforme | Surelevation mesuree (m) | Cible (m) | Deblai max (m) | Pente max zone (deg) |
 |---|---|---|---|---|---|---|---|
-| TowerSlot_05_04  | 178 | 11 | oui | 1,11 | 1,25 | 0,01 | 21,8 |
-| TowerSlot_05_03  | 160 | 18 | oui | 1,06 | 1,25 | 0,04 | 23,8 |
+| TowerSlot_05_04 (ECHEC) | 178 | 11 | oui | 4,62 | 1,25 | 0,00 | 59,5 |
+| TowerSlot_05_03 (ECHEC) | 160 | 18 | oui | 0,46 | 1,25 | 0,52 | 35,3 |
 | TowerSlot_02_06 (ECHEC) | 144 | 37 | oui | 0,18 | 1,25 | 0,39 | 51,6 |
-| TowerSlot_05_02  | 134 | 17 | oui | 1,06 | 1,25 | 0,02 | 24,7 |
-| TowerSlot_05_01 (ECHEC) | 124 | 26 | oui | 1,38 | 1,01 | 0,05 | 34,8 |
+| TowerSlot_05_02 (ECHEC) | 134 | 17 | oui | 0,13 | 1,25 | 0,02 | 59,5 |
+| TowerSlot_05_01 (ECHEC) | 124 | 26 | oui | 1,24 | 1,01 | 0,05 | 43,8 |
 | TowerSlot_01_05 (ECHEC) | 116 | 60 | oui | 0,96 | 1,25 | 0,16 | 36,8 |
 | TowerSlot_01_06 (ECHEC) | 114 | 36 | oui | 1,41 | 1,25 | 0,11 | 49,5 |
 | TowerSlot_02_05 (ECHEC) | 114 | 52 | oui | 1,02 | 1,25 | 0,39 | 46,8 |
@@ -118,4 +118,4 @@ Criteres : deblai <= 0,4 m (+ ondulation), pente de bord <= 25 deg, 0 m (pas de 
 - Altitude minimale du terrain : 5,00 m OK
 - muraille (non modifiee) : Y objet 5,41, Y terrain sous le pivot 10,41, ecart -5,00 m
 
-**Resultat : 13 echec(s)**
+**Resultat : 21 echec(s)**

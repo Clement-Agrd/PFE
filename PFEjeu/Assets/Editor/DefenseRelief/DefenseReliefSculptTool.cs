@@ -21,17 +21,24 @@ namespace Defense.Relief.EditorTools
         /// </summary>
         public static System.Action<float[,], Vector3, Vector3> HeightmapPostProcessor;
 
+        /// <summary>
+        /// Couches appliquees dans l'ordre d'inscription APRES <see cref="HeightmapPostProcessor"/>
+        /// (ex. etages du village). Meme signature : hauteurs normalisees [j, i], origine monde, taille.
+        /// Cumulables : chaque outil ajoute sa couche sans ecraser celle des autres.
+        /// </summary>
+        public static readonly System.Collections.Generic.List<System.Action<float[,], Vector3, Vector3>> LateLayers =
+            new System.Collections.Generic.List<System.Action<float[,], Vector3, Vector3>>();
+
         [MenuItem("Tools/Defense/Relief/2 - Sculpter le relief")]
         public static void Sculpt()
         {
             DefenseReliefConfig config = DefenseReliefConfig.LoadOrCreate();
-            ReliefField field = DefenseReliefScene.BuildField(config);
             Terrain terrain = DefenseReliefScene.Terrain;
             TerrainData data = terrain.terrainData;
 
             int res = config.TargetHeightmapResolution;
             Vector3 size = config.BaseTerrainData.size;
-            float[,] target = ComputeHeights(config, field, size, terrain.transform.position, res);
+            float[,] target = ComputeTargetHeights(config, true);
 
             Undo.RegisterCompleteObjectUndo(data, "Defense Relief : sculpt");
             SetResolutionKeepingSize(data, res, size);
@@ -66,6 +73,23 @@ namespace Defense.Relief.EditorTools
         {
             if (data.heightmapResolution != res) data.heightmapResolution = res;
             data.size = size;
+        }
+
+        /// <summary>
+        /// Heightmap cible (normalisee [j, i]) recalculee depuis la BASE, sans toucher au terrain.
+        /// <paramref name="includeLateLayers"/> = false : relief seul, avant les couches tardives
+        /// (sert a mesurer l'ecart entre le terrain courant et le sculpt).
+        /// </summary>
+        public static float[,] ComputeTargetHeights(DefenseReliefConfig config, bool includeLateLayers)
+        {
+            ReliefField field = DefenseReliefScene.BuildField(config);
+            Vector3 origin = DefenseReliefScene.Terrain.transform.position;
+            Vector3 size = config.BaseTerrainData.size;
+            float[,] heights = ComputeHeights(config, field, size, origin, config.TargetHeightmapResolution);
+            if (!includeLateLayers) return heights;
+
+            foreach (System.Action<float[,], Vector3, Vector3> layer in LateLayers) layer(heights, origin, size);
+            return heights;
         }
 
         private static float[,] ComputeHeights(

@@ -1,0 +1,61 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 468a6037fd627af42b6da4a9a0fb64ff, type: 3}
+  m_Name: VillageLayoutProfile
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::Village.Layout.EditorTools.VillageLayoutProfile
+  terracesEnabled: 1
+  axisOrigin: {x: 80.73, y: -88.42}
+  axisTarget: {x: -60, y: -150}
+  groundFloorY: 26.47
+  floorStep: 6
+  upperFloorLabels:
+  - Milieu
+  - Haut
+  wallThresholdOffsets:
+  - 0
+  - 0
+  contourSmoothingRadius: 8
+  cliffFaceAngleDegrees: 68
+  crestDrop: 0.7
+  crestWidth: 3
+  talusShareMin: 0.3
+  talusShareMax: 0.65
+  talusAngleDegrees: 30
+  talusConcavity: 2
+  talusNoiseWavelength: 14
+  contourNoiseAmplitude: 1.8
+  contourNoiseWavelength: 30
+  contourDetailAmplitude: 0.7
+  contourDetailWavelength: 11
+  noiseOffset: {x: 137.3, y: 71.9}
+  zoneCenter: {x: -5, y: -125}
+  zoneRadius: 105
+  zoneFade: 35
+  groundFloorStart: -60
+  groundFloorEnd: -50
+  groundFloorHalfWidth: 4
+  groundFloorBlend: 10
+  wallKeepRadius: 14
+  wallKeepBlend: 8
+  rampsEnabled: 1
+  rampSlopeDegrees: 8
+  rampHalfWidth: 3
+  rampSideAngleDegrees: 60
+  firstRampClimbsTowardPositiveT: 1
+  maxRampSlopeDegrees: 10
+  stairsEnabled: 1
+  stairLateralOffset: 0
+  stairHalfWidth: 2
+  stairSlopeDegrees: 32
+  stairSideAngleDegrees: 75
+  maxStairSlopeDegrees: 35
+  flatnessTolerance: 0.15

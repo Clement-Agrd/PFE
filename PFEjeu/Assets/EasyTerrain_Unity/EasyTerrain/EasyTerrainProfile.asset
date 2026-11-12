@@ -13,6 +13,21 @@ MonoBehaviour:
   m_Name: EasyTerrainProfile
   m_EditorClassIdentifier: Assembly-CSharp::EasyTerrain.EasyTerrainProfile
   seed: 1
-  layers: []
+  layers:
+  - label: 
+    layer: {fileID: 0}
+    weight: 0
+    heightRange: {x: 0, y: 0}
+    heightFalloff: 0
+    slopeRange: {x: 0, y: 0}
+    slopeFalloff: 0
+    noiseScale: 0
+    noiseAmount: 0
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0
+    breakupNoiseScale: 0
+    breakupAmount: 0
+    breakupSharpness: 0
   trees: []
   details: []
