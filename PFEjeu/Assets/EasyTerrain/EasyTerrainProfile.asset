@@ -29,5 +29,20 @@ MonoBehaviour:
     breakupNoiseScale: 14
     breakupAmount: 0.5
     breakupSharpness: 0.5
+  - label: T_YFRM_02_d
+    layer: {fileID: 8574412962073106934, guid: b39ad4ca65bd3384ba5274ed42d606f2, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
   trees: []
   details: []
