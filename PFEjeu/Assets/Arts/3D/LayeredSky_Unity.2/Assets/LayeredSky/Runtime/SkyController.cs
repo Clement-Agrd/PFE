@@ -65,6 +65,26 @@ namespace LayeredSky
         /// <summary>Transition animée vers un preset. seconds &lt; 0 = durée par défaut ; 0 = immédiat.</summary>
         public void TransitionTo(SkyPreset preset, float seconds = -1f)
         {
+            StartTransition(preset, seconds, null);
+        }
+
+        public void TransitionAlongSunOrbit(SkyPreset preset, float seconds, float sunsetAzimuth,
+            float targetAngle, bool returningToDay)
+        {
+            if (preset == null) return;
+            EnsureInitialized();
+
+            Vector3 west = SkyState.DirectionFromAngles(sunsetAzimuth, 0f);
+            Vector3 sun = _current.SunDirection;
+            float startAngle = Mathf.Atan2(-sun.y, Vector3.Dot(sun, west)) * Mathf.Rad2Deg;
+            float travel = Mathf.DeltaAngle(startAngle, targetAngle);
+            if (travel < -.001f) travel += 360f;
+            var orbit = new SolarOrbit(sunsetAzimuth, startAngle, startAngle + Mathf.Max(0f, travel), returningToDay);
+            StartTransition(preset, seconds, orbit);
+        }
+
+        private void StartTransition(SkyPreset preset, float seconds, SolarOrbit? orbit)
+        {
             if (preset == null)
             {
                 Debug.LogWarning("[SkyController] Preset nul : transition ignorée.", this);
@@ -82,6 +102,7 @@ namespace LayeredSky
             if (duration <= 0f || !isActiveAndEnabled)
             {
                 _current = preset.State;
+                if (orbit is SolarOrbit instantOrbit) instantOrbit.Apply(ref _current, instantOrbit.End);
                 ApplyAll();
                 FinishAll();
                 _transition = null;
@@ -89,7 +110,7 @@ namespace LayeredSky
                 return;
             }
 
-            _transition = StartCoroutine(TransitionRoutine(duration, preset));
+            _transition = StartCoroutine(TransitionRoutine(duration, preset, orbit));
         }
         #endregion
 
@@ -169,9 +190,10 @@ namespace LayeredSky
             return -1;
         }
 
-        private IEnumerator TransitionRoutine(float duration, SkyPreset target)
+        private IEnumerator TransitionRoutine(float duration, SkyPreset target, SolarOrbit? orbit)
         {
             int last = _waypoints.Count - 1;
+            float[] solarAngles = orbit?.GetWaypointAngles(_waypoints);
             float elapsed = 0f;
             while (elapsed < duration)
             {
@@ -179,16 +201,69 @@ namespace LayeredSky
                 float k = Mathf.SmoothStep(0f, 1f, elapsed / duration);
                 float position = k * last;
                 int segment = Mathf.Min((int)position, last - 1);
-                _current = SkyState.Lerp(_waypoints[segment], _waypoints[segment + 1], position - segment);
+                float blend = position - segment;
+                _current = SkyState.Lerp(_waypoints[segment], _waypoints[segment + 1], blend);
+                if (orbit is SolarOrbit solar)
+                    solar.Apply(ref _current, Mathf.Lerp(solarAngles[segment], solarAngles[segment + 1], blend));
                 ApplyAll();
                 yield return null;
             }
 
             _current = _waypoints[last];
+            if (orbit is SolarOrbit endOrbit) endOrbit.Apply(ref _current, endOrbit.End);
             ApplyAll();
             FinishAll();
             _transition = null;
             PresetReached?.Invoke(target);
+        }
+
+        private readonly struct SolarOrbit
+        {
+            private readonly float _sunsetAzimuth;
+            private readonly float _start;
+            private readonly bool _returningToDay;
+            public float End { get; }
+
+            public SolarOrbit(float sunsetAzimuth, float start, float end, bool returningToDay)
+            {
+                _sunsetAzimuth = sunsetAzimuth;
+                _start = start;
+                End = end;
+                _returningToDay = returningToDay;
+            }
+
+            public float[] GetWaypointAngles(List<SkyState> states)
+            {
+                var angles = new float[states.Count];
+                angles[0] = _start;
+                angles[angles.Length - 1] = End;
+                for (int i = 1; i < angles.Length - 1; i++)
+                {
+                    // Le même preset d'ambiance sert au couchant et à l'aube, sur deux horizons opposés.
+                    float angle = _returningToDay ? 180f + states[i].sunElevation : -states[i].sunElevation;
+                    float distance = Mathf.Repeat(angle - _start, 360f);
+                    if (distance > End - _start)
+                        distance = (End - _start) * i / (angles.Length - 1);
+                    angles[i] = Mathf.Clamp(_start + distance, angles[i - 1], End);
+                }
+                return angles;
+            }
+
+            public void Apply(ref SkyState state, float angle)
+            {
+                float radians = angle * Mathf.Deg2Rad;
+                float height = -Mathf.Sin(radians);
+                state.sunAzimuth = Mathf.Cos(radians) >= 0f ? _sunsetAzimuth : _sunsetAzimuth + 180f;
+                state.sunElevation = Mathf.Asin(Mathf.Clamp(height, -1f, 1f)) * Mathf.Rad2Deg;
+
+                // La lumière suit le soleil près de l'horizon et retrouve la direction nocturne en profondeur.
+                float sunlight = Mathf.SmoothStep(0f, 1f, Mathf.InverseLerp(-24f, 0f, state.sunElevation));
+                if (sunlight <= 0f) return;
+                var solarLight = SkyState.DirectionFromAngles(state.sunAzimuth, Mathf.Max(2f, state.sunElevation));
+                var light = Vector3.Slerp(state.LightDirection, solarLight, sunlight);
+                state.lightAzimuth = Mathf.Atan2(-light.z, light.x) * Mathf.Rad2Deg;
+                state.lightElevation = Mathf.Asin(Mathf.Clamp(light.y, -1f, 1f)) * Mathf.Rad2Deg;
+            }
         }
 
         private void ApplyAll()

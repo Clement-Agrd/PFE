@@ -20,6 +20,8 @@ namespace Core.TowerDefense
         [SerializeField] private bool trainingMode;
         private GameObject _canvas;
         private RectTransform _rows;
+        private RectTransform _card;
+        private Vector2 _defaultCardPosition;
         private TMP_Text _feedback;
         private DefenseBuildSlot _slot;
         private readonly Dictionary<Building, DefenseBuildSlot> _towerSlots = new();
@@ -31,14 +33,26 @@ namespace Core.TowerDefense
         public bool IsOpen=>_canvas!=null&&_canvas.activeSelf;
         public IReadOnlyList<DefenseBuildingDefinition> Catalog=>catalog;
         public event System.Action<Building> OnBuildingConstructed;
-        private void OnEnable(){if(village!=null)village.OnBuildingUpgraded+=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnExitedVillageView+=Close;}}
-        private void OnDisable(){if(village!=null)village.OnBuildingUpgraded-=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
+        private void OnEnable(){if(village!=null)village.OnBuildingUpgraded+=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnMapSelectionChanging+=Close;villageView.OnExitedVillageView+=Close;}}
+        private void OnDisable(){if(village!=null)village.OnBuildingUpgraded-=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnMapSelectionChanging-=Close;villageView.OnExitedVillageView-=Close;}Close();}
         private void OnDestroy()
         {
             if (_canvas != null) Destroy(_canvas);
             _preview?.Dispose();
         }
         private void Update(){if(IsOpen&&Input.GetKeyDown(KeyCode.Escape))Close();}
+        private void LateUpdate()
+        {
+            if (IsOpen && _slot != null) PositionCard();
+        }
+
+        private void PositionCard()
+        {
+            if (Core.Village.UI.MapPanelLayout.Place(villageView, _slot.BuildAnchor.position, _card)) return;
+            _card.anchoredPosition = _defaultCardPosition;
+            _card.localScale = Vector3.one;
+        }
+
         private void OnDefenseStarted(int _){Core.BarracksSystem.BarracksFlagPlacement.CancelActivePlacement();Close();}
         public void Open(DefenseBuildSlot slot)
         {
@@ -49,6 +63,7 @@ namespace Core.TowerDefense
             _slot = slot;
             _canvas.SetActive(true);
             Select(_selection);
+            PositionCard();
             if (village != null && village.HdvInventory != null)
             {
                 village.HdvInventory.OnChanged -= RefreshSelection;
@@ -97,7 +112,7 @@ namespace Core.TowerDefense
             var building=Instantiate(def.prefab,anchor.position+anchor.rotation*def.placementOffset,anchor.rotation,buildingsRoot);
             building.name=def.displayName+" · "+slot.name;
             if(building.TryGetComponent<Core.BarracksSystem.BarracksVillageUpgrade>(out var upgrade))upgrade.Configure(upgradePanel);
-            if(building.TryGetComponent<TowerHeroStation>(out var tower))tower.Configure(this, upgradePanel);
+            if(building.TryGetComponent<TowerHeroStation>(out var tower))tower.Configure(this, upgradePanel, villageView);
             if(building.TryGetComponent<Building>(out _))
             {
                 var highlight=building.GetComponent<BuildingHighlight>();
@@ -252,8 +267,11 @@ namespace Core.TowerDefense
             scaler.matchWidthOrHeight = .5f;
 
             var card = NewImage("Construction", _canvas.transform, Card, 16);
+            card.raycastTarget = true;
             Anchor(card.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f),
                 new Vector2(-28f, 0f), new Vector2(390f, 440f));
+            _card = card.rectTransform;
+            _defaultCardPosition = _card.anchoredPosition;
             VStack(card.gameObject, 9f, new RectOffset(16, 16, 15, 15));
             Layout(NewText("Title", card.transform, "Construire une défense", 26, Accent,
                 TextAlignmentOptions.Left, FontStyles.Bold).gameObject, height: 39f);

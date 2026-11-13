@@ -1,48 +1,58 @@
 using UnityEngine;
 using Core.HealthSystem;
+using Core.TowerDefense;
 using Core.UIBarSystem;
 
 [RequireComponent(typeof(Health))]
 public class HealthBarLink : MonoBehaviour
 {
-    [Tooltip("Glisse ici le composant UIBar de ton ennemi.")]
     [SerializeField] private UIBar healthBar;
 
     private Health _health;
+    private EnemyHealthBars _sharedBars;
+    private bool _useSharedBar;
 
     public Transform BarAnchor => healthBar != null ? healthBar.transform : null;
+    public bool HasBarAnchor => BarAnchor != null && (_useSharedBar || BarAnchor.gameObject.activeInHierarchy);
 
     private void Awake()
     {
-        // On récupère automatiquement le script Health sur le même objet
         _health = GetComponent<Health>();
+        if (healthBar == null) return;
+        var canvas = healthBar.GetComponent<Canvas>();
+        _useSharedBar = canvas != null && canvas.renderMode == RenderMode.WorldSpace &&
+            canvas.gameObject != gameObject && canvas.transform.IsChildOf(transform) &&
+            (GetComponentInParent<EnemyController>() != null || GetComponentInParent<NavEnemy>() != null);
+
+        if (_useSharedBar) canvas.gameObject.SetActive(false);
     }
 
     private void OnEnable()
     {
-        // 1. On s'abonne à l'événement : à chaque changement, on met à jour la barre
-        _health.OnHealthChanged += UpdateBar;
-
-        // 2. On initialise la barre tout de suite au bon niveau (sans animation de remplissage)
-        if (healthBar != null)
+        if (_useSharedBar)
+        {
+            _sharedBars = EnemyHealthBars.ForScene(gameObject.scene);
+            _sharedBars.Register(this, _health, BarAnchor);
+        }
+        else if (healthBar != null)
         {
             healthBar.SetValue(_health.CurrentHealth, _health.MaxHealth);
             healthBar.SnapToValue();
         }
+
+        _health.OnHealthChanged += UpdateBar;
     }
 
     private void OnDisable()
     {
-        // Sécurité : on se désabonne quand l'objet est désactivé ou détruit
         _health.OnHealthChanged -= UpdateBar;
+        if (_sharedBars != null) _sharedBars.Unregister(this);
+        _sharedBars = null;
     }
 
     private void UpdateBar(int current, int max)
     {
-        if (healthBar != null)
-        {
-            // Appelle la fonction de ton UIBar pour animer la descente/montée
-            healthBar.SetValue(current, max);
-        }
+        if (_sharedBars != null) _sharedBars.SetValue(this, current, max);
+        else if (!_useSharedBar && healthBar != null) healthBar.SetValue(current, max);
     }
 }

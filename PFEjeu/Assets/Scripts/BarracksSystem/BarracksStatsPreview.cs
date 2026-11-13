@@ -23,15 +23,16 @@ namespace Core.BarracksSystem
         public BarracksStatsPreview(Transform parent, string name)
             : this(parent, name, "Statistiques des troupes", null) { }
 
-        public BarracksStatsPreview(Transform parent, string name, string titleText, string[] labels)
+        public BarracksStatsPreview(Transform parent, string name, string titleText, string[] labels, Texture2D[] icons = null)
         {
+            bool compact = icons != null;
             var card = NewImage(name, parent, CardRaised, 16);
             card.raycastTarget = true;
             Root = card.rectTransform;
             var title = NewText("Title", Root, titleText, 29, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
-            Anchor(title.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -20), new Vector2(630, 45));
+            Anchor(title.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -20), new Vector2(compact ? 378 : 630, 45));
             _subtitle = NewText("ComparisonTarget", Root, "", 21, TextMuted);
-            Anchor(_subtitle.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -68), new Vector2(630, 58));
+            Anchor(_subtitle.rectTransform, new Vector2(0, 1), new Vector2(0, 1), new Vector2(26, -68), new Vector2(compact ? 378 : 630, 58));
             var header = NewRect("ColumnHeaders", Root);
             header.anchorMin = new Vector2(0, 1); header.anchorMax = Vector2.one;
             header.pivot = new Vector2(.5f, 1); header.anchoredPosition = new Vector2(0, -135); header.sizeDelta = new Vector2(-52, 32);
@@ -41,7 +42,7 @@ namespace Core.BarracksSystem
             var list = NewRect("Stats", Root);
             list.anchorMin = new Vector2(0, 1); list.anchorMax = Vector2.one;
             list.pivot = new Vector2(.5f, 1); list.anchoredPosition = new Vector2(0, -177); list.sizeDelta = new Vector2(-52, 460);
-            VStack(list.gameObject, 6);
+            VStack(list.gameObject, compact ? 4 : 6);
             _types = (EnumStats.StatTypes[])Enum.GetValues(typeof(EnumStats.StatTypes));
             if (labels == null)
             {
@@ -51,9 +52,9 @@ namespace Core.BarracksSystem
                 labels[_types.Length + 1] = "Réapparition (s)";
             }
             _rows = new Row[labels.Length];
-            for (int i = 0; i < labels.Length; i++) _rows[i] = CreateRow(list, $"Stat_{i}", labels[i]);
+            for (int i = 0; i < labels.Length; i++) _rows[i] = CreateRow(list, $"Stat_{i}", labels[i], compact ? icons[i] : null);
             var legend = NewText("ComparisonLegend", Root, "Vert : hausse · Rouge : baisse · Gris : identique", 18, TextMuted, TextAlignmentOptions.Center);
-            Anchor(legend.rectTransform, new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 18), new Vector2(650, 32));
+            Anchor(legend.rectTransform, new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 18), new Vector2(compact ? 398 : 650, 32));
         }
 
         private static TMP_Text Column(Transform parent, string text, float min, float max, Color color)
@@ -67,14 +68,24 @@ namespace Core.BarracksSystem
             return label;
         }
 
-        private static Row CreateRow(Transform parent, string name, string label)
+        private static Row CreateRow(Transform parent, string name, string label, Texture2D icon)
         {
             var root = NewRect(name, parent);
-            Layout(root.gameObject, height: 40);
+            Layout(root.gameObject, height: icon != null ? 36 : 40);
             var statName = NewText("StatName", root, label, 22, TextMain);
             statName.rectTransform.anchorMin = Vector2.zero;
             statName.rectTransform.anchorMax = new Vector2(.43f, 1);
             statName.rectTransform.offsetMin = Vector2.zero;
+            if (icon != null)
+            {
+                var iconRect = NewRect("StatIcon", root);
+                Anchor(iconRect, new Vector2(0f, .5f), new Vector2(0f, .5f), Vector2.zero, new Vector2(30f, 30f));
+                var graphic = iconRect.gameObject.AddComponent<UnityEngine.UI.RawImage>();
+                graphic.texture = icon;
+                graphic.raycastTarget = false;
+                statName.rectTransform.offsetMin = new Vector2(37f, 0f);
+                statName.fontSize = 17f;
+            }
             statName.rectTransform.offsetMax = Vector2.zero;
             statName.textWrappingMode = TextWrappingModes.NoWrap;
             return new Row { Current = Column(root, "Current", .43f, .61f, TextMuted),

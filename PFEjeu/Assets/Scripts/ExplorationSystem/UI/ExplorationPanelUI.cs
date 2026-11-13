@@ -60,6 +60,7 @@ namespace Core.Village.Exploration.UI
             {
                 villageView.OnBuildingClicked += HandleBuildingClicked;
                 villageView.OnExitedVillageView += Hide;
+                villageView.OnMapSelectionChanging += Hide;
             }
             if (manager != null) manager.OnStateChanged += HandleStateChanged;
         }
@@ -69,6 +70,7 @@ namespace Core.Village.Exploration.UI
             {
                 villageView.OnBuildingClicked -= HandleBuildingClicked;
                 villageView.OnExitedVillageView -= Hide;
+                villageView.OnMapSelectionChanging -= Hide;
             }
             if (manager != null) manager.OnStateChanged -= HandleStateChanged;
             GameFreeze.ReleasePause(this);

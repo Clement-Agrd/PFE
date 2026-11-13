@@ -51,6 +51,7 @@ namespace Core.TavernSystem.UI
             if (villageView == null) return;
             villageView.OnBuildingClicked += HandleBuildingClicked;
             villageView.OnExitedVillageView += Hide;
+            villageView.OnMapSelectionChanging += Hide;
         }
         private void OnDisable()
         {
@@ -58,6 +59,7 @@ namespace Core.TavernSystem.UI
             {
                 villageView.OnBuildingClicked -= HandleBuildingClicked;
                 villageView.OnExitedVillageView -= Hide;
+                villageView.OnMapSelectionChanging -= Hide;
             }
             HideImmediate();
         }
