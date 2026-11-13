@@ -114,7 +114,7 @@ namespace FreezeFx
             frostBlock = new MaterialPropertyBlock();
             tintBlock = new MaterialPropertyBlock();
 
-            CacheBody();
+            if (tintAmount > 0f) CacheBody();
             CacheAnimators();
             if (autoFit) FitToTarget();
             CacheSpikeScales();

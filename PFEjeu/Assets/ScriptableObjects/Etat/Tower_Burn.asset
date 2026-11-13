@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Tower_Burn
   m_EditorClassIdentifier: Assembly-CSharp::SOEtat
   duration: 4
+  visualEffect: {fileID: 8050139289386761768, guid: 28b02150968eeb147a0bcf9a417645ad, type: 3}
   statModifiers: []
   damageType: {fileID: 11400000, guid: 32ce24f6e882d4a46b70e7ae451132ad, type: 2}
   damage: 6

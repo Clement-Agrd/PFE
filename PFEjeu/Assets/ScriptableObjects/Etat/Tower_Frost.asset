@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Tower_Frost
   m_EditorClassIdentifier: Assembly-CSharp::SOEtat
   duration: 3
+  visualEffect: {fileID: 8930900830934256091, guid: 562a4fca122f7d941b303e52116bdfee, type: 3}
   statModifiers:
   - stat: 6
     modifier: -0.3

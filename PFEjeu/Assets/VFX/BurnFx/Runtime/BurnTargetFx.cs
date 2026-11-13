@@ -85,7 +85,7 @@ namespace BurnFx
         private void Awake()
         {
             charBlock = new MaterialPropertyBlock();
-            CacheBody();
+            if (charring > 0f) CacheBody();
             if (autoFit) FitToTarget();
             PushState();
         }

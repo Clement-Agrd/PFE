@@ -401,7 +401,7 @@ MonoBehaviour:
   roll: {fileID: -7457282641837436403, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
   sprint: {fileID: -3528008650494804680, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
   attack: {fileID: -38450215899249389, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
-  aim: {fileID: 0}
+  aim: {fileID: 3220436852841582552, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
   selectMelee: {fileID: -3017454021915181449, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
   selectBow: {fileID: 5129088637729589846, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}
   selectMagic: {fileID: -5503065528062632261, guid: 66ba4cf6feceb65429aeb4fc76918185, type: 3}

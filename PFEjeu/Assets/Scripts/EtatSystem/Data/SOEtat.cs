@@ -7,6 +7,9 @@ public class SOEtat : ScriptableObject
     [Header("Info")]
     [SerializeField] private float duration;
     public float Duration => duration;
+
+    [SerializeField] private GameObject visualEffect;
+    public GameObject VisualEffect => visualEffect;
     
     [SerializeField] private StatModifierData[] statModifiers;
     public StatModifierData[] StatModifiers => statModifiers ?? System.Array.Empty<StatModifierData>();

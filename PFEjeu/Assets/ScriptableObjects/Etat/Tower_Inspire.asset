@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: Tower_Inspire
   m_EditorClassIdentifier: Assembly-CSharp::SOEtat
   duration: 3
+  visualEffect: {fileID: 1233837332028242399, guid: 8a34d9f05626d4f4aa30d9ae16fdafc9, type: 3}
   statModifiers:
   - stat: 2
     modifier: 0.25
