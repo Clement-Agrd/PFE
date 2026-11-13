@@ -5,6 +5,7 @@ using Core.Village;
 using Core.WaveSystem;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 using static Core.PauseMenu.PauseUiKit;
 namespace Core.TowerDefense
 {
@@ -22,14 +23,21 @@ namespace Core.TowerDefense
         private TMP_Text _feedback;
         private DefenseBuildSlot _slot;
         private readonly Dictionary<Building, DefenseBuildSlot> _towerSlots = new();
-        private readonly List<GameObject> _choices=new();
+        private readonly Dictionary<DefenseBuildingDefinition, Core.PauseMenu.PauseButton> _choices = new();
+        private DefenseBuildingDefinition _selection;
+        private Button _confirm;
+        private DefenseConstructionPreview _preview;
         public bool CanBuildNow=>trainingMode||(spawner!=null&&!spawner.IsWaveActive&&!spawner.IsDefeated);
         public bool IsOpen=>_canvas!=null&&_canvas.activeSelf;
         public IReadOnlyList<DefenseBuildingDefinition> Catalog=>catalog;
         public event System.Action<Building> OnBuildingConstructed;
         private void OnEnable(){if(village!=null)village.OnBuildingUpgraded+=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnExitedVillageView+=Close;}}
         private void OnDisable(){if(village!=null)village.OnBuildingUpgraded-=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnExitedVillageView-=Close;}Close();}
-        private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
+        private void OnDestroy()
+        {
+            if (_canvas != null) Destroy(_canvas);
+            _preview?.Dispose();
+        }
         private void Update(){if(IsOpen&&Input.GetKeyDown(KeyCode.Escape))Close();}
         private void OnDefenseStarted(int _){Core.BarracksSystem.BarracksFlagPlacement.CancelActivePlacement();Close();}
         public void Open(DefenseBuildSlot slot)
@@ -37,15 +45,25 @@ namespace Core.TowerDefense
             if(!CanBuildNow||slot==null||slot.IsOccupied||!slot.BelongsTo(this))return;
             Core.BarracksSystem.BarracksFlagPlacement.CancelActivePlacement();
             if(_canvas==null)BuildUI();
-            _slot=slot;
+            if (_slot != slot) _selection = null;
+            _slot = slot;
             _canvas.SetActive(true);
-            Refresh();
+            Select(_selection);
+            if (village != null && village.HdvInventory != null)
+            {
+                village.HdvInventory.OnChanged -= RefreshSelection;
+                village.HdvInventory.OnChanged += RefreshSelection;
+            }
             GameFreeze.RequestPause(this);GameFreeze.RequestCursorUnlock(this);
         }
         public void Close()
         {
             if(_canvas!=null)_canvas.SetActive(false);
-            _slot=null;
+            if (village != null && village.HdvInventory != null)
+                village.HdvInventory.OnChanged -= RefreshSelection;
+            _slot = null;
+            _selection = null;
+            _preview?.Clear();
             GameFreeze.ReleasePause(this);GameFreeze.ReleaseCursorUnlock(this);
         }
         private Dictionary<ItemDefinition,int> Costs(DefenseBuildingDefinition def)
@@ -183,43 +201,89 @@ namespace Core.TowerDefense
             return requiredSlots <= freeSlots;
         }
 
-        private void Refresh()
+        private void Select(DefenseBuildingDefinition definition)
         {
-            foreach(var c in _choices){c.SetActive(false);Destroy(c);}_choices.Clear();
-            _feedback.text=trainingMode?"Construction gratuite pour les essais.":"Ressources prélevées dans le stockage de l’hôtel de ville.";
-            if(catalog==null)return;
-            foreach(var def in catalog.Where(d=>d!=null))
+            _selection = definition;
+            _preview?.Clear();
+            if (definition != null && _slot != null)
             {
-                bool enabled=CanBuild(_slot,def,out var reason);
-                string cost=string.Join(" · ",Costs(def).Select(c=>$"{c.Value} {c.Key.DisplayName}"));
-                string requirements=trainingMode?"Gratuit":$"{(cost.Length>0?cost:"Gratuit")} · HDV {def.requiredTownHallLevel}";
-                var button=NewButton(_rows,$"{def.displayName}\n{requirements}"+(enabled?"":$"\n{reason}"),()=>
-                {
-                    if(!TryBuild(_slot,def,out var failure)){Refresh();_feedback.text=failure;}
-                },fontSize:24);
-                Layout(button.gameObject,height:150);
-                button.Label.textWrappingMode=TextWrappingModes.Normal;
-                button.name="Build_"+def.name;
-                button.GetComponent<UnityEngine.UI.Button>().interactable=enabled;
-                button.gameObject.AddComponent<CanvasGroup>().alpha=enabled?1:.5f;
-                _choices.Add(button.gameObject);
+                _preview ??= new DefenseConstructionPreview();
+                _preview.Show(_slot.BuildAnchor, definition);
+            }
+            RefreshSelection();
+        }
+
+        private void RefreshSelection()
+        {
+            foreach (var entry in _choices)
+                entry.Value.SetActive(entry.Key == _selection);
+
+            if (_selection == null)
+            {
+                _confirm.interactable = false;
+                _feedback.text = "Choisis un bâtiment.";
+                return;
+            }
+
+            _confirm.interactable = CanBuild(_slot, _selection, out var reason);
+            _feedback.text = _confirm.interactable ? "Aperçu · Valide pour construire" : reason;
+        }
+
+        private void ConfirmConstruction()
+        {
+            if (!TryBuild(_slot, _selection, out var reason))
+            {
+                RefreshSelection();
+                _feedback.text = reason;
             }
         }
+
         private void BuildUI()
         {
-            _canvas=new GameObject("DefenseConstructionCanvas",typeof(RectTransform),typeof(Canvas),typeof(UnityEngine.UI.CanvasScaler),typeof(UnityEngine.UI.GraphicRaycaster));
-            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(_canvas,gameObject.scene);
-            _canvas.GetComponent<Canvas>().renderMode=RenderMode.ScreenSpaceOverlay;_canvas.GetComponent<Canvas>().sortingOrder=550;
-            var scaler=_canvas.GetComponent<UnityEngine.UI.CanvasScaler>();scaler.uiScaleMode=UnityEngine.UI.CanvasScaler.ScaleMode.ScaleWithScreenSize;scaler.referenceResolution=new Vector2(1920,1080);scaler.matchWidthOrHeight=.5f;
-            var dim=NewImage("Backdrop",_canvas.transform,Dim);Stretch(dim.rectTransform);dim.raycastTarget=true;
-            var card=NewImage("Construction",dim.transform,Card,20);Anchor(card.rectTransform,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(1020,800));
-            var title=NewText("Title",card.transform,"Construire une défense",34,Accent,TextAlignmentOptions.Center,FontStyles.Bold);Anchor(title.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-24),new Vector2(920,60));
-            var scroll=NewRect("BuildScroll",card.transform);Stretch(scroll,40);scroll.offsetMin=new Vector2(40,190);scroll.offsetMax=new Vector2(-40,-110);
-            var view=NewImage("Viewport",scroll,new Color(1,1,1,.01f));Stretch(view.rectTransform);view.raycastTarget=true;view.gameObject.AddComponent<UnityEngine.UI.Mask>().showMaskGraphic=false;
-            _rows=NewRect("Content",view.transform);_rows.anchorMin=new Vector2(0,1);_rows.anchorMax=Vector2.one;_rows.pivot=new Vector2(.5f,1);_rows.sizeDelta=Vector2.zero;VStack(_rows.gameObject,14);_rows.gameObject.AddComponent<UnityEngine.UI.ContentSizeFitter>().verticalFit=UnityEngine.UI.ContentSizeFitter.FitMode.PreferredSize;
-            var sr=scroll.gameObject.AddComponent<UnityEngine.UI.ScrollRect>();sr.content=_rows;sr.viewport=view.rectTransform;sr.horizontal=false;sr.movementType=UnityEngine.UI.ScrollRect.MovementType.Clamped;sr.scrollSensitivity=40;
-            _feedback=NewText("Feedback",card.transform,"",22,TextMuted,TextAlignmentOptions.Center);Anchor(_feedback.rectTransform,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,115),new Vector2(920,65));
-            var close=NewButton(card.transform,"Annuler",Close,fontSize:26);Anchor((RectTransform)close.transform,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,30),new Vector2(400,60));
+            _canvas = new GameObject("DefenseConstructionCanvas", typeof(RectTransform), typeof(Canvas),
+                typeof(CanvasScaler), typeof(GraphicRaycaster));
+            UnityEngine.SceneManagement.SceneManager.MoveGameObjectToScene(_canvas, gameObject.scene);
+            var canvas = _canvas.GetComponent<Canvas>();
+            canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            canvas.sortingOrder = 550;
+            var scaler = _canvas.GetComponent<CanvasScaler>();
+            scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            scaler.referenceResolution = new Vector2(1920, 1080);
+            scaler.matchWidthOrHeight = .5f;
+
+            var card = NewImage("Construction", _canvas.transform, Card, 16);
+            Anchor(card.rectTransform, new Vector2(1f, .5f), new Vector2(1f, .5f),
+                new Vector2(-28f, 0f), new Vector2(390f, 440f));
+            VStack(card.gameObject, 9f, new RectOffset(16, 16, 15, 15));
+            Layout(NewText("Title", card.transform, "Construire une défense", 26, Accent,
+                TextAlignmentOptions.Left, FontStyles.Bold).gameObject, height: 39f);
+
+            _rows = NewScroll(card.transform, "BuildChoices", 5f, new RectOffset(2, 2, 2, 2), out var scroll);
+            Layout(scroll.gameObject, flexH: 1f);
+            foreach (var definition in catalog ?? System.Array.Empty<DefenseBuildingDefinition>())
+            {
+                if (definition == null || _choices.ContainsKey(definition)) continue;
+                string cost = string.Join(" · ", Costs(definition).Select(c => $"{c.Value} {c.Key.DisplayName}"));
+                string requirements = trainingMode ? "Gratuit" :
+                    $"{(cost.Length > 0 ? cost : "Gratuit")} · HDV {definition.requiredTownHallLevel}";
+                var choice = NewButton(_rows, $"{definition.displayName}\n{requirements}", () => Select(definition), fontSize: 21);
+                choice.name = "Build_" + definition.name;
+                choice.Label.textWrappingMode = TextWrappingModes.Normal;
+                Layout(choice.gameObject, height: 66f);
+                _choices.Add(definition, choice);
+            }
+
+            _feedback = NewText("Feedback", card.transform, "", 19, TextMuted);
+            Layout(_feedback.gameObject, height: 50f);
+            var actions = NewRect("Actions", card.transform);
+            Layout(actions.gameObject, height: 49f);
+            HStack(actions.gameObject, 8f);
+            var cancel = NewButton(actions, "Annuler", Close, fontSize: 20);
+            Layout(cancel.gameObject, flexW: 1f);
+            var confirm = NewButton(actions, "Valider", ConfirmConstruction, ButtonStyle.Primary, 20);
+            confirm.name = "ConfirmDefenseConstruction";
+            Layout(confirm.gameObject, flexW: 1f);
+            _confirm = confirm.GetComponent<Button>();
         }
     }
 }

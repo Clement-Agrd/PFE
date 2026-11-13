@@ -55,6 +55,7 @@ namespace Core.BarracksSystem
                 : "Déplacer le drapeau";
 
         public SOBarracks Data => barracksData;
+        public Transform ModelAnchor => modelParent != null ? modelParent : transform;
         public int CurrentLevel => currentLevel;
         public heros AssignedHero => assignedHero;
         public TypeCaserne BarracksType => assignedHero == null ? TypeCaserne.Standard : assignedHero.Classe switch

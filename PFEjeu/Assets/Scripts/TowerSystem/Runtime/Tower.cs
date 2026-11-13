@@ -21,6 +21,7 @@ public class Tower : MonoBehaviour
     public SOTower TowerData => specialization != null ? specialization : towerData;
     public int CurrentLevel => currentLevel;
     public SOTower BaseProfile => towerData;
+    public Transform ModelAnchor => modelParent != null ? modelParent : transform;
     private int heroLevel;
     public float DetectionRange => TowerData != null ? TowerData.GetRange(heroLevel) : 0f;
     
