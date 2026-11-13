@@ -820,7 +820,7 @@ namespace Core.HealthSystem
                     top = Mathf.Max(top, mesh.bounds.max.y);
 
             Transform bar = _damageBar != null ? _damageBar.BarAnchor : null;
-            if (bar != null && bar.gameObject.activeInHierarchy) top = Mathf.Max(top, bar.position.y);
+            if (bar != null && _damageBar.HasBarAnchor) top = Mathf.Max(top, bar.position.y);
 
             if (top > position.y)
             {

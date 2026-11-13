@@ -5,17 +5,23 @@ using Stat = Core.StatsSystem.EnumStats.StatTypes;
 
 public sealed class TowerStatsPreview
 {
+    public static readonly Vector2 CardSize = new(430f, 530f);
+    private static readonly string[] IconNames = { "Physical", "Magic", "Heal", "Speed", "Range", "Impact", "Pierce" };
+    private static Texture2D[] _icons;
     private readonly BarracksStatsPreview _comparison;
 
     public RectTransform Root => _comparison.Root;
 
     public TowerStatsPreview(Transform parent, string name)
     {
+        if (_icons == null)
+            _icons = System.Array.ConvertAll(IconNames, icon => Resources.Load<Texture2D>("TowerStats/" + icon));
+
         _comparison = new BarracksStatsPreview(parent, name, "Statistiques de la tour", new[]
         {
-            "Dégâts physiques", "Dégâts magiques", "Soin par allié", "Attaques par seconde",
-            "Portée (m)", "Rayon d’impact (m)", "Armure ignorée (%)"
-        });
+            "Physique", "Magique", "Soin / allié", "Attaques/s",
+            "Portée (m)", "Impact (m)", "Armure (%)"
+        }, _icons);
     }
 
     public void Refresh(TowerHeroStation station, int nextLevel, heros candidate, string title)

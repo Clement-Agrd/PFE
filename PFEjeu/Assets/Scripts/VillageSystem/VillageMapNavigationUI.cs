@@ -29,10 +29,7 @@ namespace Core.Village
         }
         private void Select(Core.TowerDefense.DefenseBuildSlot slot)
         {
-            if(view==null||!view.CanSelectMap||slot==null)return;
-            if(buildingPanel!=null)buildingPanel.Hide();
-            if(!slot.IsOccupied)slot.OpenFromVillageView();
-            else if(buildingPanel!=null&&slot.Occupant.TryGetComponent<Building>(out var b))buildingPanel.ShowStandalone(b);
+            if (view != null) view.SelectDefenseSlot(slot);
         }
         private void LateUpdate()
         {

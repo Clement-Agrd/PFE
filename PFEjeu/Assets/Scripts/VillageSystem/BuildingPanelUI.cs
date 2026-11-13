@@ -76,7 +76,8 @@ namespace Core.Village.UI
         private Core.BarracksSystem.BarracksStatsPreview _statsPreview;
         private TowerStatsPreview _towerPreview;
         private TowerHeroStation _previewTower;
-        private Vector2 _panelAnchorMin, _panelAnchorMax, _panelPivot, _panelPosition;
+        private readonly Core.TowerDefense.DefenseConstructionPreview _towerRangePreview = new();
+        private Vector2 _panelPosition;
 
         public bool IsOpen => _current != null;
 
@@ -88,8 +89,7 @@ namespace Core.Village.UI
         {
             if (panel != null && panel.transform is RectTransform rect)
             {
-                _panelAnchorMin = rect.anchorMin; _panelAnchorMax = rect.anchorMax;
-                _panelPivot = rect.pivot; _panelPosition = rect.anchoredPosition;
+                _panelPosition = rect.anchoredPosition;
             }
             if (upgradeButton != null) upgradeButton.onClick.AddListener(HandleUpgradeClicked);
             if (closeButton != null) closeButton.onClick.AddListener(Hide);
@@ -102,6 +102,7 @@ namespace Core.Village.UI
             {
                 villageView.OnBuildingClicked += HandleBuildingClicked;
                 villageView.OnMapAreaChanged += Hide;
+                villageView.OnMapSelectionChanging += HideImmediate;
                 villageView.OnExitedVillageView += Hide;
             }
             if (villageManager != null)
@@ -117,6 +118,7 @@ namespace Core.Village.UI
             {
                 villageView.OnBuildingClicked -= HandleBuildingClicked;
                 villageView.OnMapAreaChanged -= Hide;
+                villageView.OnMapSelectionChanging -= HideImmediate;
                 villageView.OnExitedVillageView -= Hide;
             }
             if (villageManager != null)
@@ -132,6 +134,7 @@ namespace Core.Village.UI
 
         private void OnDestroy()
         {
+            _towerRangePreview.Dispose();
             if (_statsPreview != null && _statsPreview.Root != null) Destroy(_statsPreview.Root.gameObject);
             if (_towerPreview != null && _towerPreview.Root != null) Destroy(_towerPreview.Root.gameObject);
         }
@@ -150,6 +153,18 @@ namespace Core.Village.UI
         private void Update()
         {
             if (_ownsFreeze && IsOpen && Input.GetKeyDown(KeyCode.Escape)) Hide();
+        }
+
+        private void LateUpdate()
+        {
+            if (_current != null) PositionForMap();
+        }
+
+        private bool PositionForMap()
+        {
+            if (_current == null || panel == null || panel.transform is not RectTransform rect) return false;
+            var comparison = _previewTower != null ? _towerPreview?.Root : _previewBarracks != null ? _statsPreview?.Root : null;
+            return MapPanelLayout.Place(villageView, _current.transform.position, rect, comparison);
         }
 
         private void ReleaseFreeze()
@@ -179,6 +194,12 @@ namespace Core.Village.UI
             if (building == null || building.Definition == null) return;
 
             bool wasOpen = _current != null;
+            if (panel != null && panel.transform is RectTransform rect)
+            {
+                rect.KillTweens();
+                rect.anchoredPosition = _panelPosition;
+                rect.localScale = Vector3.one;
+            }
             _current = building;
             SetPreviewBuilding(building.GetComponent<Core.BarracksSystem.Barracks>());
             SetTowerPreview(building.GetComponent<TowerHeroStation>());
@@ -188,14 +209,15 @@ namespace Core.Village.UI
             if (panel != null) panel.SetActive(true);
             Refresh();
 
-            if (!wasOpen) PlayOpenAnimation();
+            bool placedOnMap = PositionForMap();
+            if (!wasOpen) PlayOpenAnimation(placedOnMap);
         }
 
         public void Hide()
         {
             if (_current == null) return;
             _current = null;
-            SetPreviewBuilding(null, false);
+            SetPreviewBuilding(null);
             SetTowerPreview(null);
             ReleaseFreeze();
             WatchInventory(null);
@@ -217,6 +239,7 @@ namespace Core.Village.UI
 
         private void HideImmediate()
         {
+            CancelInvoke(nameof(Refresh));
             _current = null;
             SetPreviewBuilding(null);
             SetTowerPreview(null);
@@ -225,7 +248,7 @@ namespace Core.Village.UI
             if (panel != null) panel.SetActive(false);
         }
 
-        private void PlayOpenAnimation()
+        private void PlayOpenAnimation(bool placedOnMap)
         {
             if (panelGroup != null)
             {
@@ -235,7 +258,7 @@ namespace Core.Village.UI
                 panelGroup.blocksRaycasts = true;
                 panelGroup.TweenFade(1f, fadeDuration).SetUnscaledTime(true);
             }
-            if (panel != null)
+            if (panel != null && !placedOnMap)
             {
                 Transform tr = panel.transform;
                 tr.KillTweens();
@@ -298,7 +321,7 @@ namespace Core.Village.UI
 
         #region Affichage
 
-        private void SetPreviewBuilding(Core.BarracksSystem.Barracks barracks, bool restoreLayout = true)
+        private void SetPreviewBuilding(Core.BarracksSystem.Barracks barracks)
         {
             if (_previewBarracks != barracks)
             {
@@ -315,20 +338,14 @@ namespace Core.Village.UI
                     _statsPreview.Root.sizeDelta = new Vector2(730, 740);
                 }
                 _statsPreview.Root.gameObject.SetActive(true);
-                rect.anchorMin = _panelAnchorMin; rect.anchorMax = _panelAnchorMax;
-                rect.pivot = _panelPivot; rect.anchoredPosition = _panelPosition;
                 _statsPreview.Root.anchorMin = _statsPreview.Root.anchorMax = new Vector2(1f, .5f);
                 _statsPreview.Root.pivot = new Vector2(1f, .5f);
+                _statsPreview.Root.localScale = Vector3.one;
                 _statsPreview.Root.anchoredPosition = _panelPosition + new Vector2(-rect.rect.width - 32f, 0f);
             }
             else
             {
                 if (_statsPreview != null) _statsPreview.Root.gameObject.SetActive(false);
-                if (restoreLayout)
-                {
-                    rect.anchorMin = _panelAnchorMin; rect.anchorMax = _panelAnchorMax;
-                    rect.pivot = _panelPivot; rect.anchoredPosition = _panelPosition;
-                }
             }
         }
 
@@ -337,13 +354,15 @@ namespace Core.Village.UI
             _previewTower = tower;
             if (tower == null)
             {
+                _towerRangePreview.Clear();
                 if (_towerPreview != null) _towerPreview.Root.gameObject.SetActive(false);
                 return;
             }
             if (panel == null || panel.transform is not RectTransform rect) return;
             _towerPreview ??= new TowerStatsPreview(panel.transform.parent, "TowerUpgradeStats");
             Core.PauseMenu.PauseUiKit.Anchor(_towerPreview.Root, new Vector2(1f, .5f), new Vector2(1f, .5f),
-                _panelPosition + new Vector2(-rect.rect.width - 32f, 0f), new Vector2(730, 670));
+                _panelPosition + new Vector2(-rect.rect.width - 32f, 0f), TowerStatsPreview.CardSize);
+            _towerPreview.Root.localScale = Vector3.one;
             _towerPreview.Root.gameObject.SetActive(true);
         }
 
@@ -368,9 +387,12 @@ namespace Core.Village.UI
             BuildingLevelData next = _current.GetNextLevelData();
             bool isMax = next == null;
             RefreshBarracksPreview();
-            if (_previewTower != null && _towerPreview != null)
-                _towerPreview.Refresh(_previewTower, isMax ? level : level + 1, _previewTower.AssignedHero,
+            if (_previewTower != null)
+            {
+                _towerRangePreview.ShowRange(_previewTower.transform, _previewTower.GetPreviewRange(_previewTower.AssignedHero));
+                _towerPreview?.Refresh(_previewTower, isMax ? level : level + 1, _previewTower.AssignedHero,
                     isMax ? "Niveau maximum" : $"Amélioration {level} → {level + 1}");
+            }
 
             if (iconImage != null)
             {

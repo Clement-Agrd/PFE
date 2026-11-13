@@ -21,12 +21,12 @@ namespace Core.Village
         public bool IsShown=>_canvas!=null&&_canvas.activeSelf;
         private void OnEnable()
         {
-            if(villageView!=null){villageView.OnBuildingClicked+=Selected;villageView.OnExitedVillageView+=Hide;villageView.OnMapAreaChanged+=Hide;}
+            if(villageView!=null){villageView.OnBuildingClicked+=Selected;villageView.OnExitedVillageView+=Hide;villageView.OnMapSelectionChanging+=Hide;villageView.OnMapAreaChanged+=Hide;}
             if(camp!=null&&camp.Spawner!=null)camp.Spawner.OnWaveStarted+=DefenseStarted;
         }
         private void OnDisable()
         {
-            if(villageView!=null){villageView.OnBuildingClicked-=Selected;villageView.OnExitedVillageView-=Hide;villageView.OnMapAreaChanged-=Hide;}
+            if(villageView!=null){villageView.OnBuildingClicked-=Selected;villageView.OnExitedVillageView-=Hide;villageView.OnMapSelectionChanging-=Hide;villageView.OnMapAreaChanged-=Hide;}
             if(camp!=null&&camp.Spawner!=null)camp.Spawner.OnWaveStarted-=DefenseStarted;
             Hide();
         }

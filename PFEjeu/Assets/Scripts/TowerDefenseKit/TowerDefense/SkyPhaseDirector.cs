@@ -67,13 +67,14 @@ namespace Core.TowerDefense
             // La nuit tombe une seule fois par défense, pas à chaque vague.
             if (_defenseActive) return;
             _defenseActive = true;
-            Go(nightPreset, toNightSeconds);
+            Go(nightPreset, toNightSeconds, 90f);
         }
 
         private void HandleDefenseCompleted()
         {
             _defenseActive = false;
-            Go(dayPreset, toDaySeconds);
+            if (dayPreset != null)
+                Go(dayPreset, toDaySeconds, 360f - dayPreset.State.sunElevation, returningToDay: true);
         }
         #endregion
 
@@ -82,15 +83,17 @@ namespace Core.TowerDefense
         public void StartPreparationPhase()
         {
             if (_defenseActive) return;
-            Go(duskPreset, toDuskSeconds);
+            if (duskPreset != null)
+                Go(duskPreset, toDuskSeconds, -duskPreset.State.sunElevation);
         }
         #endregion
 
         #region Utilitaires
-        private void Go(SkyPreset preset, float seconds)
+        private void Go(SkyPreset preset, float seconds, float sunAngle, bool returningToDay = false)
         {
             if (skyController == null || preset == null) return;
-            skyController.TransitionTo(preset, seconds);
+            var horizon = duskPreset != null ? duskPreset : dayPreset != null ? dayPreset : preset;
+            skyController.TransitionAlongSunOrbit(preset, seconds, horizon.State.sunAzimuth, sunAngle, returningToDay);
         }
         #endregion
     }

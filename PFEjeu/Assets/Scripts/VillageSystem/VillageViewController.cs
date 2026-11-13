@@ -43,6 +43,7 @@ namespace Core.Village
         public bool CanSelectMap => IsInVillageView && !_isTransitioning;
         public Camera MapCamera => targetCamera;
         public event Action OnMapAreaChanged;
+        public event Action OnMapSelectionChanging;
 
         public event Action<Building> OnBuildingClicked;
         public event Action OnEnteredVillageView;
@@ -155,10 +156,31 @@ namespace Core.Village
             if (Physics.Raycast(ray, out var hit, 500f, buildingLayer))
             {
                 var slot = hit.collider.GetComponentInParent<Core.TowerDefense.DefenseBuildSlot>();
-                if (slot != null && !slot.IsOccupied) { slot.OpenFromVillageView(); return; }
-                if (hit.collider.GetComponentInParent<Building>() is Building building)
-                    OnBuildingClicked?.Invoke(building);
+                if (slot != null && !slot.IsOccupied)
+                    SelectDefenseSlot(slot);
+                else
+                    SelectBuilding(hit.collider.GetComponentInParent<Building>());
             }
+        }
+
+        public void SelectDefenseSlot(Core.TowerDefense.DefenseBuildSlot slot)
+        {
+            if (!CanSelectMap || slot == null) return;
+            if (slot.IsOccupied)
+            {
+                SelectBuilding(slot.Occupant.GetComponent<Building>());
+                return;
+            }
+
+            OnMapSelectionChanging?.Invoke();
+            slot.OpenFromVillageView();
+        }
+
+        private void SelectBuilding(Building building)
+        {
+            if (building == null) return;
+            OnMapSelectionChanging?.Invoke();
+            OnBuildingClicked?.Invoke(building);
         }
 
         private void SetPlayerControlEnabled(bool enabled)

@@ -27,11 +27,14 @@ public sealed class TowerHeroStation : InteractableBase
     private Building _building;
     private DefenseConstructionUI _construction;
     private BuildingPanelUI _upgradePanel;
+    private VillageViewController _villageView;
+    private readonly DefenseConstructionPreview _rangePreview = new();
     private HeroRoster _roster;
     private GameObject _canvas;
     private RectTransform _rows;
     private TMP_Text _title;
     private TowerStatsPreview _preview;
+    private RectTransform _panel;
     private heros _candidate;
     private Button _confirm;
     private TMP_Text _feedback;
@@ -56,14 +59,19 @@ public sealed class TowerHeroStation : InteractableBase
         ClearHero();
     }
 
-    private void OnDestroy() { if (_canvas != null) Destroy(_canvas); }
+    private void OnDestroy()
+    {
+        _rangePreview.Dispose();
+        if (_canvas != null) Destroy(_canvas);
+    }
 
     private void Start() => _tower.SetLevel(_building.CurrentLevel);
 
-    public void Configure(DefenseConstructionUI construction, BuildingPanelUI upgradePanel)
+    public void Configure(DefenseConstructionUI construction, BuildingPanelUI upgradePanel, VillageViewController villageView)
     {
         _construction = construction;
         _upgradePanel = upgradePanel;
+        _villageView = villageView;
     }
 
     private SOTower ProfileFor(heros hero)
@@ -75,6 +83,8 @@ public sealed class TowerHeroStation : InteractableBase
     }
 
     public SOTower GetProfile(heros hero) => ProfileFor(hero) ?? _tower.BaseProfile;
+
+    public float GetPreviewRange(heros hero) => GetProfile(hero)?.GetRange(hero != null ? hero.Level : 0) ?? 0f;
 
     public int CurrentLevel => _tower.CurrentLevel;
 
@@ -142,7 +152,13 @@ public sealed class TowerHeroStation : InteractableBase
         _feedback.text = "";
         _canvas.SetActive(true);
         if (_roster != null) _roster.Changed += Refresh;
+        if (_villageView != null)
+        {
+            _villageView.OnMapSelectionChanging += Hide;
+            _villageView.OnMapAreaChanged += Hide;
+        }
         Refresh();
+        PositionPanels();
         GameFreeze.RequestPause(this);
         GameFreeze.RequestCursorUnlock(this);
     }
@@ -153,6 +169,12 @@ public sealed class TowerHeroStation : InteractableBase
         CloseConfirmation();
         _canvas.SetActive(false);
         if (_roster != null) _roster.Changed -= Refresh;
+        if (_villageView != null)
+        {
+            _villageView.OnMapSelectionChanging -= Hide;
+            _villageView.OnMapAreaChanged -= Hide;
+        }
+        _rangePreview.Clear();
         GameFreeze.ReleasePause(this);
         GameFreeze.ReleaseCursorUnlock(this);
     }
@@ -168,10 +190,25 @@ public sealed class TowerHeroStation : InteractableBase
         }
     }
 
+    private void LateUpdate()
+    {
+        if (_canvas != null && _canvas.activeSelf && _villageView != null && _villageView.IsInVillageView)
+            PositionPanels();
+    }
+
+    private void PositionPanels()
+    {
+        if (MapPanelLayout.Place(_villageView, transform.position, _panel, _preview.Root)) return;
+        _panel.localScale = _preview.Root.localScale = Vector3.one;
+        _panel.anchoredPosition = new Vector2(-40f, 0f);
+        _preview.Root.anchoredPosition = new Vector2(-574f, 0f);
+    }
+
     private void Refresh()
     {
         if (_canvas == null || !_canvas.activeSelf) return;
         if (_candidate != null && !CanAssign(_candidate)) _candidate = AssignedHero;
+        _rangePreview.ShowRange(transform, GetPreviewRange(_candidate));
         _preview.Refresh(this, _tower.CurrentLevel, _candidate, "Affectation");
         _confirm.interactable = _candidate != AssignedHero && (_candidate == null || CanAssign(_candidate));
         _title.text = $"{_building.Definition.DisplayName} · Niveau {_building.CurrentLevel}\n" +
@@ -282,10 +319,15 @@ public sealed class TowerHeroStation : InteractableBase
 
         var backdrop = NewImage("Backdrop", _canvas.transform, Dim);
         Stretch(backdrop.rectTransform);
+        var backdropColor = backdrop.color;
+        backdropColor.a = .15f;
+        backdrop.color = backdropColor;
         var panel = NewImage("Tower", backdrop.transform, Card, 16);
-        Anchor(panel.rectTransform, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-40, 0), new Vector2(650, 670));
+        _panel = panel.rectTransform;
+        Anchor(_panel, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-40, 0), new Vector2(520, 620));
+        panel.raycastTarget = true;
         _preview = new TowerStatsPreview(backdrop.transform, "TowerAssignmentStats");
-        Anchor(_preview.Root, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-722, 0), new Vector2(730, 670));
+        Anchor(_preview.Root, new Vector2(1, .5f), new Vector2(1, .5f), new Vector2(-574, 0), TowerStatsPreview.CardSize);
         VStack(panel.gameObject, 12, new RectOffset(24, 24, 24, 24));
         _title = NewText("Title", panel.transform, "", 28, Accent);
         Layout(_title.gameObject, height: 100);

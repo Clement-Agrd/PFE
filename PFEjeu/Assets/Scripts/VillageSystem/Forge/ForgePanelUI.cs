@@ -96,6 +96,7 @@ namespace Core.Village.UI
             {
                 villageView.OnBuildingClicked += HandleBuildingClicked;
                 villageView.OnExitedVillageView += Close;
+                villageView.OnMapSelectionChanging += Close;
             }
             if (forge != null)
             {
@@ -112,6 +113,7 @@ namespace Core.Village.UI
             {
                 villageView.OnBuildingClicked -= HandleBuildingClicked;
                 villageView.OnExitedVillageView -= Close;
+                villageView.OnMapSelectionChanging -= Close;
             }
             if (forge != null)
             {

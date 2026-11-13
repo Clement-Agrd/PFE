@@ -45,8 +45,15 @@ namespace Core.UIBarSystem
                 _catchUpTimer = delayBeforeCatchUp;
         }
 
+        internal void ConfigureImages(Image main, Image delayed)
+        {
+            fill = main;
+            delayedFill = delayed;
+        }
+
         public void SnapToValue()
         {
+            _catchUpTimer = 0f;
             _currentFill = _target01;
             _currentDelayedFill = _target01;
             ApplyFill(_currentFill, fill);
