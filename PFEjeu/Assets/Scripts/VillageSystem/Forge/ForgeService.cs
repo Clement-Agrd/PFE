@@ -81,7 +81,12 @@ namespace Core.Village
         }
 
         /// <summary>Améliore l'objet (garanti). Retourne le nouvel index de la case, ou -1.</summary>
-        public int TryUpgrade(int slotIndex)
+        public bool NeedsElementChoice(ItemStack stack) => IsUpgradable(stack) && definition.IsStaff(stack.Definition) &&
+            stack.UpgradeLevel + 1 >= ForgeDefinition.ElementLevel && stack.ForgeElement == ForgeElement.None;
+
+        public int TryUpgrade(int slotIndex) => TryUpgrade(slotIndex, ForgeElement.None);
+
+        public int TryUpgrade(int slotIndex, ForgeElement element)
         {
             if (!CanUpgrade(slotIndex, out string reason))
             {
@@ -92,11 +97,20 @@ namespace Core.Village
             Inventory inv = PlayerInventory;
             ItemStack stack = inv.GetSlot(slotIndex);
             int target = stack.UpgradeLevel + 1;
+            if (NeedsElementChoice(stack))
+            {
+                if (definition.GetSpell(element) == null)
+                {
+                    OnFailed?.Invoke("Choisis le feu ou la glace.");
+                    return -1;
+                }
+            }
+            else element = stack.ForgeElement;
 
+            int newIndex = inv.SetUpgradeLevelAt(slotIndex, target, element);
+            if (newIndex < 0) return -1;
             foreach (ResourceCost cost in definition.GetCost(target))
                 if (cost.item != null) HdvInventory.Remove(cost.item, cost.amount);
-
-            int newIndex = inv.SetUpgradeLevelAt(slotIndex, target);
             OnUpgraded?.Invoke(inv.GetSlot(newIndex), target);
             return newIndex;
         }

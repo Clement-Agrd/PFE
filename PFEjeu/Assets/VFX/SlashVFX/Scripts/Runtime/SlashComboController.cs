@@ -131,7 +131,8 @@ namespace SlashVFX
         }
 
         /// <summary>Plays one step at a world position and direction.</summary>
-        public void PlayStepAt(int index, Vector3 position, Vector3 direction)
+        public void PlayStepAt(int index, Vector3 position, Vector3 direction,
+            ProfessionalTPS.MeleeCombatModule.SwingGeometry? swing = null)
         {
             if (steps == null || steps.Length == 0) return;
             index = Mathf.Clamp(index, 0, steps.Length - 1);
@@ -155,6 +156,7 @@ namespace SlashVFX
             var pp = new SlashInstance.PlayParams
             {
                 step = step,
+                swing = swing,
                 position = position,
                 aim = direction,
                 intensityMul = boost * Mathf.Lerp(0.9f, 1.1f, t),

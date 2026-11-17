@@ -42,6 +42,29 @@ namespace ProfessionalTPS
         private Vector3 _velocity;
 
         private bool _launched;
+        private float _explosionRadius;
+        private SOTower _element;
+        private static readonly RaycastHit[] GroundHits = new RaycastHit[16];
+
+        internal static CombatProjectile CreateElemental(GameObject visual, CombatProjectile template,
+            Vector3 position, Quaternion rotation)
+        {
+            var instance = Instantiate(visual, position, rotation);
+            if (instance.TryGetComponent<TowerProjectil>(out var towerProjectile)) towerProjectile.enabled = false;
+            var projectile = instance.AddComponent<CombatProjectile>();
+            projectile.radius = template.radius;
+            projectile.collisionMask = template.collisionMask;
+            projectile.triggerInteraction = template.triggerInteraction;
+            projectile.impactPrefab = template.impactPrefab;
+            return projectile;
+        }
+
+        internal void SetExplosion(SOTower element)
+        {
+            _element = element;
+            _explosionRadius = element != null && element.ImpactRadius > 0f
+                ? element.ImpactRadius : Core.Village.ForgeDefinition.ExplosionRadius;
+        }
 
 
         private readonly RaycastHit[] _castHits =
@@ -246,6 +269,13 @@ namespace ProfessionalTPS
         private void HandleImpact(
             RaycastHit hit)
         {
+            if (_explosionRadius > 0f)
+            {
+                Explode(hit);
+                Destroy(gameObject);
+                return;
+            }
+
             IDamageable damageable =
                 FindDamageable(
                     hit.collider
@@ -294,6 +324,42 @@ namespace ProfessionalTPS
             );
         }
 
+
+        private void Explode(RaycastHit hit)
+        {
+            var struck = hit.collider.GetComponentInParent<Health>();
+            Vector3 floor = hit.point;
+            if (struck != null) floor.y = hit.collider.bounds.min.y;
+            var ground = TowerAreaImpact.FindGround(floor, GroundHits, out var normal);
+            var mask = _element != null ? _element.TargetLayer.value : LayerMask.GetMask("Enemy");
+            var hitHealths = new System.Collections.Generic.HashSet<Health>();
+            if (struck != null && (mask & (1 << hit.collider.gameObject.layer)) != 0) hitHealths.Add(struck);
+            foreach (var body in Physics.OverlapSphere(ground, _explosionRadius, mask, triggerInteraction))
+            {
+                var health = body.GetComponentInParent<Health>();
+                if (health != null) hitHealths.Add(health);
+            }
+            foreach (var health in hitHealths)
+            {
+                if (health.IsDead || (_owner != null && health.transform.IsChildOf(_owner.transform))) continue;
+                health.TakeDamage(new DamageInfo(_damage, _element != null ? _element.DamageType : _damageType, _owner, _sourceKind));
+                if (_element != null && !health.IsDead) EtatManager.ApplyTo(health, _element.ETAT);
+            }
+
+            var effectPrefab = _element != null ? _element.ImpactPrefab : impactPrefab;
+            if (effectPrefab == null) return;
+            var effect = Instantiate(effectPrefab, ground + normal * .01f, Quaternion.FromToRotation(Vector3.forward, normal));
+            if (effect.TryGetComponent<TowerAreaImpact>(out var area)) area.Play(_explosionRadius);
+            else
+            {
+                foreach (var particles in effect.GetComponentsInChildren<ParticleSystem>(true))
+                {
+                    var main = particles.main;
+                    main.startSizeMultiplier *= _explosionRadius;
+                }
+            }
+            Destroy(effect, 3f);
+        }
 
         private static IDamageable FindDamageable(
             Collider collider)

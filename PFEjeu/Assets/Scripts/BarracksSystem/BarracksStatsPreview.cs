@@ -9,6 +9,20 @@ namespace Core.BarracksSystem
     /// <summary>Shared read-only comparison for hero assignment and barracks upgrades.</summary>
     public sealed class BarracksStatsPreview
     {
+        public static readonly Vector2 CardSize = new(430f, 620f);
+        private static readonly string[] BarracksLabels =
+        {
+            "PV", "Endurance", "Dégâts phys.", "Dégâts mag.", "Défense phys.", "Défense mag.",
+            "Déplacement", "Attaques/s", "Soldats", "Réappar. (s)"
+        };
+        private static readonly string[] BarracksIconPaths =
+        {
+            "BarracksStats/Life", "BarracksStats/Stamina", "TowerStats/Physical", "TowerStats/Magic",
+            "BarracksStats/PhysicalDefense", "BarracksStats/MagicDefense", "BarracksStats/Movement",
+            "TowerStats/Speed", "BarracksStats/Troops", "BarracksStats/Respawn"
+        };
+        private static Texture2D[] _barracksIcons;
+
         private sealed class Row
         {
             public TMP_Text Current, Future, Delta;
@@ -21,7 +35,8 @@ namespace Core.BarracksSystem
         public bool HasChanges { get; private set; }
 
         public BarracksStatsPreview(Transform parent, string name)
-            : this(parent, name, "Statistiques des troupes", null) { }
+            : this(parent, name, "Statistiques des troupes", BarracksLabels,
+                _barracksIcons ??= Array.ConvertAll(BarracksIconPaths, path => Resources.Load<Texture2D>(path))) { }
 
         public BarracksStatsPreview(Transform parent, string name, string titleText, string[] labels, Texture2D[] icons = null)
         {
@@ -71,7 +86,7 @@ namespace Core.BarracksSystem
         private static Row CreateRow(Transform parent, string name, string label, Texture2D icon)
         {
             var root = NewRect(name, parent);
-            Layout(root.gameObject, height: icon != null ? 36 : 40);
+            Layout(root.gameObject, height: icon != null ? 34 : 40);
             var statName = NewText("StatName", root, label, 22, TextMain);
             statName.rectTransform.anchorMin = Vector2.zero;
             statName.rectTransform.anchorMax = new Vector2(.43f, 1);

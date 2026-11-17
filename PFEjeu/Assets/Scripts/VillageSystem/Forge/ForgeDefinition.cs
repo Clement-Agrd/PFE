@@ -7,6 +7,8 @@ namespace Core.Village
 {
     using StatType = EnumStats.StatTypes;
 
+    public enum ForgeElement { None, Fire, Ice }
+
     /// <summary>Bonus de stat gagné à CHAQUE niveau d'amélioration d'un objet.</summary>
     [Serializable]
     public struct UpgradeBonus
@@ -66,6 +68,53 @@ namespace Core.Village
 
         [Tooltip("Articles que la Forge vend (armures, armes, pièges...).")]
         [SerializeField] private ForgeShopEntry[] shop;
+
+        [Header("Équipement de base")]
+        [SerializeField] private ItemDefinition sword;
+        [SerializeField] private ItemDefinition bow;
+        [SerializeField] private ItemDefinition staff;
+        [SerializeField] private SOTower fireSpell;
+        [SerializeField] private SOTower iceSpell;
+        [SerializeField] private GameObject swordFinisher;
+        public GameObject SwordFinisher => swordFinisher;
+
+        public const int ExplosionLevel = 3;
+        public const int ElementLevel = 6;
+        public const float ExplosionRadius = 2.5f;
+        private static readonly UpgradeBonus[] ChestBonuses =
+        {
+            new UpgradeBonus { stat = StatType.Life, valuePerLevel = 25f, modifierType = StatModifierType.Flat }
+        };
+
+        public ItemDefinition GetWeapon(ProfessionalTPS.CombatMode mode) => mode switch
+        {
+            ProfessionalTPS.CombatMode.Melee => sword,
+            ProfessionalTPS.CombatMode.Bow => bow,
+            ProfessionalTPS.CombatMode.Magic => staff,
+            _ => null
+        };
+
+        public SOTower GetSpell(ForgeElement element) => element switch
+        {
+            ForgeElement.Fire => fireSpell,
+            ForgeElement.Ice => iceSpell,
+            _ => null
+        };
+
+        public bool IsStaff(ItemDefinition item) => staff != null && item == staff;
+        public bool IsPlayerWeapon(ItemDefinition item) => item != null && (item == sword || item == bow || item == staff);
+        public bool IsSword(ItemDefinition item) => sword != null && item == sword;
+        public UpgradeBonus[] GetBonuses(ItemDefinition item) =>
+            item == null || IsPlayerWeapon(item) ? Array.Empty<UpgradeBonus>() :
+            item.Category == ItemCategory.Armor && item.ArmorSlot == ArmorSlotType.Chest ? ChestBonuses :
+            GetRules(item.Category)?.bonuses ?? Array.Empty<UpgradeBonus>();
+
+        public static float WeaponDamage(int level) => level * 2f;
+        public static float PhysicalScaling(int level) => (level / 3) * .10f;
+        public static float MagicScaling(int level) => level * .05f;
+        public static float SwordReach(int level) => (level / 3) * .15f;
+        public static float ArrowSpeed(int level) => 1f + (level / 3) * .15f;
+        public static float WeaponCadence(int level) => 1f + (level / 3) * .10f;
 
         public float DismantleRefundPercent => dismantleRefundPercent;
 

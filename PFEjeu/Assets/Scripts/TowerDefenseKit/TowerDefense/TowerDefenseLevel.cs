@@ -216,6 +216,7 @@ namespace Core.TowerDefense
                     wallet,
                     playerInventory
                 );
+                navEnemy.SetDefenseObjective(defenseObjective, objectiveCollider);
 
                 return;
             }

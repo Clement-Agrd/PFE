@@ -24,7 +24,7 @@ namespace Core.TowerDefense
         private Vector2 _defaultCardPosition;
         private TMP_Text _feedback;
         private DefenseBuildSlot _slot;
-        private readonly Dictionary<Building, DefenseBuildSlot> _towerSlots = new();
+        private readonly Dictionary<Building, DefenseBuildSlot> _defenseSlots = new();
         private readonly Dictionary<DefenseBuildingDefinition, Core.PauseMenu.PauseButton> _choices = new();
         private DefenseBuildingDefinition _selection;
         private Button _confirm;
@@ -33,8 +33,8 @@ namespace Core.TowerDefense
         public bool IsOpen=>_canvas!=null&&_canvas.activeSelf;
         public IReadOnlyList<DefenseBuildingDefinition> Catalog=>catalog;
         public event System.Action<Building> OnBuildingConstructed;
-        private void OnEnable(){if(village!=null)village.OnBuildingUpgraded+=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnMapSelectionChanging+=Close;villageView.OnExitedVillageView+=Close;}}
-        private void OnDisable(){if(village!=null)village.OnBuildingUpgraded-=RecordTowerUpgrade;if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnMapSelectionChanging-=Close;villageView.OnExitedVillageView-=Close;}Close();}
+        private void OnEnable(){if(village!=null)village.OnBuildingUpgraded+=RecordDefenseUpgrade;if(spawner!=null)spawner.OnWaveStarted+=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged+=Close;villageView.OnMapSelectionChanging+=Close;villageView.OnExitedVillageView+=Close;}}
+        private void OnDisable(){if(village!=null)village.OnBuildingUpgraded-=RecordDefenseUpgrade;if(spawner!=null)spawner.OnWaveStarted-=OnDefenseStarted;if(villageView!=null){villageView.OnMapAreaChanged-=Close;villageView.OnMapSelectionChanging-=Close;villageView.OnExitedVillageView-=Close;}Close();}
         private void OnDestroy()
         {
             if (_canvas != null) Destroy(_canvas);
@@ -113,6 +113,8 @@ namespace Core.TowerDefense
             building.name=def.displayName+" · "+slot.name;
             if(building.TryGetComponent<Core.BarracksSystem.BarracksVillageUpgrade>(out var upgrade))upgrade.Configure(upgradePanel);
             if(building.TryGetComponent<TowerHeroStation>(out var tower))tower.Configure(this, upgradePanel, villageView);
+            building.TryGetComponent<Core.BarracksSystem.BarracksConfirmationUI>(out var barracksMenu);
+            if (barracksMenu != null) barracksMenu.Configure(this);
             if(building.TryGetComponent<Building>(out _))
             {
                 var highlight=building.GetComponent<BuildingHighlight>();
@@ -128,7 +130,7 @@ namespace Core.TowerDefense
             slot.Occupy(building);
             if(building.TryGetComponent<Building>(out var constructed))
             {
-                if(tower != null) _towerSlots[constructed] = slot;
+                if (tower != null || barracksMenu != null) _defenseSlots[constructed] = slot;
                 OnBuildingConstructed?.Invoke(constructed);
             }
             Close();
@@ -139,9 +141,9 @@ namespace Core.TowerDefense
             }
             return true;
         }
-        private void RecordTowerUpgrade(Building building, int level)
+        private void RecordDefenseUpgrade(Building building, int level)
         {
-            if (!_towerSlots.TryGetValue(building, out var slot)) return;
+            if (!_defenseSlots.TryGetValue(building, out var slot)) return;
             var costs = building.Definition.GetLevelData(level)?.upgradeCost;
             if (costs == null) return;
             foreach (var cost in costs)
@@ -152,14 +154,14 @@ namespace Core.TowerDefense
         private Dictionary<ItemDefinition, int> GetRefund(Building building)
         {
             var refund = new Dictionary<ItemDefinition, int>();
-            if (!_towerSlots.TryGetValue(building, out var slot)) return refund;
+            if (!_defenseSlots.TryGetValue(building, out var slot)) return refund;
             foreach (var cost in slot.Investment)
                 if (cost.Value >= 2) refund[cost.Key] = cost.Value / 2;
             return refund;
         }
 
         public bool CanDemolish(Building building)
-            => CanBuildNow && building != null && _towerSlots.TryGetValue(building, out var slot) &&
+            => CanBuildNow && building != null && _defenseSlots.TryGetValue(building, out var slot) &&
                 slot.Occupant == building.gameObject;
 
         public string RefundLabel(Building building)
@@ -172,7 +174,7 @@ namespace Core.TowerDefense
 
         public bool TryDemolish(Building building, out string reason)
         {
-            reason = "Cette tour ne peut pas être démolie maintenant.";
+            reason = "Ce bâtiment ne peut pas être démoli maintenant.";
             if (!CanDemolish(building)) return false;
 
             var refund = GetRefund(building);
@@ -183,8 +185,8 @@ namespace Core.TowerDefense
                 return false;
             }
 
-            var slot = _towerSlots[building];
-            _towerSlots.Remove(building);
+            var slot = _defenseSlots[building];
+            _defenseSlots.Remove(building);
             building.gameObject.SetActive(false);
             Destroy(building.gameObject);
             slot.Release();

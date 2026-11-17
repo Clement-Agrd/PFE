@@ -38,7 +38,10 @@ namespace SlashVFX
             if (bridge == null) return;
             if (finisherOnLastHit && index >= comboLength - 1 && bridge.controller != null && bridge.controller.steps != null)
                 index = bridge.controller.steps.Length - 1;
-            bridge.OnStep(index);
+            if (bridge.controller == null) return;
+            bridge.controller.readMouse = false;
+            var swing = melee.ActiveSwing;
+            bridge.controller.PlayStepAt(index, swing.Origin, swing.Rotation * Vector3.forward, swing);
         }
     }
 }

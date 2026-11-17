@@ -101,15 +101,18 @@ public class SplineWallBuilder : MonoBehaviour
 
     private void OnEnable()
     {
+#if UNITY_EDITOR
         if (autoRebuildInEditor && !Application.isPlaying)
-            Rebuild();
+            UnityEditor_DelayedRebuild();
+#endif
     }
 
     private void OnValidate()
     {
-        if (!autoRebuildInEditor || splineContainer == null) return;
-        if (!Application.isPlaying)
+#if UNITY_EDITOR
+        if (autoRebuildInEditor && splineContainer != null && !Application.isPlaying)
             UnityEditor_DelayedRebuild();
+#endif
     }
 
     #endregion
@@ -386,13 +389,11 @@ public class SplineWallBuilder : MonoBehaviour
 #if UNITY_EDITOR
             if (!Application.isPlaying)
             {
-                UnityEditor.EditorApplication.delayCall += () =>
-                {
-                    if (child != null) DestroyImmediate(child);
-                };
+                DestroyImmediate(child);
                 continue;
             }
 #endif
+            child.SetActive(false);
             Destroy(child);
         }
     }
@@ -406,7 +407,9 @@ public class SplineWallBuilder : MonoBehaviour
         UnityEditor.EditorApplication.delayCall += () =>
         {
             _rebuildQueued = false;
-            if (this != null) Rebuild();
+            if (this != null && isActiveAndEnabled && autoRebuildInEditor &&
+                !UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode)
+                Rebuild();
         };
     }
 #endif

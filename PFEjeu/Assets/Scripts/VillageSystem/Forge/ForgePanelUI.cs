@@ -76,6 +76,7 @@ namespace Core.Village.UI
         private bool _open;
         private int _openedFrame = -1;
         private bool _ownsFreeze;
+        private GameObject _elementChoice;
         private string _pendingFeedback;
         private Color _pendingColor;
 
@@ -122,6 +123,7 @@ namespace Core.Village.UI
                 forge.OnPurchased -= HandlePurchased;
                 forge.OnFailed -= HandleFailed;
             }
+            CloseElementChoice();
             Watch(null, null);
             ReleaseFreeze();
         }
@@ -130,7 +132,9 @@ namespace Core.Village.UI
 
         private void Update()
         {
-            if (_open && UiCloseKeys.Pressed(_openedFrame)) Close();
+            if (!_open || !UiCloseKeys.Pressed(_openedFrame)) return;
+            if (_elementChoice != null) CloseElementChoice();
+            else Close();
         }
 
         #region Ouverture / fermeture
@@ -165,6 +169,7 @@ namespace Core.Village.UI
         {
             if (!_open) return;
             _open = false;
+            CloseElementChoice();
             ReleaseFreeze();
             Watch(null, null);
             if (panel != null) panel.SetActive(false);
@@ -210,8 +215,52 @@ namespace Core.Village.UI
                 forge.TryBuy(_selected);
                 return;
             }
+            if (forge.NeedsElementChoice(_playerInv.GetSlot(_selected)))
+            {
+                if (forge.CanUpgrade(_selected, out _)) ChooseElement(_selected);
+                return;
+            }
             int newIndex = forge.TryUpgrade(_selected);
             if (newIndex >= 0) _selected = newIndex;
+        }
+
+        private void ChooseElement(int slot)
+        {
+            CloseElementChoice();
+            var overlay = Core.PauseMenu.PauseUiKit.NewImage("ForgeElementChoice", panel.GetComponentInParent<Canvas>().rootCanvas.transform,
+                Core.PauseMenu.PauseUiKit.Dim);
+            Core.PauseMenu.PauseUiKit.Stretch(overlay.rectTransform);
+            overlay.raycastTarget = true;
+            _elementChoice = overlay.gameObject;
+            var card = Core.PauseMenu.PauseUiKit.NewImage("Element", overlay.transform, Core.PauseMenu.PauseUiKit.Card, 16);
+            var center = Vector2.one * .5f;
+            Core.PauseMenu.PauseUiKit.Anchor(card.rectTransform, center, center, Vector2.zero, new Vector2(580, 280));
+            Core.PauseMenu.PauseUiKit.VStack(card.gameObject, 12, new RectOffset(22, 22, 22, 22));
+            var title = Core.PauseMenu.PauseUiKit.NewText("Title", card.transform, "Choisir l’élément du bâton",
+                28, Core.PauseMenu.PauseUiKit.TextMain);
+            Core.PauseMenu.PauseUiKit.Layout(title.gameObject, height: 45);
+            void AddChoice(string label, ForgeElement element)
+            {
+                var button = Core.PauseMenu.PauseUiKit.NewButton(card.transform, label, () =>
+                {
+                    CloseElementChoice();
+                    int upgraded = forge.TryUpgrade(slot, element);
+                    if (upgraded >= 0) _selected = upgraded;
+                }, fontSize: 22);
+                Core.PauseMenu.PauseUiKit.Layout(button.gameObject, height: 49);
+            }
+            AddChoice("Feu · Brûlure", ForgeElement.Fire);
+            AddChoice("Glace · Ralentissement et armure réduite", ForgeElement.Ice);
+            var cancel = Core.PauseMenu.PauseUiKit.NewButton(card.transform, "Annuler", CloseElementChoice, fontSize: 22);
+            Core.PauseMenu.PauseUiKit.Layout(cancel.gameObject, height: 45);
+        }
+
+        private void CloseElementChoice()
+        {
+            if (_elementChoice == null) return;
+            _elementChoice.SetActive(false);
+            Destroy(_elementChoice);
+            _elementChoice = null;
         }
 
         private void HandleDismantle()
@@ -334,7 +383,7 @@ namespace Core.Village.UI
             bool isMax = forge.IsMaxed(stack);
 
             ShowItem(item, isMax ? $"+{level} (max)" : $"+{level} → +{level + 1}");
-            if (statsPreview != null) statsPreview.text = BuildPreview(def.GetRules(item.Category), level, isMax);
+            if (statsPreview != null) statsPreview.text = BuildItemPreview(def, stack, isMax);
             if (maxLevelBanner != null) maxLevelBanner.SetActive(isMax);
 
             RefreshCosts(isMax ? null : forge.GetNextCost(stack));
@@ -365,10 +414,9 @@ namespace Core.Village.UI
             ForgeShopEntry entry = forge.Definition.Shop[_selected];
             ShowItem(entry.item, "En vente");
 
-            ForgeCategoryRules rules = forge.Definition.GetRules(entry.item.Category);
             if (statsPreview != null)
-                statsPreview.text = rules != null && rules.bonuses != null && rules.bonuses.Length > 0
-                    ? "Bonus par niveau d'amélioration :\n" + BuildPreview(rules, 1, true)
+                statsPreview.text = forge.Definition.GetBonuses(entry.item).Length > 0
+                    ? "Bonus par niveau d'amélioration :\n" + BuildPreview(forge.Definition.GetBonuses(entry.item), 1, true)
                     : "";
             if (maxLevelBanner != null) maxLevelBanner.SetActive(false);
 
@@ -414,14 +462,43 @@ namespace Core.Village.UI
             return sb.Append(')').ToString();
         }
 
-        private static string BuildPreview(ForgeCategoryRules rules, int level, bool isMax)
+        internal static string BuildItemPreview(ForgeDefinition definition, ItemStack stack, bool isMax)
         {
-            if (rules == null || rules.bonuses == null) return "";
+            int level = stack.UpgradeLevel;
+            if (!definition.IsPlayerWeapon(stack.Definition)) return BuildPreview(definition.GetBonuses(stack.Definition), level, isMax);
+            int next = isMax ? level : level + 1;
+            string Delta(float current, float future, string suffix = "") =>
+                isMax || current == future ? $"+{current:0.##}{suffix}" : $"+{current:0.##}{suffix} → +{future:0.##}{suffix}";
+            string damage = $"Dégâts de base {Delta(ForgeDefinition.WeaponDamage(level), ForgeDefinition.WeaponDamage(next))}";
+            if (definition.IsStaff(stack.Definition))
+            {
+                string scaling = Delta(ForgeDefinition.MagicScaling(level) * 100f, ForgeDefinition.MagicScaling(next) * 100f, " %");
+                string spell = stack.ForgeElement != ForgeElement.None
+                    ? stack.ForgeElement == ForgeElement.Fire ? "Explosion de feu" : "Explosion de glace"
+                    : next >= ForgeDefinition.ElementLevel ? "Choix : feu ou glace" : next >= ForgeDefinition.ExplosionLevel ? "Explosion · rayon 2,5 m" : "Explosion au niveau +3";
+                return $"{damage}    Scaling magique {scaling}\n{spell}";
+            }
+            string physical = Delta(ForgeDefinition.PhysicalScaling(level) * 100f, ForgeDefinition.PhysicalScaling(next) * 100f, " %");
+            string cadence = Delta((ForgeDefinition.WeaponCadence(level) - 1f) * 100f, (ForgeDefinition.WeaponCadence(next) - 1f) * 100f, " %");
+            string reach = definition.IsSword(stack.Definition)
+                ? $"Portée {Delta(ForgeDefinition.SwordReach(level), ForgeDefinition.SwordReach(next), " m")}"
+                : $"Vitesse des flèches {Delta((ForgeDefinition.ArrowSpeed(level) - 1f) * 100f, (ForgeDefinition.ArrowSpeed(next) - 1f) * 100f, " %")}";
+            return $"{damage}    Scaling physique {physical}\nCadence {cadence}    {reach}";
+        }
+
+        private static string BuildPreview(UpgradeBonus[] bonuses, int level, bool isMax)
+        {
             var sb = new StringBuilder();
-            foreach (UpgradeBonus b in rules.bonuses)
+            foreach (UpgradeBonus b in bonuses)
             {
                 if (sb.Length > 0) sb.Append('\n');
-                sb.Append(b.stat).Append(" : ").Append(Format(b, level));
+                sb.Append(b.stat switch
+                {
+                    EnumStats.StatTypes.Life => "PV max",
+                    EnumStats.StatTypes.DefensePhysic => "Défense physique",
+                    EnumStats.StatTypes.DefenseMagic => "Défense magique",
+                    _ => b.stat.ToString()
+                }).Append(" : ").Append(Format(b, level));
                 if (!isMax) sb.Append(" → ").Append(Format(b, level + 1));
             }
             return sb.ToString();

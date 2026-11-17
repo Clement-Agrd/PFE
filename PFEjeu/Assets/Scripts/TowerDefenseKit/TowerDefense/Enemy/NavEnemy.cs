@@ -285,6 +285,20 @@ namespace Core.TowerDefense
 
 
         private Health _combatTarget;
+        private bool _reachedPathEnd;
+        private Health _defenseObjective;
+        private Collider _objectiveCollider;
+
+        internal void SetDefenseObjective(Health target, Collider surface)
+        {
+            _defenseObjective = target;
+            _objectiveCollider = surface;
+        }
+
+        private Vector3 CombatTargetPosition =>
+            _combatTarget == _defenseObjective && _objectiveCollider != null
+                ? _objectiveCollider.ClosestPoint(transform.position)
+                : _combatTarget.transform.position;
 
 
         private readonly Collider[] _detectionHits =
@@ -516,8 +530,9 @@ namespace Core.TowerDefense
                 null;
 
 
-            _finished =
-                false;
+            _finished = false;
+            _reachedPathEnd = false;
+            SetDefenseObjective(null, null);
 
 
             _repathTimer =
@@ -607,9 +622,8 @@ namespace Core.TowerDefense
         public void SetPath(
             EnemySplinePath path)
         {
-            splinePath =
-                path;
-
+            splinePath = path;
+            _reachedPathEnd = false;
             ReacquireSpline();
         }
 
@@ -627,7 +641,7 @@ namespace Core.TowerDefense
             {
                 float distance =
                     GetPlanarDistanceTo(
-                        _combatTarget.transform.position
+                        CombatTargetPosition
                     );
 
 
@@ -690,8 +704,7 @@ namespace Core.TowerDefense
 
                     if (_agent.isOnNavMesh)
                     {
-                        _agent.isStopped =
-                            false;
+                        _agent.isStopped = _reachedPathEnd;
 
                         _agent.stoppingDistance =
                             0f;
@@ -797,7 +810,7 @@ namespace Core.TowerDefense
 
         private void TickFollowSpline()
         {
-            if (splinePath == null ||
+            if (_reachedPathEnd || splinePath == null ||
                 !splinePath.IsValid)
             {
                 return;
@@ -955,15 +968,15 @@ namespace Core.TowerDefense
                 Time.deltaTime;
 
 
-            if (_detectionTimer > 0f)
-                return;
+            if (_detectionTimer <= 0f)
+            {
+                _detectionTimer = detectionInterval;
+                FindBestTarget();
+            }
 
-
-            _detectionTimer =
-                detectionInterval;
-
-
-            FindBestTarget();
+            if (_combatTarget == null && _reachedPathEnd && _defenseObjective != null &&
+                !_defenseObjective.IsDead && _defenseObjective.gameObject.activeInHierarchy)
+                _combatTarget = _defenseObjective;
         }
 
 
@@ -1088,16 +1101,10 @@ namespace Core.TowerDefense
             }
 
 
-            float distance =
-                GetPlanarDistanceTo(
-                    _combatTarget
-                        .transform
-                        .position
-                );
+            if (_combatTarget == _defenseObjective) return true;
 
-
-            if (distance >
-                loseTargetRange)
+            float distance = GetPlanarDistanceTo(CombatTargetPosition);
+            if (distance > loseTargetRange)
             {
                 return false;
             }
@@ -1172,11 +1179,7 @@ namespace Core.TowerDefense
                 repathInterval;
 
 
-            SetDestinationSafe(
-                _combatTarget
-                    .transform
-                    .position
-            );
+            SetDestinationSafe(CombatTargetPosition);
         }
 
 
@@ -1293,14 +1296,7 @@ namespace Core.TowerDefense
                 return;
 
 
-            float distance =
-                GetPlanarDistanceTo(
-                    _combatTarget
-                        .transform
-                        .position
-                );
-
-
+            float distance = GetPlanarDistanceTo(CombatTargetPosition);
             if (distance >
                 attackRange +
                 attackRangeLeeway)
@@ -1391,8 +1387,7 @@ namespace Core.TowerDefense
 
 
             Vector3 direction =
-                _combatTarget.transform.position -
-                transform.position;
+                CombatTargetPosition - transform.position;
 
 
             direction.y = 0f;
@@ -1501,32 +1496,15 @@ namespace Core.TowerDefense
 
         private void ReachPathEnd()
         {
-            if (_finished)
-                return;
+            _reachedPathEnd = true;
+            if (_agent.isOnNavMesh) _agent.isStopped = true;
+        }
 
-
-            _finished =
-                true;
-
-
-            ChangeState(
-                EnemyAIState.Finished,
-                true
-            );
-
-
-            Debug.Log(
-                $"[NavEnemy] {name} a atteint la fin de son chemin."
-            );
-
-
-            // Important :
-            //
-            // Pas de gold.
-            // Pas de loot.
-            //
-            // L'ennemi est simplement considéré
-            // comme sorti de la vague.
+        internal void Dismiss()
+        {
+            if (_finished) return;
+            _finished = true;
+            ChangeState(EnemyAIState.Finished, true);
             Defeat();
         }
 

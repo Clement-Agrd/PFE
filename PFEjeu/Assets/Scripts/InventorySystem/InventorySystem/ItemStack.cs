@@ -10,10 +10,14 @@ namespace Core.InventorySystem
         [SerializeField] private int quantity;
         [SerializeField, Min(0)] private int upgradeLevel;
 
-        public ItemStack(ItemDefinition definition, int quantity, int upgradeLevel = 0)
+        [SerializeField] private Core.Village.ForgeElement forgeElement;
+
+        public ItemStack(ItemDefinition definition, int quantity, int upgradeLevel = 0,
+            Core.Village.ForgeElement element = Core.Village.ForgeElement.None)
         {
             this.upgradeLevel = Mathf.Max(0, upgradeLevel);
             this.definition = definition;
+            forgeElement = element;
             this.quantity = Mathf.Max(0, quantity);
         }
 
@@ -22,6 +26,7 @@ namespace Core.InventorySystem
 
         /// <summary>Niveau d'amélioration Forge (donnée d'instance, 0 = non amélioré).</summary>
         public int UpgradeLevel => upgradeLevel;
+        public Core.Village.ForgeElement ForgeElement => forgeElement;
 
         public bool IsEmpty => definition == null || quantity <= 0;
         public int SpaceLeft => definition == null ? 0 : definition.MaxStackSize - quantity;
@@ -49,8 +54,12 @@ namespace Core.InventorySystem
 
         /// <summary>Deux piles fusionnent seulement si même objet ET même niveau d'amélioration.</summary>
         public bool CanMergeWith(ItemStack other)
-            => other != null && definition == other.definition && upgradeLevel == other.upgradeLevel;
+            => other != null && definition == other.definition && upgradeLevel == other.upgradeLevel && forgeElement == other.forgeElement;
 
-        internal void SetUpgradeLevel(int level) => upgradeLevel = Mathf.Max(0, level);
+        internal void SetUpgradeLevel(int level, Core.Village.ForgeElement element)
+        {
+            upgradeLevel = Mathf.Max(0, level);
+            forgeElement = element;
+        }
     }
 }

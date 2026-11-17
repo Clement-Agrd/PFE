@@ -91,6 +91,9 @@ namespace Core.BarracksSystem
 
         public void BeginPlacement(GameObject interactor) => BeginPlacement(interactor, null, false);
 
+        internal void BeginPlacement(GameObject interactor, Core.Village.VillageViewController view)
+            => BeginPlacement(interactor, view, false);
+
         public void BeginConstructionPlacement(GameObject interactor, Core.Village.VillageViewController view)
             => BeginPlacement(interactor, view != null && view.IsInVillageView ? view : null, true);
 
@@ -105,7 +108,7 @@ namespace Core.BarracksSystem
             {
                 placementCamera = _mapView.MapCamera;
                 _mapView.OnMapAreaChanged += CancelPlacement;
-                _mapView.OnBuildingClicked += BuildingSelected;
+                _mapView.OnMapSelectionChanging += CancelPlacement;
             }
             else ResolveCamera();
             if (placementCamera == null)
@@ -124,11 +127,6 @@ namespace Core.BarracksSystem
             _previewInstance.SetActive(true);
             ShowRange();
             UpdatePreview();
-        }
-
-        private void BuildingSelected(Core.Village.Building building)
-        {
-            if (building != null && building.gameObject != gameObject) CancelPlacement();
         }
 
         public static void CancelActivePlacement()
@@ -176,7 +174,7 @@ namespace Core.BarracksSystem
             if (_mapView != null)
             {
                 _mapView.OnMapAreaChanged -= CancelPlacement;
-                _mapView.OnBuildingClicked -= BuildingSelected;
+                _mapView.OnMapSelectionChanging -= CancelPlacement;
             }
             _mapView = null;
             _automaticOnCancel = false;

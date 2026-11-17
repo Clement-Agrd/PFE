@@ -189,6 +189,14 @@ namespace Core.BarracksSystem
                 flagPlacement.BeginPlacement(interactor);
         }
 
+        internal bool ShowFromMap(Core.Village.VillageViewController view)
+        {
+            if (confirmationUI == null || flagPlacement == null) return false;
+            var actor = FindFirstObjectByType<Core.InteractionSystem.Interactor>();
+            confirmationUI.Show(this, flagPlacement, actor != null ? actor.gameObject : null, view);
+            return true;
+        }
+
         public void LevelUp()
             => SetLevel(currentLevel + 1);
 

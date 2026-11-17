@@ -176,23 +176,23 @@ namespace ProfessionalTPS
                     aimRange
                 );
 
+            int level = Owner.ForgeLevel(CombatMode.Magic);
+            var spell = Owner.ForgeSpell;
             int finalDamage =
                 Owner.CalculateDamage(
                     EnumStats.StatTypes.MagicDamage,
-                    baseDamage,
-                    magicDamageScaling
+                    baseDamage + Core.Village.ForgeDefinition.WeaponDamage(level),
+                    magicDamageScaling + Core.Village.ForgeDefinition.MagicScaling(level)
                 );
 
             if (projectilePrefab != null)
             {
-                CombatProjectile projectile =
-                    Instantiate(
-                        projectilePrefab,
-                        origin,
-                        Quaternion.LookRotation(
-                            direction
-                        )
-                    );
+                Quaternion rotation = Quaternion.LookRotation(direction);
+                var projectile = spell != null && spell.ProjectilePrefab != null
+                    ? CombatProjectile.CreateElemental(spell.ProjectilePrefab, projectilePrefab, origin, rotation)
+                    : Instantiate(projectilePrefab, origin, rotation);
+                if (level >= Core.Village.ForgeDefinition.ExplosionLevel)
+                    projectile.SetExplosion(spell);
 
                 projectile.Launch(
                     direction,

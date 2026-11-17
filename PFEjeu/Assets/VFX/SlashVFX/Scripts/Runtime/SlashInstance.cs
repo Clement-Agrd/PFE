@@ -33,6 +33,7 @@ namespace SlashVFX
     {
         public struct PlayParams
         {
+            public ProfessionalTPS.MeleeCombatModule.SwingGeometry? swing;
             public SlashComboStep step;
             public Vector3 position;
             public Vector3 aim;
@@ -139,7 +140,7 @@ namespace SlashVFX
             startTime = Time.time;
             duration = Step.duration;
             intensity = Step.intensity * p.intensityMul;
-            scaleMul = Step.scale * p.scaleMul;
+            scaleMul = p.swing?.VisualScale ?? Step.scale * p.scaleMul;
             impactAt = Anticipation + duration * Step.impactFraction;
             impacted = false;
             quality = p.quality;
@@ -149,20 +150,21 @@ namespace SlashVFX
             cam = Camera.main;
 
             float roll = Step.tiltDegrees + UnityEngine.Random.Range(-Step.randomRoll, Step.randomRoll);
-            Vector3 basePos = p.position + Vector3.up * Step.yOffset;
-            transform.SetPositionAndRotation(basePos, Quaternion.LookRotation(aim, Vector3.up) * Quaternion.Euler(Step.pitchDegrees, 0f, roll));
-            follow = p.follow;
+            Vector3 basePos = p.swing?.Origin ?? p.position + Vector3.up * Step.yOffset;
+            var rotation = p.swing?.Rotation ?? Quaternion.LookRotation(aim, Vector3.up) * Quaternion.Euler(Step.pitchDegrees, 0f, roll);
+            transform.SetPositionAndRotation(basePos, rotation);
+            follow = p.swing.HasValue ? null : p.follow;
             followUntil = Time.time + p.followTime;
             followOffset = follow != null ? basePos - follow.position : Vector3.zero;
 
             if (bladeRoot != null)
-                bladeRoot.localScale = new Vector3(Step.mirror ? -scaleMul : scaleMul, scaleMul, scaleMul);
+                bladeRoot.localScale = new Vector3((p.swing?.Reverse ?? Step.mirror) ? -scaleMul : scaleMul, scaleMul, scaleMul);
 
             float tail = Anticipation + duration + TailTime;
             endAt = tail + Step.secondBladeDelay * (HasSecondBlade() ? 1f : 0f) + 0.1f;
             if (Step.shockwave) endAt = Mathf.Max(endAt, impactAt + 1.5f);
 
-            contact = basePos + (transform.rotation * Quaternion.Inverse(Quaternion.Euler(0f, 0f, roll))) * Vector3.forward * (1.5f * scaleMul);
+            contact = p.swing?.Point(.5f) ?? basePos + (transform.rotation * Quaternion.Inverse(Quaternion.Euler(0f, 0f, roll))) * Vector3.forward * (1.5f * scaleMul);
             if (flashRenderer != null) flashRenderer.enabled = false;
             if (shockwaveRenderer != null) shockwaveRenderer.enabled = false;
             if (scorchRenderer != null) scorchRenderer.enabled = false;

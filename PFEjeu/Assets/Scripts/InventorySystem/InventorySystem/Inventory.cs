@@ -122,15 +122,17 @@ namespace Core.InventorySystem
         /// plusieurs, un exemplaire est détaché dans une case libre. Retourne l'index de la
         /// case améliorée, ou -1 si impossible (case vide / aucune case libre pour détacher).
         /// </summary>
-        public int SetUpgradeLevelAt(int index, int level)
+        public int SetUpgradeLevelAt(int index, int level,
+            Core.Village.ForgeElement element = Core.Village.ForgeElement.None)
         {
             if (index < 0 || index >= _slots.Length) return -1;
             ItemStack slot = _slots[index];
             if (slot == null || slot.IsEmpty) return -1;
 
+            if (element == Core.Village.ForgeElement.None) element = slot.ForgeElement;
             if (slot.Quantity <= 1)
             {
-                slot.SetUpgradeLevel(level);
+                slot.SetUpgradeLevel(level, element);
                 RaiseSlot(index);
                 OnChanged?.Invoke();
                 return index;
@@ -140,7 +142,7 @@ namespace Core.InventorySystem
             if (free < 0) return -1;
 
             slot.Remove(1);
-            _slots[free] = new ItemStack(slot.Definition, 1, level);
+            _slots[free] = new ItemStack(slot.Definition, 1, level, element);
             RaiseSlot(index);
             RaiseSlot(free);
             OnChanged?.Invoke();

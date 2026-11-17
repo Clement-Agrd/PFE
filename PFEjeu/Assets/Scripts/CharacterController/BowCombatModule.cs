@@ -341,18 +341,14 @@ namespace ProfessionalTPS
                     aimRange
                 );
 
-            float projectileSpeed =
-                Mathf.Lerp(
-                    minimumProjectileSpeed,
-                    maximumProjectileSpeed,
-                    charge
-                );
+            int level = Owner.ForgeLevel(CombatMode.Bow);
+            float projectileSpeed = GetProjectileSpeed(charge);
 
             int maximumDamage =
                 Owner.CalculateDamage(
                     EnumStats.StatTypes.PhysicDamage,
-                    baseDamage,
-                    physicDamageScaling
+                    baseDamage + Core.Village.ForgeDefinition.WeaponDamage(level),
+                    physicDamageScaling + Core.Village.ForgeDefinition.PhysicalScaling(level)
                 );
 
             float chargeDamageMultiplier =
@@ -411,6 +407,10 @@ namespace ProfessionalTPS
             );
         }
 
+        private float GetProjectileSpeed(float charge) =>
+            Mathf.Lerp(minimumProjectileSpeed, maximumProjectileSpeed, charge) *
+            Core.Village.ForgeDefinition.ArrowSpeed(Owner.ForgeLevel(CombatMode.Bow));
+
         private void UpdateTrajectoryPreview()
         {
             bool shouldShow =
@@ -453,12 +453,7 @@ namespace ProfessionalTPS
                     ? Charge01
                     : 0f;
 
-            float speed =
-                Mathf.Lerp(
-                    minimumProjectileSpeed,
-                    maximumProjectileSpeed,
-                    previewCharge
-                );
+            float speed = GetProjectileSpeed(previewCharge);
 
             int pointCount =
                 Mathf.Max(

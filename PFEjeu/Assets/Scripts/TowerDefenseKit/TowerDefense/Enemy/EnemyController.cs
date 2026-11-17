@@ -634,14 +634,7 @@ namespace Core.TowerDefense
                 ChangeToChase();
                 return;
             }
-            _finished = true;
-
-            ChangeState(
-                _finishedState,
-                true
-            );
-
-            Defeat();
+            // Le suivi s'est arrêté, mais l'ennemi reste vivant et détecte les cibles.
         }
 
         private void HandleDeath()

@@ -201,7 +201,7 @@ public class TowerShoot : MonoBehaviour
             {
                 if (this == null) return;
                 float radius = GetImpactRadius(profile);
-                Vector3 ground = FindImpactGround(position - Vector3.up * heightAboveFeet, out Vector3 normal);
+                Vector3 ground = TowerAreaImpact.FindGround(position - Vector3.up * heightAboveFeet, groundHits, out Vector3 normal);
                 if (profile.ImpactPrefab != null)
                 {
                     Quaternion rotation = Quaternion.FromToRotation(Vector3.forward, normal);
@@ -212,30 +212,6 @@ public class TowerShoot : MonoBehaviour
                 }
                 ApplyAreaDamage(ground, radius, finalDamage, profile);
             }, body);
-    }
-
-    private Vector3 FindImpactGround(Vector3 position, out Vector3 normal)
-    {
-        normal = Vector3.up;
-        Vector3 ground = position;
-        float closest = float.PositiveInfinity;
-        int groundLayer = LayerMask.NameToLayer("Ground");
-        int count = Physics.RaycastNonAlloc(position + Vector3.up * .65f, Vector3.down, groundHits, 15f,
-            LayerMask.GetMask("Ground", "Default"), QueryTriggerInteraction.Ignore);
-        for (int i = 0; i < count; i++)
-        {
-            RaycastHit hit = groundHits[i];
-            if (hit.distance >= closest || hit.normal.y < .35f) continue;
-            Collider surface = hit.collider;
-            bool levelSurface = surface.gameObject.layer == groundLayer || surface is TerrainCollider ||
-                (surface.attachedRigidbody == null && surface.GetComponentInParent<Health>() == null &&
-                    surface.GetComponentInParent<Core.Village.Building>() == null);
-            if (!levelSurface) continue;
-            closest = hit.distance;
-            ground = hit.point;
-            normal = hit.normal;
-        }
-        return ground;
     }
 
     private IEnumerator AreaDamageAfterDelay(Transform followTarget, Vector3 fallbackPosition, int finalDamage, float delay, SOTower profile)

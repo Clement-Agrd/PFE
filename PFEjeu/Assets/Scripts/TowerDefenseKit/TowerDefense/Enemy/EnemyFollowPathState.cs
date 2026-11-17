@@ -42,6 +42,8 @@ namespace Core.TowerDefense
                 return;
             }
 
+            if (_owner.PathFollower.ReachedEnd) return;
+
             _owner.PathFollower.Tick(
                 deltaTime
             );

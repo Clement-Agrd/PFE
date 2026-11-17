@@ -80,8 +80,12 @@ namespace Core.WaveSystem
 
         private bool _customWave;
 
-        private readonly List<GameObject> _spawned =
-            new();
+        private const float RecoveryCheckInterval = 1f;
+        private const float StrandedTimeout = 10f;
+        private const float BuriedDepth = 1.25f;
+        private readonly List<GameObject> _spawned = new();
+        private readonly Dictionary<GameObject, float> _strandedSince = new();
+        private float _nextRecoveryCheck;
 
 
         // ============================================================
@@ -174,6 +178,63 @@ namespace Core.WaveSystem
             BuildZoneLookup();
         }
 
+
+        private void Update()
+        {
+            float now = Time.time;
+            if (!_isWaveActive || _spawned.Count == 0 || Time.timeScale <= 0f || now < _nextRecoveryCheck)
+                return;
+
+            _nextRecoveryCheck = now + RecoveryCheckInterval;
+            var terrains = Terrain.activeTerrains;
+            for (int i = _spawned.Count - 1; i >= 0; i--)
+            {
+                var enemy = _spawned[i];
+                if (enemy == null)
+                {
+                    _strandedSince.Remove(enemy);
+                    _spawned.RemoveAt(i);
+                    _aliveCount--;
+                    continue;
+                }
+
+                if (!enemy.activeInHierarchy)
+                {
+                    if (enemy.TryGetComponent<IWaveEnemy>(out var inactive)) HandleDefeated(inactive);
+                    continue;
+                }
+
+                // A stationary enemy fighting or waiting at the end of its route is still valid.
+                if (!enemy.TryGetComponent<NavMeshAgent>(out var agent) ||
+                    (agent.isOnNavMesh && !IsBuried(enemy.transform.position, terrains)))
+                {
+                    _strandedSince.Remove(enemy);
+                    continue;
+                }
+
+                if (_strandedSince.TryAdd(enemy, now) || now - _strandedSince[enemy] < StrandedTimeout)
+                    continue;
+
+                if (enemy.TryGetComponent<EnemyController>(out var controller)) controller.Dismiss();
+                else if (enemy.TryGetComponent<NavEnemy>(out var legacy)) legacy.Dismiss();
+            }
+        }
+
+        private static bool IsBuried(Vector3 position, Terrain[] terrains)
+        {
+            foreach (var terrain in terrains)
+            {
+                Vector3 origin = terrain.transform.position;
+                Vector3 size = terrain.terrainData.size;
+                if (position.x < origin.x || position.x > origin.x + size.x ||
+                    position.z < origin.z || position.z > origin.z + size.z)
+                    continue;
+
+                if (position.y < origin.y + terrain.SampleHeight(position) - BuriedDepth)
+                    return true;
+            }
+            return false;
+        }
 
         private void BuildZoneLookup()
         {
@@ -294,9 +355,15 @@ namespace Core.WaveSystem
                 {
                     controller.Dismiss();
                 }
+                else if (enemy.TryGetComponent<NavEnemy>(out var legacy))
+                {
+                    legacy.Dismiss();
+                }
             }
 
             _spawned.Clear();
+            _strandedSince.Clear();
+            _nextRecoveryCheck = 0f;
 
             _aliveCount = 0;
             _isWaveActive = false;
@@ -682,25 +749,12 @@ namespace Core.WaveSystem
         private void HandleDefeated(
             IWaveEnemy enemy)
         {
-            if (enemy != null)
-            {
-                enemy.Defeated -=
-                    HandleDefeated;
+            if (enemy == null) return;
+            enemy.Defeated -= HandleDefeated;
+            if (enemy is not Component component || !_spawned.Remove(component.gameObject)) return;
 
-                if (enemy is Component component)
-                {
-                    _spawned.Remove(
-                        component.gameObject
-                    );
-                }
-            }
-
-
-            _aliveCount =
-                Mathf.Max(
-                    0,
-                    _aliveCount - 1
-                );
+            _strandedSince.Remove(component.gameObject);
+            _aliveCount--;
         }
     }
 }

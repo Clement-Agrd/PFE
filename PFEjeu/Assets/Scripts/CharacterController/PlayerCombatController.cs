@@ -130,6 +130,11 @@ namespace ProfessionalTPS
         /// 1.25 = +25 %
         /// 2 = deux fois plus rapide
         /// </summary>
+        private Core.EquipmentSystem.EquipmentUpgradeApplier _equipment;
+        public int ForgeLevel(CombatMode mode) => _equipment != null ? _equipment.LevelFor(mode) : 0;
+        public SOTower ForgeSpell => _equipment != null ? _equipment.Spell : null;
+        public GameObject SwordFinisher => _equipment != null ? _equipment.SwordFinisher : null;
+
         public float AttackSpeed
         {
             get
@@ -140,7 +145,8 @@ namespace ProfessionalTPS
                 return Mathf.Clamp(
                     stats.GetStat(
                         StatType.AttackSpeed
-                    ),
+                    ) * (CurrentMode is CombatMode.Melee or CombatMode.Bow
+                        ? Core.Village.ForgeDefinition.WeaponCadence(ForgeLevel(CurrentMode)) : 1f),
                     minimumAttackSpeed,
                     maximumAttackSpeed
                 );
@@ -152,6 +158,7 @@ namespace ProfessionalTPS
 
         private void Awake()
         {
+            _equipment = GetComponentInParent<Core.EquipmentSystem.EquipmentUpgradeApplier>();
             if (stats == null)
             {
                 stats =

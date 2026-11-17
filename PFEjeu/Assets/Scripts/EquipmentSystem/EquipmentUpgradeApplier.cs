@@ -18,6 +18,21 @@ namespace Core.EquipmentSystem
         [SerializeField] private ForgeDefinition forge;
 
         private Inventory _inventory;
+        private ItemStack _sword, _bow, _staff;
+        private readonly System.Collections.Generic.List<(ItemDefinition Item, int Level, int Quantity)> _applied = new();
+        private readonly System.Collections.Generic.List<(ItemDefinition Item, int Level, int Quantity)> _current = new();
+
+        public SOTower Spell => forge != null && _staff != null && _staff.UpgradeLevel >= ForgeDefinition.ElementLevel
+            ? forge.GetSpell(_staff.ForgeElement) : null;
+        public GameObject SwordFinisher => forge != null ? forge.SwordFinisher : null;
+
+        public int LevelFor(ProfessionalTPS.CombatMode mode) => mode switch
+        {
+            ProfessionalTPS.CombatMode.Melee => _sword?.UpgradeLevel ?? 0,
+            ProfessionalTPS.CombatMode.Bow => _bow?.UpgradeLevel ?? 0,
+            ProfessionalTPS.CombatMode.Magic => _staff?.UpgradeLevel ?? 0,
+            _ => 0
+        };
 
         private void Start()
         {
@@ -37,20 +52,35 @@ namespace Core.EquipmentSystem
 
         private void Rebuild()
         {
-            stats.RemoveModifiersFromSource(this);
-
+            _sword = _bow = _staff = null;
+            _current.Clear();
             for (int i = 0; i < _inventory.Capacity; i++)
             {
                 ItemStack stack = _inventory.GetSlot(i);
-                if (stack == null || stack.IsEmpty || stack.UpgradeLevel <= 0) continue;
+                if (stack == null || stack.IsEmpty) continue;
+                var item = stack.Definition;
+                if (item == forge.GetWeapon(ProfessionalTPS.CombatMode.Melee)) KeepBest(ref _sword, stack);
+                else if (item == forge.GetWeapon(ProfessionalTPS.CombatMode.Bow)) KeepBest(ref _bow, stack);
+                else if (item == forge.GetWeapon(ProfessionalTPS.CombatMode.Magic)) KeepBest(ref _staff, stack);
+                else if (stack.UpgradeLevel > 0 && forge.GetRules(item.Category)?.appliesToPlayerStats == true)
+                    _current.Add((item, stack.UpgradeLevel, stack.Quantity));
+            }
 
-                ForgeCategoryRules rules = forge.GetRules(stack.Definition.Category);
-                if (rules == null || !rules.appliesToPlayerStats || rules.bonuses == null) continue;
-
-                foreach (UpgradeBonus bonus in rules.bonuses)
-                    stats.AddModifier(bonus.stat, bonus.valuePerLevel * stack.UpgradeLevel * stack.Quantity,
+            if (System.Linq.Enumerable.SequenceEqual(_current, _applied)) return;
+            stats.RemoveModifiersFromSource(this);
+            _applied.Clear();
+            _applied.AddRange(_current);
+            foreach (var stack in _applied)
+            {
+                foreach (var bonus in forge.GetBonuses(stack.Item))
+                    stats.AddModifier(bonus.stat, bonus.valuePerLevel * stack.Level * stack.Quantity,
                         bonus.modifierType, this);
             }
+        }
+
+        private static void KeepBest(ref ItemStack best, ItemStack candidate)
+        {
+            if (best == null || candidate.UpgradeLevel > best.UpgradeLevel) best = candidate;
         }
     }
 }

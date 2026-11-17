@@ -145,7 +145,7 @@ namespace Core.InventorySystem.UI
             ForgeDefinition def = f != null ? f.Definition : null;
             if (def == null || !def.IsUpgradable(stack.Definition)) return;
 
-            ForgeCategoryRules rules = def.GetRules(stack.Definition.Category);
+            var bonuses = def.GetBonuses(stack.Definition);
             int level = stack.UpgradeLevel;
             int max = def.AbsoluteMaxLevel;
             int unlocked = def.GetMaxItemLevel(f.ForgeLevel);
@@ -154,20 +154,23 @@ namespace Core.InventorySystem.UI
             sb.Append($"\nNiveau : <b>+{level}</b> / +{max}");
             sb.Append(Colored($"   (Forge niv. {f.ForgeLevel} : jusqu'à +{unlocked})", mutedColor));
 
-            if (rules.bonuses != null && rules.bonuses.Length > 0)
+            if (bonuses.Length > 0)
             {
                 sb.Append("\n\nBonus actuel :");
                 if (level == 0) sb.Append('\n').Append(Colored("Aucun (non amélioré)", mutedColor));
-                foreach (UpgradeBonus b in rules.bonuses)
+                foreach (UpgradeBonus b in bonuses)
                     if (level > 0) sb.Append('\n').Append(Line(b.stat, b.valuePerLevel * level, b.modifierType));
 
                 sb.Append("\n\nPar niveau :");
-                foreach (UpgradeBonus b in rules.bonuses)
+                foreach (UpgradeBonus b in bonuses)
                     sb.Append('\n').Append(Line(b.stat, b.valuePerLevel, b.modifierType));
 
-                if (!rules.appliesToPlayerStats)
+                if (def.GetRules(stack.Definition.Category)?.appliesToPlayerStats == false)
                     sb.Append('\n').Append(Colored("Bonus appliqué par le piège lui-même, pas au joueur.", mutedColor));
             }
+
+            if (def.IsPlayerWeapon(stack.Definition))
+                sb.Append("\n\n").Append(Core.Village.UI.ForgePanelUI.BuildItemPreview(def, stack, level >= max));
 
             if (level >= max)
             {
@@ -177,8 +180,8 @@ namespace Core.InventorySystem.UI
 
             int next = level + 1;
             sb.Append($"\n\n<b>Prochain niveau : +{next}</b>");
-            if (rules.bonuses != null)
-                foreach (UpgradeBonus b in rules.bonuses)
+            if (bonuses.Length > 0)
+                foreach (UpgradeBonus b in bonuses)
                     sb.Append('\n').Append(Line(b.stat, b.valuePerLevel * next, b.modifierType))
                       .Append(Colored($"  (actuel : {Value(b.valuePerLevel * level, b.modifierType)})", mutedColor));
 

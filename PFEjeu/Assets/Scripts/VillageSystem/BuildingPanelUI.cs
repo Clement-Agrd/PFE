@@ -183,6 +183,9 @@ namespace Core.Village.UI
                 tower.Show();
                 return;
             }
+            if (building != null && building.TryGetComponent<Core.BarracksSystem.Barracks>(out var barracks) &&
+                barracks.ShowFromMap(villageView)) return;
+
             // Ces services proposent leur propre bouton d'amélioration.
             if (building != null && (building.GetComponent<Core.TavernSystem.Tavern>() != null ||
                 building.GetComponent<Core.Village.Exploration.ExplorationPostTrigger>() != null || building.GetComponent<Core.Village.RecruitmentCamp>() != null)) { Hide(); return; }
@@ -335,7 +338,7 @@ namespace Core.Village.UI
                 if (_statsPreview == null)
                 {
                     _statsPreview = new Core.BarracksSystem.BarracksStatsPreview(panel.transform.parent, "UpgradeStatsPreview");
-                    _statsPreview.Root.sizeDelta = new Vector2(730, 740);
+                    _statsPreview.Root.sizeDelta = Core.BarracksSystem.BarracksStatsPreview.CardSize;
                 }
                 _statsPreview.Root.gameObject.SetActive(true);
                 _statsPreview.Root.anchorMin = _statsPreview.Root.anchorMax = new Vector2(1f, .5f);
