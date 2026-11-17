@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e29ebab6caa9d434d86f6b33571f5c43, type: 3}
+  m_Name: DisputeAuConseil
+  m_EditorClassIdentifier: Assembly-CSharp::Core.VillageEvents.VillageEventDefinition
+  title: Dispute au conseil
+  flavorText: "Les b\xE2tisseurs et les guerriers s'invectivent devant l'H\xF4tel de ville. L'un des deux camps partira vex\xE9."
+  flavorVariants: []
+  conditions:
+    minTownHallLevel: 2
+    wallsBelowPercent: 0
+    stockItem: {fileID: 0}
+    stockBelow: 0
+    requiredBuildings: []
+    requiredBuildingMinLevel: 0
+    minNight: 0
+    maxNight: 0
+    minCorruptionTier: 0
+    minBuildingCount: 3
+    minHeroes: 0
+    wallsAbovePercent: 0
+    stockAboveItem: {fileID: 0}
+    stockAbove: 0
+    maxCorruptionTier: 0
+  weight: 1
+  cooldownNights: 5
+  unique: 0
+  choices:
+  - label: "Donner raison aux b\xE2tisseurs"
+    isFreeOption: 0
+    effects:
+    - type: 4
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 0
+    - type: 3
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 1
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Donner raison aux guerriers
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: d66055f6e968a644e869eb2d09fdd3be, type: 2}
+      building: {fileID: 0}
+      amount: -30
+      randomBuilding: 0
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: -15
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Faire payer les deux camps
+    isFreeOption: 0
+    effects:
+    - type: 7
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 0
+    - type: 0
+      item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
+      building: {fileID: 0}
+      amount: 30
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: "Ajourner la s\xE9ance"
+    isFreeOption: 1
+    effects:
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 10
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2

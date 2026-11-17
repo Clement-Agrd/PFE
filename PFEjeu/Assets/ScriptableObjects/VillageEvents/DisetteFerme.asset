@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Core.VillageEvents.VillageEventDefinition
   title: "Disette \xE0 la Ferme"
   flavorText: Les greniers sonnent creux. Les enfants mangent moins que les guerriers, et tout le monde le voit.
+  flavorVariants: []
   conditions:
     minTownHallLevel: 0
     wallsBelowPercent: 0
@@ -26,6 +27,12 @@ MonoBehaviour:
     minNight: 0
     maxNight: 0
     minCorruptionTier: 0
+    minBuildingCount: 0
+    minHeroes: 0
+    wallsAbovePercent: 0
+    stockAboveItem: {fileID: 0}
+    stockAbove: 0
+    maxCorruptionTier: 0
   weight: 1
   cooldownNights: 3
   unique: 0
@@ -37,10 +44,12 @@ MonoBehaviour:
       item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
       building: {fileID: 0}
       amount: 30
+      randomBuilding: 0
     - type: 2
       item: {fileID: 0}
       building: {fileID: 11400000, guid: db9a2b72a2adf524a9859f5f65bcd701, type: 2}
       amount: 1
+      randomBuilding: 0
     followUp: {fileID: 0}
     followUpDelayNights: 2
   - label: Battue de chasse
@@ -50,10 +59,12 @@ MonoBehaviour:
       item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
       building: {fileID: 0}
       amount: 40
+      randomBuilding: 0
     - type: 4
       item: {fileID: 0}
       building: {fileID: 0}
       amount: 1
+      randomBuilding: 0
     followUp: {fileID: 0}
     followUpDelayNights: 2
   - label: Ne rien changer
@@ -63,5 +74,6 @@ MonoBehaviour:
       item: {fileID: 0}
       building: {fileID: 0}
       amount: 10
+      randomBuilding: 0
     followUp: {fileID: 0}
     followUpDelayNights: 2

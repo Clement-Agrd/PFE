@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e29ebab6caa9d434d86f6b33571f5c43, type: 3}
+  m_Name: RituelVacille
+  m_EditorClassIdentifier: Assembly-CSharp::Core.VillageEvents.VillageEventDefinition
+  title: Le rituel vacille
+  flavorText: "Les symboles grav\xE9s au sol saignent une lumi\xE8re p\xE2le. Quelqu'un doit d\xE9cider du prix de la suite."
+  flavorVariants: []
+  conditions:
+    minTownHallLevel: 0
+    wallsBelowPercent: 0
+    stockItem: {fileID: 0}
+    stockBelow: 0
+    requiredBuildings: []
+    requiredBuildingMinLevel: 0
+    minNight: 6
+    maxNight: 0
+    minCorruptionTier: 1
+    minBuildingCount: 0
+    minHeroes: 0
+    wallsAbovePercent: 0
+    stockAboveItem: {fileID: 0}
+    stockAbove: 0
+    maxCorruptionTier: 0
+  weight: 1.4
+  cooldownNights: 4
+  unique: 0
+  choices:
+  - label: Offrir un sacrifice de vivres
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+      building: {fileID: 0}
+      amount: -50
+      randomBuilding: 0
+    - type: 7
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: -1
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Forcer le rythme
+    isFreeOption: 0
+    effects:
+    - type: 7
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 0
+    - type: 5
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 2
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Laisser le village se reposer
+    isFreeOption: 0
+    effects:
+    - type: 4
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 0
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: -20
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Ne rien toucher
+    isFreeOption: 1
+    effects:
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 20
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2

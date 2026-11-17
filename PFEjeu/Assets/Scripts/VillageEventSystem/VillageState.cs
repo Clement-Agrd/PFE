@@ -46,7 +46,8 @@ namespace Core.VillageEvents
 
         public void AddNextNightEnemyBonus(int percent)
         {
-            PendingEnemyBonusPercent = Mathf.Max(0, PendingEnemyBonusPercent + percent);
+            // Négatif = ennemis affaiblis la nuit suivante (gain), borné pour ne jamais les rendre triviaux.
+            PendingEnemyBonusPercent = Mathf.Clamp(PendingEnemyBonusPercent + percent, -50, 300);
             OnChanged?.Invoke();
         }
 

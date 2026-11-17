@@ -35,6 +35,15 @@ namespace Core.VillageEvents
         [Tooltip("Anti-snowball : un choix qui donne cette ressource est bloqué si le stock la dépasse déjà.")]
         [SerializeField, Min(1)] private int resourceStockCap = 500;
 
+        [Header("Aléatoire")]
+        [Tooltip("Probabilité (%) qu'un événement survienne après une vague. 100 = à chaque fois.")]
+        [SerializeField, Range(0, 100)] private int eventChancePercent = 100;
+        [Tooltip("Variation aléatoire (± %) appliquée aux montants (ressources, remparts, ennemis) à chaque apparition.")]
+        [SerializeField, Range(0, 50)] private int amountJitterPercent = 15;
+        [Tooltip("Les événements ciblés sur la situation du village (remparts bas, stock vide, bâtiment précis…) " +
+                 "sont plus probables : poids × (1 + bonus × nombre de conditions de situation).")]
+        [SerializeField, Min(0f)] private float situationBonusPerCondition = 0.5f;
+
         private struct Scheduled { public VillageEventDefinition def; public int dueNight; }
 
         private readonly Dictionary<VillageEventDefinition, int> _lastSeenNight = new();
@@ -62,7 +71,10 @@ namespace Core.VillageEvents
         {
             if (waveSpawner == null) return;
             waveSpawner.OnWaveStarted += HandleWaveStarted;
-            waveSpawner.OnAllWavesCompleted += HandleNightEnded;
+            // OnDefenseCompleted = "la défense est finie, retour au village" : c'est le signal utilisé par le reste
+            // du jeu (exploration, production, herse…). Il part après CHAQUE vague quand le village s'intercale,
+            // et à la fin de toutes les vagues sinon. (OnAllWavesCompleted ne part qu'à la toute dernière vague.)
+            waveSpawner.OnDefenseCompleted += HandleNightEnded;
             waveSpawner.OnEnemySpawned += HandleEnemySpawned;
         }
 
@@ -70,7 +82,7 @@ namespace Core.VillageEvents
         {
             if (waveSpawner == null) return;
             waveSpawner.OnWaveStarted -= HandleWaveStarted;
-            waveSpawner.OnAllWavesCompleted -= HandleNightEnded;
+            waveSpawner.OnDefenseCompleted -= HandleNightEnded;
             waveSpawner.OnEnemySpawned -= HandleEnemySpawned;
         }
 
@@ -86,7 +98,7 @@ namespace Core.VillageEvents
         private void HandleEnemySpawned(GameObject enemy, SpawnZone zone)
         {
             int bonus = state.ActiveEnemyBonusPercent;
-            if (bonus > 0) StartCoroutine(BuffEnemyNextFrame(enemy, bonus));
+            if (bonus != 0) StartCoroutine(BuffEnemyNextFrame(enemy, bonus));
         }
 
         // Le spawner initialise l'ennemi après l'événement : on attend une frame pour ne pas être écrasé.
@@ -94,7 +106,7 @@ namespace Core.VillageEvents
         {
             yield return null;
             if (enemy == null || !enemy.TryGetComponent(out Health health)) yield break;
-            health.SetMaxHealth(Mathf.RoundToInt(health.MaxHealth * (1f + percent / 100f)), true);
+            health.SetMaxHealth(Mathf.Max(1, Mathf.RoundToInt(health.MaxHealth * (1f + percent / 100f))), true);
         }
 
         private void HandleNightEnded()
@@ -109,6 +121,9 @@ namespace Core.VillageEvents
         private IEnumerator ShowEventAfterDelay()
         {
             yield return new WaitForSecondsRealtime(delayAfterDefense);
+            if (ui != null && ui.IsOpen) yield break; // un dilemme est déjà à l'écran
+            // Une suite différée arrivée à échéance n'est jamais perdue au jet de dé.
+            if (!HasDueFollowUp() && Random.value * 100f >= eventChancePercent) yield break;
             VillageEventDefinition def = PickEvent();
             if (def != null) Present(def);
         }
@@ -131,14 +146,25 @@ namespace Core.VillageEvents
             List<VillageEventDefinition> pool = catalog.Where(IsEligible).ToList();
             if (pool.Count == 0) return null;
 
-            float total = pool.Sum(e => e.Weight);
+            float total = pool.Sum(EffectiveWeight);
             float roll = Random.value * total;
             foreach (VillageEventDefinition e in pool)
             {
-                roll -= e.Weight;
+                roll -= EffectiveWeight(e);
                 if (roll <= 0f) return e;
             }
             return pool[^1];
+        }
+
+        /// <summary>Poids de tirage : plus un événement colle précisément à la situation du village, plus il est probable.</summary>
+        private float EffectiveWeight(VillageEventDefinition e)
+            => e.Weight * (1f + situationBonusPerCondition * e.Conditions.Specificity);
+
+        private bool HasDueFollowUp()
+        {
+            foreach (Scheduled s in _scheduled)
+                if (s.dueNight <= _nightIndex && s.def != null) return true;
+            return false;
         }
 
         private bool IsEligible(VillageEventDefinition e)
@@ -176,6 +202,21 @@ namespace Core.VillageEvents
                 }
             }
 
+            if (c.wallsAbovePercent > 0)
+            {
+                if (playerBase == null || WallPercent() <= c.wallsAbovePercent) return false;
+            }
+
+            if (c.stockAboveItem != null && c.stockAbove > 0)
+            {
+                if (villageManager == null || villageManager.HdvInventory == null) return false;
+                if (villageManager.HdvInventory.Count(c.stockAboveItem) <= c.stockAbove) return false;
+            }
+
+            if (c.minBuildingCount > 0 && FindObjectsByType<Building>(FindObjectsSortMode.None).Length < c.minBuildingCount) return false;
+            if (c.minHeroes > 0 && (explorationManager == null || explorationManager.HeroRoster.Count < c.minHeroes)) return false;
+            if (c.maxCorruptionTier > 0 && state.CorruptionTier > c.maxCorruptionTier) return false;
+
             if (state.RitualNight < c.minNight) return false;
             if (c.maxNight > 0 && state.RitualNight > c.maxNight) return false;
             if (state.CorruptionTier < c.minCorruptionTier) return false;
@@ -196,31 +237,75 @@ namespace Core.VillageEvents
             _lastSeenNight[def] = _nightIndex;
             if (def.Unique) _usedUnique.Add(def);
 
-            float mult = EscalationMultiplier;
+            // Les effets sont "résolus" une seule fois à l'apparition (bâtiment aléatoire, variation des montants) :
+            // ce que le joueur lit est exactement ce qui sera appliqué.
+            float baseMult = EscalationMultiplier;
+            _resolved = new List<ResolvedEffect>[def.Choices.Count];
             var views = new List<VillageEventUI.ChoiceView>();
-            foreach (EventChoice choice in def.Choices)
+            for (int i = 0; i < def.Choices.Count; i++)
             {
-                string reason = BlockReason(choice, mult);
+                EventChoice choice = def.Choices[i];
+                _resolved[i] = ResolveChoice(choice, baseMult, out string unresolvable);
+                string reason = unresolvable ?? BlockReason(_resolved[i]);
                 views.Add(new VillageEventUI.ChoiceView
                 {
                     label = choice.label,
-                    effects = choice.effects == null
-                        ? new List<(string, bool)>()
-                        : choice.effects.Select(e => (e.Describe(mult), e.IsCost)).ToList(),
+                    effects = _resolved[i].Select(r => (r.effect.Describe(r.mult), r.effect.IsCost)).ToList(),
                     hasFollowUp = choice.followUp != null,
                     blockedReason = reason
                 });
             }
 
-            ui.Show(def.Title, def.FlavorText, state.RitualNight, views, index => Resolve(def.Choices[index]));
+            ui.Show(def.Title, def.PickFlavor(), state.RitualNight, views, index => Resolve(def.Choices[index], index));
         }
 
-        private string BlockReason(EventChoice choice, float mult)
+        private struct ResolvedEffect { public EventEffect effect; public float mult; }
+        private List<ResolvedEffect>[] _resolved;
+
+        private List<ResolvedEffect> ResolveChoice(EventChoice choice, float baseMult, out string unresolvable)
         {
-            if (choice.effects == null) return null;
-            foreach (EventEffect e in choice.effects)
+            unresolvable = null;
+            var list = new List<ResolvedEffect>();
+            if (choice.effects == null) return list;
+
+            float j = amountJitterPercent / 100f;
+            foreach (EventEffect src in choice.effects)
             {
-                int amount = e.Scaled(mult);
+                EventEffect e = src;
+
+                if (e.randomBuilding && (e.type == EffectType.BuildingDowntime || e.type == EffectType.BuildingLevelUp))
+                {
+                    Building pick = PickRandomBuilding(e.type == EffectType.BuildingLevelUp);
+                    if (pick == null) { unresolvable = "Aucun bâtiment concerné."; continue; }
+                    e.building = pick.Definition;
+                }
+
+                float mult = baseMult;
+                if (j > 0f && e.type is EffectType.Resource or EffectType.WallRepair or EffectType.NextNightEnemies)
+                    mult *= 1f + Random.Range(-j, j);
+
+                list.Add(new ResolvedEffect { effect = e, mult = mult });
+            }
+            return list;
+        }
+
+        /// <summary>Bâtiment tiré au hasard (hors hôtel de ville) : améliorable pour un gain, disponible pour un coût.</summary>
+        private Building PickRandomBuilding(bool forLevelUp)
+        {
+            var candidates = FindObjectsByType<Building>(FindObjectsSortMode.None)
+                .Where(b => b.Definition != null
+                            && (villageManager == null || !villageManager.IsTownHall(b))
+                            && (forLevelUp ? !b.IsMaxLevel : b.IsAvailable))
+                .ToList();
+            return candidates.Count == 0 ? null : candidates[Random.Range(0, candidates.Count)];
+        }
+
+        private string BlockReason(List<ResolvedEffect> effects)
+        {
+            foreach (ResolvedEffect r in effects)
+            {
+                EventEffect e = r.effect;
+                int amount = e.Scaled(r.mult);
                 switch (e.type)
                 {
                     case EffectType.Resource when e.item != null && villageManager != null && villageManager.HdvInventory != null:
@@ -240,11 +325,10 @@ namespace Core.VillageEvents
 
         // ------------------------------------------------------------ résolution
 
-        private void Resolve(EventChoice choice)
+        private void Resolve(EventChoice choice, int index)
         {
-            float mult = EscalationMultiplier;
-            if (choice.effects != null)
-                foreach (EventEffect e in choice.effects) Apply(e, mult);
+            if (_resolved != null && index >= 0 && index < _resolved.Length)
+                foreach (ResolvedEffect r in _resolved[index]) Apply(r.effect, r.mult);
 
             if (choice.followUp != null)
                 _scheduled.Add(new Scheduled { def = choice.followUp, dueNight = _nightIndex + choice.followUpDelayNights });
@@ -303,6 +387,26 @@ namespace Core.VillageEvents
         public PlayerBase Base => playerBase;
         public VillageManager Village => villageManager;
         public int NightIndex => _nightIndex;
+
+        public bool IsEventOpen => ui != null && ui.IsOpen;
+
+        /// <summary>
+        /// Présente un événement au hasard (bouton de test). Sans 'ignoreConditions', tire parmi les fiches admissibles ;
+        /// s'il n'y en a aucune, retombe sur le catalogue entier pour ne jamais rester sans réaction.
+        /// </summary>
+        public void DebugPresentRandom(bool ignoreConditions)
+        {
+            if (IsEventOpen) return;
+            VillageEventDefinition def = null;
+            if (!ignoreConditions) def = PickEvent();
+            if (def == null)
+            {
+                var all = catalog.Where(e => e != null).ToList();
+                if (all.Count == 0) { Debug.LogWarning("[VillageEvents] Catalogue vide."); return; }
+                def = all[Random.Range(0, all.Count)];
+            }
+            Present(def);
+        }
 
         /// <summary>Force l'affichage d'un événement précis (ignore conditions et cooldown).</summary>
         public void DebugForce(VillageEventDefinition def) => Present(def);

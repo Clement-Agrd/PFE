@@ -189,8 +189,13 @@ namespace Core.TowerDefense
             }
         }
 
+        // Registre statique des ennemis actifs (évite les FindObjectsByType, ex. minimap).
+        private static readonly System.Collections.Generic.List<EnemyController> s_active = new();
+        public static System.Collections.Generic.IReadOnlyList<EnemyController> Active => s_active;
+
         private void OnEnable()
         {
+            s_active.Add(this);
             if (_restoreAgentOnEnable && _agent != null) _agent.enabled = true;
             _restoreAgentOnEnable = false;
             foreach (var collider in _fallbackHitboxes)
@@ -211,6 +216,7 @@ namespace Core.TowerDefense
 
         private void OnDisable()
         {
+            s_active.Remove(this);
             if (_health != null)
             {
                 _health.OnDeath -=

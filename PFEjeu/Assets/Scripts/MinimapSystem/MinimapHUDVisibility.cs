@@ -58,8 +58,7 @@ namespace Core.Minimap
             }
 
             var sys = MinimapSystem.Instance;
-            if (sys != null && sys.MiniCamera != null)
-                sys.MiniCamera.enabled = _alpha > 0.01f;
+            if (sys != null) sys.SetMiniVisible(_alpha > 0.01f);
         }
     }
 }

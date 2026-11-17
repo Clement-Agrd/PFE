@@ -28,6 +28,8 @@ namespace Core.VillageEvents
         public ItemDefinition item;
         public BuildingDefinition building;
         public int amount;
+        [Tooltip("Pour BuildingDowntime / BuildingLevelUp : le bâtiment touché est tiré au hasard parmi ceux du village (ignore 'building').")]
+        public bool randomBuilding;
 
         public EventAxis Axis => type switch
         {
@@ -110,6 +112,36 @@ namespace Core.VillageEvents
         [Tooltip("0 = pas de plafond.")]
         [Min(0)] public int maxNight;
         [Min(0)] public int minCorruptionTier;
+
+        [Header("Avancée du village (0 = ignoré)")]
+        [Tooltip("Nombre minimum de bâtiments construits dans le village.")]
+        [Min(0)] public int minBuildingCount;
+        [Tooltip("Nombre minimum de héros recrutés.")]
+        [Min(0)] public int minHeroes;
+        [Tooltip("N'apparaît que si l'intégrité des remparts est AU-DESSUS de ce % (remparts en bonne santé).")]
+        [Range(0, 100)] public int wallsAbovePercent;
+        [Tooltip("Optionnel : n'apparaît que si ce stock est AU-DESSUS du seuil (abondance).")]
+        public ItemDefinition stockAboveItem;
+        [Min(0)] public int stockAbove;
+        [Tooltip("0 = ignoré. Sinon l'événement n'apparaît que si le palier de corruption est ≤ cette valeur.")]
+        [Min(0)] public int maxCorruptionTier;
+
+        /// <summary>Nombre de contraintes "de situation" actives : plus il y en a, plus l'événement est ciblé.</summary>
+        public int Specificity
+        {
+            get
+            {
+                int n = 0;
+                if (wallsBelowPercent > 0) n++;
+                if (wallsAbovePercent > 0) n++;
+                if (stockItem != null && stockBelow > 0) n++;
+                if (stockAboveItem != null && stockAbove > 0) n++;
+                if (requiredBuildings != null && requiredBuildings.Length > 0) n++;
+                if (minCorruptionTier > 0 || maxCorruptionTier > 0) n++;
+                if (minBuildingCount > 0 || minHeroes > 0 || minTownHallLevel > 0) n++;
+                return n;
+            }
+        }
     }
 
     /// <summary>
@@ -122,6 +154,8 @@ namespace Core.VillageEvents
         [Header("Identité")]
         [SerializeField] private string title = "Événement";
         [SerializeField, TextArea(2, 5)] private string flavorText;
+        [Tooltip("Variantes du texte d'ambiance : une est tirée au hasard à chaque apparition (le texte ci-dessus reste une des variantes).")]
+        [SerializeField, TextArea(2, 5)] private string[] flavorVariants;
 
         [Header("Conditions")]
         [SerializeField] private EventConditions conditions = new();
@@ -137,6 +171,15 @@ namespace Core.VillageEvents
 
         public string Title => title;
         public string FlavorText => flavorText;
+
+        /// <summary>Texte d'ambiance tiré au hasard parmi le texte principal et ses variantes.</summary>
+        public string PickFlavor()
+        {
+            if (flavorVariants == null || flavorVariants.Length == 0) return flavorText;
+            int i = UnityEngine.Random.Range(0, flavorVariants.Length + 1);
+            return i == 0 || string.IsNullOrWhiteSpace(flavorVariants[i - 1]) ? flavorText : flavorVariants[i - 1];
+        }
+
         public EventConditions Conditions => conditions;
         public float Weight => weight;
         public int CooldownNights => cooldownNights;
@@ -146,10 +189,11 @@ namespace Core.VillageEvents
 #if UNITY_EDITOR
         /// <summary>Remplit la fiche par code (générateur d'exemples de l'éditeur).</summary>
         public void EditorSetup(string newTitle, string flavor, float newWeight, int cooldown, bool isUnique,
-            EventConditions newConditions, EventChoice[] newChoices)
+            EventConditions newConditions, EventChoice[] newChoices, string[] variants = null)
         {
             title = newTitle;
             flavorText = flavor;
+            flavorVariants = variants;
             weight = newWeight;
             cooldownNights = cooldown;
             unique = isUnique;

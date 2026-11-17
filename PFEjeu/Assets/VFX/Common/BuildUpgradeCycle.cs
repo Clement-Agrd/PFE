@@ -16,6 +16,13 @@ namespace VFXCycle
 
         IEnumerator Start()
         {
+            if (build == null) build = GetComponentInChildren<BuildSite>(true);
+            if (build == null || upgrade == null || levels == null || levels.Length == 0)
+            {
+                Debug.LogWarning("[BuildUpgradeCycle] build / upgrade / levels non assignés : cycle désactivé.", this);
+                yield break;
+            }
+
             yield return new WaitForSeconds(startDelay);
             while (true)
             {

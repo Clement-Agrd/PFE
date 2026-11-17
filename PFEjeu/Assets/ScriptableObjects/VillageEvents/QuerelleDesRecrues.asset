@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e29ebab6caa9d434d86f6b33571f5c43, type: 3}
+  m_Name: QuerelleDesRecrues
+  m_EditorClassIdentifier: Assembly-CSharp::Core.VillageEvents.VillageEventDefinition
+  title: Les recrues se querellent
+  flavorText: "Au Camp d'entra\xEEnement, deux escouades en sont venues aux poings. Les sergents attendent un verdict."
+  flavorVariants: []
+  conditions:
+    minTownHallLevel: 0
+    wallsBelowPercent: 0
+    stockItem: {fileID: 0}
+    stockBelow: 0
+    requiredBuildings:
+    - {fileID: 11400000, guid: 4555f76ff95f69a4b9580710ea27a343, type: 2}
+    requiredBuildingMinLevel: 0
+    minNight: 3
+    maxNight: 0
+    minCorruptionTier: 0
+    minBuildingCount: 0
+    minHeroes: 0
+    wallsAbovePercent: 0
+    stockAboveItem: {fileID: 0}
+    stockAbove: 0
+    maxCorruptionTier: 0
+  weight: 1
+  cooldownNights: 4
+  unique: 0
+  choices:
+  - label: "Man\u0153uvres communes jusqu'\xE0 l'aube"
+    isFreeOption: 0
+    effects:
+    - type: 4
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 0
+    - type: 3
+      item: {fileID: 0}
+      building: {fileID: 11400000, guid: 4555f76ff95f69a4b9580710ea27a343, type: 2}
+      amount: 1
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Punir les meneurs
+    isFreeOption: 0
+    effects:
+    - type: 2
+      item: {fileID: 0}
+      building: {fileID: 11400000, guid: 4555f76ff95f69a4b9580710ea27a343, type: 2}
+      amount: 1
+      randomBuilding: 0
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: -15
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: Offrir un repas aux deux escouades
+    isFreeOption: 0
+    effects:
+    - type: 0
+      item: {fileID: 11400000, guid: 81f3a7c19c8f5664986be54b298b3f11, type: 2}
+      building: {fileID: 0}
+      amount: -30
+      randomBuilding: 0
+    - type: 5
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 1
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2
+  - label: "Les laisser r\xE9gler \xE7a"
+    isFreeOption: 1
+    effects:
+    - type: 6
+      item: {fileID: 0}
+      building: {fileID: 0}
+      amount: 10
+      randomBuilding: 0
+    followUp: {fileID: 0}
+    followUpDelayNights: 2

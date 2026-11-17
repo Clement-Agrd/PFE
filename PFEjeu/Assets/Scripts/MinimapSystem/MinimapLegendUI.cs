@@ -24,7 +24,17 @@ namespace Core.Minimap
             Refresh();
         }
 
-        private void Update() => Refresh();
+        private readonly HashSet<MarkerType> _present = new();
+        private float _nextRefresh;
+        private int _lastEnemyCount = -1;
+
+        private void Update()
+        {
+            // La légende n'a pas besoin d'être rafraîchie à chaque frame.
+            if (Time.unscaledTime < _nextRefresh) return;
+            _nextRefresh = Time.unscaledTime + 0.25f;
+            Refresh();
+        }
 
         private void Build()
         {
@@ -68,23 +78,35 @@ namespace Core.Minimap
         private void Refresh()
         {
             if (!_built) return;
-            var present = new HashSet<MarkerType> { MarkerType.Player, MarkerType.Enemy };
-            foreach (var m in MinimapMarker.All) present.Add(m.Type);
+            _present.Clear();
+            _present.Add(MarkerType.Player);
+            _present.Add(MarkerType.Enemy);
+            var all = MinimapMarker.All;
+            for (int i = 0; i < all.Count; i++) _present.Add(all[i].Type);
 
             foreach (var kv in _labels)
             {
-                bool show = present.Contains(kv.Key);
-                kv.Value.transform.parent.gameObject.SetActive(show);
+                bool show = _present.Contains(kv.Key);
+                var rowGo = kv.Value.transform.parent.gameObject;
+                if (rowGo.activeSelf != show) rowGo.SetActive(show);
                 if (!show) continue;
 
-                string text = MarkerStyle.LegendOf(kv.Key);
+                // Les libellés fixes ne changent jamais : on ne touche qu'à celui des ennemis, et seulement
+                // quand leur nombre change (évite de réallouer une string à chaque rafraîchissement).
                 if (kv.Key == MarkerType.Enemy)
                 {
                     var sys = MinimapSystem.Instance;
                     int n = sys != null ? sys.Enemies.Count : 0;
-                    text += $"  ({n})";
+                    if (n != _lastEnemyCount)
+                    {
+                        _lastEnemyCount = n;
+                        kv.Value.text = $"{MarkerStyle.LegendOf(kv.Key)}  ({n})";
+                    }
                 }
-                if (kv.Value.text != text) kv.Value.text = text;
+                else if (string.IsNullOrEmpty(kv.Value.text))
+                {
+                    kv.Value.text = MarkerStyle.LegendOf(kv.Key);
+                }
             }
         }
     }

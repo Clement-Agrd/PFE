@@ -55,6 +55,7 @@ namespace Core.Minimap
         private float _zoom = 1f;
         private Vector2 _pan;
         private bool _renderRequested;
+        private int _lastStamp = -1;
 
         public ViewMode Mode => mode;
         public float Zoom => _zoom;
@@ -67,6 +68,7 @@ namespace Core.Minimap
 
         private void OnEnable()
         {
+            _lastStamp = -1; // force un recalcul des icônes à la réouverture
             if (mode == ViewMode.World) RequestRender(true);
         }
 
@@ -91,18 +93,25 @@ namespace Core.Minimap
             // La grande carte peut s'activer avant que le système existe.
             if (mode == ViewMode.World && !_renderRequested) RequestRender(true);
 
-            Camera cam = mode == ViewMode.Mini ? sys.MiniCamera : sys.WorldCamera;
-            if (cam == null) return;
+            if (sys.WorldTexture == null) return;
 
-            if (image != null)
+            // Plus aucun rendu 3D ici : on affiche juste une portion (uvRect) de l'image bakée.
+            if (image != null && image.texture != sys.WorldTexture) image.texture = sys.WorldTexture;
+
+            // Minimap HUD : mise à jour à cadence réduite (moins de reconstructions du Canvas).
+            // Grande carte : à chaque frame (réactivité du zoom / déplacement).
+            if (mode == ViewMode.Mini)
             {
-                RenderTexture rt = mode == ViewMode.Mini ? sys.MiniTexture : sys.WorldTexture;
-                if (image.texture != rt) image.texture = rt;
+                int stamp = sys.MiniStamp;
+                if (stamp == _lastStamp) return;
+                _lastStamp = stamp;
             }
-            if (mode == ViewMode.World) sys.FitWorldCamera(_zoom, _pan);
+
+            Rect uv = mode == ViewMode.Mini ? sys.MiniUvRect(1f) : sys.WorldUvRect(_zoom, _pan);
+            if (image != null) image.uvRect = uv;
 
             BuildItems(sys);
-            Layout(cam);
+            Layout(sys, uv);
         }
 
         private void BuildItems(MinimapSystem sys)
@@ -124,7 +133,7 @@ namespace Core.Minimap
                 });
         }
 
-        private void Layout(Camera cam)
+        private void Layout(MinimapSystem sys, Rect uv)
         {
             Rect r = _rect.rect;
             float limit = mode == ViewMode.Mini ? edgeRadius : 0f;
@@ -135,7 +144,8 @@ namespace Core.Minimap
                 Item it = _items[i];
                 Icon icon = GetIcon(i, layer);
 
-                Vector3 vp = cam.WorldToViewportPoint(it.pos);
+                Vector2 puv = sys.WorldToUv(it.pos);
+                Vector2 vp = new Vector2((puv.x - uv.x) / uv.width, (puv.y - uv.y) / uv.height);
                 Vector2 local = new Vector2((vp.x - 0.5f) * r.width, (vp.y - 0.5f) * r.height);
                 bool edge = false;
                 bool visible = true;
