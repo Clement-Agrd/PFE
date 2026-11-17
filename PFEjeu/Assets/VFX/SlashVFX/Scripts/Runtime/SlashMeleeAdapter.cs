@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace SlashVFX
 {
-    /// <summary>Connects MeleeCombatModule.StepStarted to the slash VFX of this character.</summary>
+    /// <summary>Connects MeleeCombatModule.SlashStarted to the slash VFX of this character.</summary>
     [AddComponentMenu("Slash VFX/Slash Melee Adapter")]
     public sealed class SlashMeleeAdapter : MonoBehaviour
     {
@@ -25,12 +25,12 @@ namespace SlashVFX
 
         void OnEnable()
         {
-            if (melee != null) melee.StepStarted += OnStep;
+            if (melee != null) melee.SlashStarted += OnStep;
         }
 
         void OnDisable()
         {
-            if (melee != null) melee.StepStarted -= OnStep;
+            if (melee != null) melee.SlashStarted -= OnStep;
         }
 
         void OnStep(int index)
@@ -41,7 +41,7 @@ namespace SlashVFX
             if (bridge.controller == null) return;
             bridge.controller.readMouse = false;
             var swing = melee.ActiveSwing;
-            bridge.controller.PlayStepAt(index, swing.Origin, swing.Rotation * Vector3.forward, swing);
+            bridge.controller.PlayStepAt(index, swing.Origin, swing.Rotation * Vector3.forward, swing, melee.SwingAnchor);
         }
     }
 }

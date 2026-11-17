@@ -145,8 +145,12 @@ namespace ProfessionalTPS
                 return Mathf.Clamp(
                     stats.GetStat(
                         StatType.AttackSpeed
-                    ) * (CurrentMode is CombatMode.Melee or CombatMode.Bow
-                        ? Core.Village.ForgeDefinition.WeaponCadence(ForgeLevel(CurrentMode)) : 1f),
+                    ) * (CurrentMode switch
+                    {
+                        CombatMode.Melee => .8f * Core.Village.ForgeDefinition.WeaponCadence(ForgeLevel(CurrentMode)),
+                        CombatMode.Bow => Core.Village.ForgeDefinition.WeaponCadence(ForgeLevel(CurrentMode)),
+                        _ => 1f
+                    }),
                     minimumAttackSpeed,
                     maximumAttackSpeed
                 );

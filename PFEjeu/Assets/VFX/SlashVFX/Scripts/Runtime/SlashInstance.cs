@@ -34,6 +34,7 @@ namespace SlashVFX
         public struct PlayParams
         {
             public ProfessionalTPS.MeleeCombatModule.SwingGeometry? swing;
+            public Transform swingAnchor;
             public SlashComboStep step;
             public Vector3 position;
             public Vector3 aim;
@@ -89,8 +90,12 @@ namespace SlashVFX
         Texture2D ramp;
         SlashQuality quality;
         Transform follow;
+        Transform swingAnchor;
+        Vector3 localSwingPosition, localContact;
+        Quaternion localSwingRotation;
         float followUntil;
         Vector3 followOffset;
+        Bounds bladeBounds;
         Color flashColor;
         MaterialPropertyBlock auxBlock;
         Camera cam;
@@ -111,6 +116,21 @@ namespace SlashVFX
                     }
                     l.mpb = new MaterialPropertyBlock();
                 }
+            if (bladeRoot != null && layers != null)
+            {
+                foreach (var layer in layers)
+                {
+                    if (layer == null || layer.kind != SlashLayerKind.Body || layer.renderer == null) continue;
+                    var body = layer.renderer;
+                    var bounds = body.localBounds;
+                    Matrix4x4 toBlade = bladeRoot.worldToLocalMatrix * body.transform.localToWorldMatrix;
+                    bladeBounds = new Bounds(toBlade.MultiplyPoint3x4(bounds.center),
+                        new Vector3(toBlade.MultiplyVector(Vector3.right * bounds.size.x).magnitude,
+                            toBlade.MultiplyVector(Vector3.up * bounds.size.y).magnitude,
+                            toBlade.MultiplyVector(Vector3.forward * bounds.size.z).magnitude));
+                    break;
+                }
+            }
             if (bladeRoot == null) Debug.LogWarning("[SlashVFX] bladeRoot missing on " + name, this);
         }
 
@@ -138,9 +158,9 @@ namespace SlashVFX
 
             gameObject.SetActive(true);
             startTime = Time.time;
-            duration = Step.duration;
+            duration = Step.duration * (p.swing?.DurationMultiplier ?? 1f);
             intensity = Step.intensity * p.intensityMul;
-            scaleMul = p.swing?.VisualScale ?? Step.scale * p.scaleMul;
+            scaleMul = p.swing.HasValue ? p.swing.Value.Radius / Mathf.Max(.01f, bladeBounds.extents.x) : Step.scale * p.scaleMul;
             impactAt = Anticipation + duration * Step.impactFraction;
             impacted = false;
             quality = p.quality;
@@ -152,6 +172,12 @@ namespace SlashVFX
             float roll = Step.tiltDegrees + UnityEngine.Random.Range(-Step.randomRoll, Step.randomRoll);
             Vector3 basePos = p.swing?.Origin ?? p.position + Vector3.up * Step.yOffset;
             var rotation = p.swing?.Rotation ?? Quaternion.LookRotation(aim, Vector3.up) * Quaternion.Euler(Step.pitchDegrees, 0f, roll);
+            if (p.swing.HasValue)
+            {
+                Vector3 center = bladeBounds.center;
+                if (p.swing.Value.Reverse) center.x = -center.x;
+                basePos -= rotation * (center * scaleMul);
+            }
             transform.SetPositionAndRotation(basePos, rotation);
             follow = p.swing.HasValue ? null : p.follow;
             followUntil = Time.time + p.followTime;
@@ -165,6 +191,13 @@ namespace SlashVFX
             if (Step.shockwave) endAt = Mathf.Max(endAt, impactAt + 1.5f);
 
             contact = p.swing?.Point(.5f) ?? basePos + (transform.rotation * Quaternion.Inverse(Quaternion.Euler(0f, 0f, roll))) * Vector3.forward * (1.5f * scaleMul);
+            swingAnchor = p.swingAnchor;
+            if (swingAnchor != null)
+            {
+                localSwingPosition = swingAnchor.InverseTransformPoint(basePos);
+                localSwingRotation = Quaternion.Inverse(swingAnchor.rotation) * rotation;
+                localContact = swingAnchor.InverseTransformPoint(contact);
+            }
             if (flashRenderer != null) flashRenderer.enabled = false;
             if (shockwaveRenderer != null) shockwaveRenderer.enabled = false;
             if (scorchRenderer != null) scorchRenderer.enabled = false;
@@ -181,12 +214,18 @@ namespace SlashVFX
             return false;
         }
 
-        void Update()
+        void LateUpdate()
         {
             if (!Active) return;
             float t = Time.time - startTime;
 
-            if (follow != null && Time.time < followUntil)
+            if (swingAnchor != null)
+            {
+                transform.SetPositionAndRotation(swingAnchor.TransformPoint(localSwingPosition), swingAnchor.rotation * localSwingRotation);
+                contact = swingAnchor.TransformPoint(localContact);
+                aim = transform.forward;
+            }
+            else if (follow != null && Time.time < followUntil)
                 transform.position = follow.position + followOffset;
 
             Evaluate(t);

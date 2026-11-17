@@ -4,6 +4,7 @@ using UnityEngine.AI;
 using Core.WaveSystem;
 using Core.PoolingSystem;
 using Core.HealthSystem;
+using Core.BarracksSystem;
 using Core.ShopSystem;
 using Core.LootSystem;
 using Core.InventorySystem;
@@ -284,6 +285,7 @@ namespace Core.TowerDefense
             EnemyAIState.FollowSpline;
 
 
+        private readonly EnemyRecoil _recoil = new();
         private Health _combatTarget;
         private bool _reachedPathEnd;
         private Health _defenseObjective;
@@ -437,6 +439,8 @@ namespace Core.TowerDefense
                 return;
 
 
+            _recoil.Tick(_agent, Time.deltaTime);
+            if (_recoil.IsStaggered) return;
             UpdateTargeting();
 
             EvaluateStateTree();
@@ -531,6 +535,7 @@ namespace Core.TowerDefense
 
 
             _finished = false;
+            _recoil.Reset();
             _reachedPathEnd = false;
             SetDefenseObjective(null, null);
 
@@ -945,33 +950,35 @@ namespace Core.TowerDefense
         // DETECTION
         // ============================================================
 
+        public void ApplySwordRecoil(Vector3 attacker, bool finisher)
+        {
+            float strength = definition != null ? definition.SwordRecoil : 1f;
+            if (_finished || _health == null || _health.IsDead || strength <= 0f ||
+                _agent == null || !_agent.isOnNavMesh) return;
+
+            if (finisher)
+            {
+                if (_state == EnemyAIState.AttackTarget) ChangeState(EnemyAIState.FollowSpline);
+                _attackImpactPending = false;
+                if (animator != null && animator.HasState(0, Animator.StringToHash("Base Layer.Idle")))
+                    animator.CrossFadeInFixedTime("Base Layer.Idle", .05f);
+            }
+            _recoil.Push(_agent, attacker, strength, finisher);
+        }
+
         private void UpdateTargeting()
         {
-            // Vérifie d'abord la cible actuelle.
-            if (_combatTarget != null)
-            {
-                if (!IsCurrentTargetValid())
-                {
-                    _combatTarget =
-                        null;
-                }
-            }
-
-
-            // Si on en a encore une, inutile
-            // de rescanner tous les colliders.
-            if (_combatTarget != null)
-                return;
-
-
-            _detectionTimer -=
-                Time.deltaTime;
-
+            if (!IsCurrentTargetValid()) _combatTarget = null;
+            if (_combatTarget != null && _combatTarget.CompareTag("Player")) return;
+            _detectionTimer -= Time.deltaTime;
 
             if (_detectionTimer <= 0f)
             {
                 _detectionTimer = detectionInterval;
-                FindBestTarget();
+                var candidate = FindBestTarget();
+                if (candidate != null && candidate.CompareTag("Player")) _combatTarget = candidate;
+                else if (_combatTarget == null || _combatTarget == _defenseObjective)
+                    _combatTarget = BarracksSoldier.FindAssignedOpponent(_health, transform.position, detectionRange) ?? candidate;
             }
 
             if (_combatTarget == null && _reachedPathEnd && _defenseObjective != null &&
@@ -980,7 +987,7 @@ namespace Core.TowerDefense
         }
 
 
-        private void FindBestTarget()
+        private Health FindBestTarget()
         {
             int count =
                 Physics.OverlapSphereNonAlloc(
@@ -996,9 +1003,8 @@ namespace Core.TowerDefense
                 null;
 
 
-            float bestSqrDistance =
-                float.PositiveInfinity;
-
+            float bestSqrDistance = float.PositiveInfinity;
+            bool bestIsPlayer = false;
 
             for (int i = 0;
                  i < count;
@@ -1052,9 +1058,11 @@ namespace Core.TowerDefense
                 }
 
 
-                Vector3 difference =
-                    candidate.transform.position -
-                    transform.position;
+                if (candidate.TryGetComponent<BarracksSoldier>(out _)) continue;
+                bool isPlayer = candidate.CompareTag("Player");
+                if (bestIsPlayer && !isPlayer) continue;
+                if (isPlayer && !EnemyTargetSensor.CanSeePlayer(transform, candidate, detectionEyeHeight)) continue;
+                Vector3 difference = candidate.transform.position - transform.position;
 
 
                 difference.y = 0f;
@@ -1064,23 +1072,17 @@ namespace Core.TowerDefense
                     difference.sqrMagnitude;
 
 
-                if (sqrDistance >=
-                    bestSqrDistance)
-                {
+                if (sqrDistance > detectionRange * detectionRange ||
+                    (isPlayer == bestIsPlayer && sqrDistance >= bestSqrDistance))
                     continue;
-                }
 
-
-                bestSqrDistance =
-                    sqrDistance;
-
-                bestTarget =
-                    candidate;
+                bestIsPlayer = isPlayer;
+                bestSqrDistance = sqrDistance;
+                bestTarget = candidate;
             }
 
 
-            _combatTarget =
-                bestTarget;
+            return bestTarget;
         }
 
 
@@ -1102,6 +1104,8 @@ namespace Core.TowerDefense
 
 
             if (_combatTarget == _defenseObjective) return true;
+            if (_combatTarget.TryGetComponent<BarracksSoldier>(out _) &&
+                !BarracksSoldier.IsAssignedOpponent(_health, _combatTarget)) return false;
 
             float distance = GetPlanarDistanceTo(CombatTargetPosition);
             if (distance > loseTargetRange)

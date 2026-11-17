@@ -86,6 +86,7 @@ namespace Core.TowerDefense
         public event System.Action<IWaveEnemy>
             Defeated;
 
+        private readonly EnemyRecoil _recoil = new();
         private NavMeshAgent _agent;
         private Health _health;
         private EntityStats _stats;
@@ -246,6 +247,9 @@ namespace Core.TowerDefense
                 return;
             }
 
+            _recoil.Tick(_agent, Time.deltaTime);
+            if (_recoil.IsStaggered) return;
+
             _stateMachine?.Tick(
                 Time.deltaTime
             );
@@ -273,6 +277,7 @@ namespace Core.TowerDefense
             }
 
             _finished = false;
+            _recoil.Reset();
             _assaultingObjective = false;
             _defenseObjective = null;
             _objectiveCollider = null;
@@ -467,6 +472,20 @@ namespace Core.TowerDefense
             }
         }
 
+        public void ApplySwordRecoil(Vector3 attacker, bool finisher)
+        {
+            float strength = definition != null ? definition.SwordRecoil : 1f;
+            if (_finished || _health == null || _health.IsDead || strength <= 0f ||
+                _agent == null || !_agent.isOnNavMesh) return;
+
+            if (finisher)
+            {
+                if (_stateMachine?.CurrentStateName == "AttackTarget") ChangeToFollowPath();
+                else attackModule?.Cancel();
+            }
+            _recoil.Push(_agent, attacker, strength, finisher);
+        }
+
         internal bool RefreshTarget(
             float deltaTime)
         {
@@ -479,7 +498,7 @@ namespace Core.TowerDefense
 
             Target =
                 targetSensor.UpdateTarget(
-                    Target,
+                    Target == _defenseObjective ? null : Target,
                     transform,
                     _health,
                     deltaTime

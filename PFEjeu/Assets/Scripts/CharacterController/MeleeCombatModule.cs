@@ -114,42 +114,43 @@ namespace ProfessionalTPS
             _damagedThisSwing =
                 new HashSet<IDamageable>();
 
-        /// <summary>Raised when a combo step starts (index = 0 based). Used by the slash VFX.</summary>
-        public event System.Action<int> StepStarted;
+        // Timings are in animation seconds, before the weapon's attack-speed multiplier.
+        private const float SlashLeadTime = .09f;
+        private const float ReturnSlashLeadTime = .035f;
+        private const float FinisherFollowThrough = .065f;
+        public event System.Action<int> SlashStarted;
 
         public readonly struct SwingGeometry
         {
             public readonly Vector3 Origin;
             public readonly Quaternion Rotation;
-            public readonly float Radius, Thickness, Arc, VisualScale;
+            public readonly float Radius;
+            public readonly float DurationMultiplier;
             public readonly bool Reverse;
 
-            public SwingGeometry(Vector3 origin, Quaternion rotation, float radius, int step)
+            public SwingGeometry(Vector3 origin, Quaternion rotation, float radius, int step, float durationMultiplier)
             {
                 Origin = origin;
                 Rotation = rotation * Quaternion.Euler(0f, 0f, step == 2 ? 90f : 0f);
                 Radius = radius;
-                Arc = step == 0 ? 2f : step == 1 ? 2.2f : 2.6f;
-                VisualScale = radius / (step == 1 ? 1.55f : 1.5f);
-                Thickness = (step == 0 ? .36f : step == 1 ? .43f : .39f) * VisualScale;
+                DurationMultiplier = durationMultiplier;
                 Reverse = step == 1;
             }
 
-            public Vector3 Point(float t)
-            {
-                float angle = (Reverse ? t - .5f : .5f - t) * Arc;
-                return Origin + Rotation * new Vector3(Mathf.Sin(angle) * Radius, 0f, Mathf.Cos(angle) * Radius);
-            }
+            public Vector3 Point(float t) => Origin + Rotation * Vector3.right *
+                (Radius * Mathf.Lerp(Reverse ? -1f : 1f, Reverse ? 1f : -1f, t));
         }
 
-        private SwingGeometry _swing;
-        public SwingGeometry ActiveSwing => _swing;
+        public SwingGeometry ActiveSwing => BuildSwing(_stepIndex, combo[_stepIndex]);
+        public Transform SwingAnchor => Owner != null ? Owner.transform : transform;
         private readonly RaycastHit[] _groundHits = new RaycastHit[16];
         private int _stepIndex;
 
         private float _timer;
 
         private bool _impactDone;
+        private bool _slashStarted;
+        private bool _finisherPlayed;
 
         private bool _queuedNext;
 
@@ -207,12 +208,18 @@ namespace ProfessionalTPS
                 return;
 
             _timer += deltaTime;
+            MeleeComboStep step = combo[_stepIndex];
+            float animationTime = _timer * (Owner != null ? Owner.AttackSpeed : 1f);
+            float visualLead = _stepIndex == 1 ? ReturnSlashLeadTime : SlashLeadTime;
+            if (!_slashStarted && animationTime >= Mathf.Max(0f, step.startup - visualLead))
+                StartSlash();
+
+            if (_stepIndex == 2 && _impactDone && !_finisherPlayed &&
+                animationTime >= step.startup + FinisherFollowThrough)
+                PlayGroundFinisher();
 
             if (useAnimationEvents)
                 return;
-
-            MeleeComboStep step =
-                combo[_stepIndex];
 
             float startup =
                 Owner != null
@@ -224,9 +231,9 @@ namespace ProfessionalTPS
             float recovery =
                 Owner != null
                     ? Owner.ScaleAttackTime(
-                        step.recovery
+                        step.recovery * 1.2f
                     )
-                    : step.recovery;
+                    : step.recovery * 1.2f;
 
             if (!_impactDone &&
                 _timer >= startup)
@@ -252,20 +259,8 @@ namespace ProfessionalTPS
 
             _impactDone = true;
 
-            // L'ancien VFX de slash (Owner.VFX.PlaySlash) est remplacé par SlashVFX,
-            // déclenché au début de chaque étape via StepStarted.
-
+            if (!_slashStarted) StartSlash();
             DoHit(combo[_stepIndex]);
-            if (_stepIndex == 2 && Owner != null && Owner.SwordFinisher != null)
-            {
-                Vector3 floor = _swing.Point(1f);
-                floor.y = Owner.transform.position.y;
-                floor = TowerAreaImpact.FindGround(floor, _groundHits, out var normal);
-                var fx = Instantiate(Owner.SwordFinisher, floor + normal * .02f,
-                    Quaternion.FromToRotation(Vector3.up, normal) * Owner.transform.rotation);
-                fx.transform.localScale *= _swing.VisualScale;
-                Destroy(fx, 4f);
-            }
         }
 
         public override void AnimationFinished()
@@ -311,22 +306,21 @@ namespace ProfessionalTPS
 
             IsBusy = true;
 
-            // Le whoosh accompagne le départ du swing,
-            // pas le moment où la hitbox inflige les dégâts.
-            Owner?.Audio?.PlayMeleeSwing(
-                _stepIndex
-            );
+            _slashStarted = false;
+            _finisherPlayed = false;
+            Owner?.Animation?.PlayMeleeAttack(_stepIndex);
+        }
 
-            Owner?.Animation?.PlayMeleeAttack(
-                _stepIndex
-            );
-
-            _swing = BuildSwing(_stepIndex, combo[_stepIndex]);
-            StepStarted?.Invoke(_stepIndex);
+        private void StartSlash()
+        {
+            _slashStarted = true;
+            Owner?.Audio?.PlayMeleeSwing(_stepIndex);
+            SlashStarted?.Invoke(_stepIndex);
         }
 
         private void CompleteCurrentStep()
         {
+            if (_stepIndex == 2 && _impactDone && !_finisherPlayed) PlayGroundFinisher();
             if (_queuedNext &&
                 _stepIndex <
                 combo.Length - 1)
@@ -351,6 +345,21 @@ namespace ProfessionalTPS
             _damagedThisSwing.Clear();
         }
 
+        private void PlayGroundFinisher()
+        {
+            _finisherPlayed = true;
+            if (Owner == null || Owner.SwordFinisher == null) return;
+            var swing = ActiveSwing;
+            Vector3 floor = swing.Origin + Owner.transform.forward * swing.Radius * .45f;
+            var body = Owner.GetComponent<CharacterController>();
+            floor.y = body != null ? body.bounds.min.y : Owner.transform.position.y;
+            floor = TowerAreaImpact.FindGround(floor, _groundHits, out var normal);
+            var fx = Instantiate(Owner.SwordFinisher, floor + normal * .02f,
+                Quaternion.FromToRotation(Vector3.up, normal) * Owner.transform.rotation);
+            fx.transform.localScale *= swing.Radius;
+            Destroy(fx, 4f);
+        }
+
         private void DoHit(
             MeleeComboStep step)
         {
@@ -361,16 +370,9 @@ namespace ProfessionalTPS
             int finalDamage = Owner.CalculateDamage(EnumStats.StatTypes.PhysicDamage,
                 step.baseDamage + Core.Village.ForgeDefinition.WeaponDamage(level),
                 step.physicDamageScaling + Core.Village.ForgeDefinition.PhysicalScaling(level));
-            const int samples = 10;
-            Vector3 previous = _swing.Point(0f);
-            for (int i = 1; i <= samples; i++)
-            {
-                Vector3 next = _swing.Point(i / (float)samples);
-                int count = Physics.OverlapCapsuleNonAlloc(previous, next, _swing.Thickness,
-                    _hits, targetMask, triggerInteraction);
-                DamageHits(count, (previous + next) * .5f, finalDamage);
-                previous = next;
-            }
+            var swing = ActiveSwing;
+            int count = Physics.OverlapSphereNonAlloc(swing.Origin, swing.Radius, _hits, targetMask, triggerInteraction);
+            DamageHits(count, swing.Origin, finalDamage);
         }
 
         private SwingGeometry BuildSwing(int index, MeleeComboStep step)
@@ -378,8 +380,10 @@ namespace ProfessionalTPS
             var owner = Owner != null ? Owner.transform : transform;
             Vector3 origin = hitOrigin != null ? hitOrigin.position : owner.position + Vector3.up * 1.1f;
             int level = Owner != null ? Owner.ForgeLevel(CombatMode.Melee) : 0;
-            return new SwingGeometry(origin, Quaternion.LookRotation(owner.forward, Vector3.up),
-                step.forwardOffset + step.hitRadius * .5f + Core.Village.ForgeDefinition.SwordReach(level), index);
+            float reach = Core.Village.ForgeDefinition.SwordReach(level);
+            float durationMultiplier = Owner != null ? 1f / Owner.AttackSpeed : 1f;
+            return new SwingGeometry(origin + owner.forward * (step.forwardOffset + reach * .5f),
+                Quaternion.LookRotation(owner.forward, Vector3.up), step.hitRadius + reach, index, durationMultiplier);
         }
 
         private void DamageHits(int count, Vector3 center, int finalDamage)
@@ -424,9 +428,17 @@ namespace ProfessionalTPS
                     );
 
 
-                damageable.TakeDamage(
-                    in damageInfo
-                );
+                var health = damageable as Health;
+                int before = health != null ? health.CurrentHealth : 0;
+                damageable.TakeDamage(in damageInfo);
+
+                if (health != null && !health.IsDead && health.CurrentHealth < before)
+                {
+                    if (health.TryGetComponent<Core.TowerDefense.EnemyController>(out var enemy) && enemy.isActiveAndEnabled)
+                        enemy.ApplySwordRecoil(Owner.transform.position, _stepIndex == 2);
+                    else if (health.TryGetComponent<Core.TowerDefense.NavEnemy>(out var legacy) && legacy.isActiveAndEnabled)
+                        legacy.ApplySwordRecoil(Owner.transform.position, _stepIndex == 2);
+                }
 
 
                 // ========================================================
@@ -503,9 +515,8 @@ namespace ProfessionalTPS
                     combo.Length - 1
                 );
 
-            var swing = IsBusy ? _swing : BuildSwing(index, combo[index]);
-            for (int i = 0; i <= 10; i++)
-                Gizmos.DrawWireSphere(swing.Point(i / 10f), swing.Thickness);
+            var swing = BuildSwing(index, combo[index]);
+            Gizmos.DrawWireSphere(swing.Origin, swing.Radius);
         }
 
 #endif

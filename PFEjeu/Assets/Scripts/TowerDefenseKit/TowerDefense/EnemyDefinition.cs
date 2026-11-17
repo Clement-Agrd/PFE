@@ -48,6 +48,10 @@ namespace Core.TowerDefense
         [SerializeField, Min(0)] private int goldReward = 5;
         [SerializeField] private LootTable lootTable;
 
+        [Tooltip("0 = ennemi lourd, insensible au recul et à l’interruption de l’épée.")]
+        [SerializeField, Range(0f, 1f)] private float swordRecoil = 1f;
+        public float SwordRecoil => swordRecoil;
+
         public string DisplayName => displayName;
         public Sprite Icon => icon;
         public string Description => description;

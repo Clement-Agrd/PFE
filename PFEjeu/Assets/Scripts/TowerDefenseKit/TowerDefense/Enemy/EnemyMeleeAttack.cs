@@ -111,9 +111,14 @@ namespace Core.TowerDefense
 
         public override void Cancel()
         {
+            bool wasAttacking = IsBusy;
             _impactPending = false;
-
             IsBusy = false;
+            if (!wasAttacking || Owner == null || Owner.Animator == null) return;
+            var animator = Owner.Animator;
+            if (!string.IsNullOrWhiteSpace(attackTrigger)) animator.ResetTrigger(attackTrigger);
+            int idle = Animator.StringToHash("Base Layer.Idle");
+            if (animator.HasState(0, idle)) animator.CrossFadeInFixedTime(idle, .05f);
         }
 
 

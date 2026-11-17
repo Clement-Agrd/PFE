@@ -1,5 +1,6 @@
 using UnityEngine;
 using Core.HealthSystem;
+using Core.BarracksSystem;
 
 namespace Core.TowerDefense
 {
@@ -27,7 +28,11 @@ namespace Core.TowerDefense
         private float detectionInterval = 0.15f;
 
 
-        [Header("Vision optionnelle")]
+        [Header("Vision")]
+        [SerializeField, Range(1f, 180f)] private float playerFieldOfView = 110f;
+        private const float DefaultPlayerVisionDot = .5735764f;
+        private static int _playerVisionObstacles;
+        private float PlayerVisionDot => Mathf.Cos(playerFieldOfView * .5f * Mathf.Deg2Rad);
 
         [SerializeField]
         private bool requireLineOfSight;
@@ -71,26 +76,21 @@ namespace Core.TowerDefense
             Health selfHealth,
             float deltaTime)
         {
-            _scanTimer -=
-                deltaTime;
+            _scanTimer -= deltaTime;
+            if (!IsTargetValid(currentTarget, owner) ||
+                (currentTarget.TryGetComponent<BarracksSoldier>(out _) &&
+                 !BarracksSoldier.IsAssignedOpponent(selfHealth, currentTarget)))
+                currentTarget = null;
 
-            if (IsTargetValid(
-                    currentTarget,
-                    owner))
-            {
-                return currentTarget;
-            }
+            if (currentTarget != null && currentTarget.CompareTag("Player")) return currentTarget;
+            if (_scanTimer > 0f) return currentTarget;
+            _scanTimer = detectionInterval;
 
-            if (_scanTimer > 0f)
-                return null;
-
-            _scanTimer =
-                detectionInterval;
-
-            return FindBestTarget(
-                owner,
-                selfHealth
-            );
+            var candidate = FindBestTarget(owner, selfHealth);
+            if (candidate != null && candidate.CompareTag("Player")) return candidate;
+            if (currentTarget != null) return currentTarget;
+            var duelist = BarracksSoldier.FindAssignedOpponent(selfHealth, owner.position, detectionRange);
+            return IsTargetValid(duelist, owner) ? duelist : candidate;
         }
 
 
@@ -152,8 +152,8 @@ namespace Core.TowerDefense
 
             Health bestTarget = null;
 
-            float bestSqrDistance =
-                float.PositiveInfinity;
+            float bestSqrDistance = float.PositiveInfinity;
+            bool bestIsPlayer = false;
 
             for (int i = 0;
                  i < count;
@@ -184,9 +184,11 @@ namespace Core.TowerDefense
                     continue;
                 }
 
-                Vector3 difference =
-                    candidate.transform.position -
-                    owner.position;
+                if (candidate.TryGetComponent<BarracksSoldier>(out _)) continue;
+                bool isPlayer = candidate.CompareTag("Player");
+                if (bestIsPlayer && !isPlayer) continue;
+                if (isPlayer && !CanSeePlayer(owner, candidate, eyeHeight, PlayerVisionDot)) continue;
+                Vector3 difference = candidate.transform.position - owner.position;
 
                 difference.y = 0f;
 
@@ -208,14 +210,13 @@ namespace Core.TowerDefense
                 float sqrDistance =
                     difference.sqrMagnitude;
 
-                if (sqrDistance >=
-                    bestSqrDistance)
+                if (isPlayer == bestIsPlayer && sqrDistance >= bestSqrDistance)
                 {
                     continue;
                 }
 
-                bestSqrDistance =
-                    sqrDistance;
+                bestSqrDistance = sqrDistance;
+                bestIsPlayer = isPlayer;
 
                 bestTarget =
                     candidate;
@@ -224,6 +225,19 @@ namespace Core.TowerDefense
             return bestTarget;
         }
 
+
+        internal static bool CanSeePlayer(Transform owner, Health player, float height, float minimumDot = DefaultPlayerVisionDot)
+        {
+            Vector3 direction = Vector3.ProjectOnPlane(player.transform.position - owner.position, Vector3.up);
+            Vector3 forward = Vector3.ProjectOnPlane(owner.forward, Vector3.up).normalized;
+            if (direction.sqrMagnitude > .01f && Vector3.Dot(forward, direction.normalized) < minimumDot)
+                return false;
+
+            if (_playerVisionObstacles == 0) _playerVisionObstacles = LayerMask.GetMask("Default", "Ground");
+            Vector3 eyes = Vector3.up * height;
+            return !Physics.Linecast(owner.position + eyes, player.transform.position + eyes,
+                _playerVisionObstacles, QueryTriggerInteraction.Ignore);
+        }
 
         private bool HasLineOfSight(
             Transform owner,

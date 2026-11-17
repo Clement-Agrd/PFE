@@ -37,7 +37,10 @@ namespace Core.BarracksSystem
         [Header("Death")]
         [SerializeField, Min(0f)] private float deathDespawnDelay = 0.35f;
 
-        private readonly Collider[] _targetBuffer = new Collider[24];
+        private const int MaxSoldiersPerEnemy = 3;
+        private static readonly System.Collections.Generic.Dictionary<Health, System.Collections.Generic.List<BarracksSoldier>>
+            Engagements = new();
+        private Collider[] _targetBuffer = new Collider[40];
 
         private Barracks _owner;
         private NavMeshAgent _agent;
@@ -93,6 +96,8 @@ namespace Core.BarracksSystem
 
         private void OnDisable()
         {
+            SetTarget(null);
+            _isAttacking = false;
             if (_health != null)
                 _health.OnDeath -= HandleDeath;
 
@@ -117,7 +122,7 @@ namespace Core.BarracksSystem
             _slotIndex = slotIndex;
             _suppressRespawn = false;
             _initialized = true;
-
+            SetTarget(null);
             ApplyMovementSpeed();
             SetCampPosition(campPosition);
         }
@@ -157,14 +162,18 @@ namespace Core.BarracksSystem
             }
 
             if (!IsTargetValid(_target))
-                _target = null;
+                SetTarget(null);
 
             if (Time.time >= _nextTargetRefresh)
             {
                 _nextTargetRefresh = Time.time + targetRefreshInterval;
 
-                if (_target == null)
-                    _target = FindNearestEnemy();
+                int currentCount = _target == null ? MaxSoldiersPerEnemy + 1 : EngagementCount(_target);
+                if (_target == null || currentCount > 1)
+                {
+                    var better = FindNearestEnemy(_target == null ? MaxSoldiersPerEnemy - 1 : currentCount - 2);
+                    if (better != null) SetTarget(better);
+                }
             }
 
             if (_target == null)
@@ -240,8 +249,7 @@ namespace Core.BarracksSystem
             _isAttacking = false;
             _damageApplied = false;
 
-            if (!IsTargetValid(_target))
-                _target = null;
+            if (!IsTargetValid(_target)) SetTarget(null);
         }
 
         private void ApplyAttackDamage()
@@ -267,17 +275,20 @@ namespace Core.BarracksSystem
             _target.TakeDamage(in info);
         }
 
-        private Health FindNearestEnemy()
+        private Health FindNearestEnemy(int maxExistingSoldiers)
         {
-            int count = Physics.OverlapSphereNonAlloc(
-                _campPosition,
-                detectionRange,
-                _targetBuffer,
-                enemyMask,
-                QueryTriggerInteraction.Ignore);
+            int count = Physics.OverlapSphereNonAlloc(_campPosition, detectionRange, _targetBuffer,
+                enemyMask, QueryTriggerInteraction.Ignore);
+            while (count == _targetBuffer.Length)
+            {
+                System.Array.Resize(ref _targetBuffer, _targetBuffer.Length * 2);
+                count = Physics.OverlapSphereNonAlloc(_campPosition, detectionRange, _targetBuffer,
+                    enemyMask, QueryTriggerInteraction.Ignore);
+            }
 
             Health nearest = null;
             float nearestSqr = float.PositiveInfinity;
+            int fewest = Mathf.Min(maxExistingSoldiers, MaxSoldiersPerEnemy - 1);
 
             for (int i = 0; i < count; i++)
             {
@@ -287,21 +298,66 @@ namespace Core.BarracksSystem
 
                 Health candidate = candidateCollider.GetComponentInParent<Health>();
 
-                if (!IsTargetValid(candidate))
+                if (candidate == _target || !IsTargetValid(candidate))
                     continue;
 
+                int assigned = EngagementCount(candidate);
+                if (assigned > fewest) continue;
                 float sqr = PlanarSqrDistance(
                     transform.position,
                     candidate.transform.position);
 
-                if (sqr >= nearestSqr)
+                if (assigned == fewest && sqr >= nearestSqr)
                     continue;
 
+                fewest = assigned;
                 nearestSqr = sqr;
                 nearest = candidate;
             }
 
             return nearest;
+        }
+
+        private void SetTarget(Health next)
+        {
+            if (ReferenceEquals(_target, next)) return;
+            if (!ReferenceEquals(_target, null) && Engagements.TryGetValue(_target, out var previous))
+            {
+                previous.Remove(this);
+                if (previous.Count == 0) Engagements.Remove(_target);
+            }
+            _target = next;
+            if (next == null) return;
+            if (!Engagements.TryGetValue(next, out var assigned))
+            {
+                assigned = new System.Collections.Generic.List<BarracksSoldier>(MaxSoldiersPerEnemy);
+                Engagements.Add(next, assigned);
+            }
+            assigned.Add(this);
+        }
+
+        private static int EngagementCount(Health target) =>
+            Engagements.TryGetValue(target, out var assigned) ? assigned.Count : 0;
+
+        internal static bool IsAssignedOpponent(Health enemy, Health opponent) =>
+            opponent != null && opponent.TryGetComponent<BarracksSoldier>(out var soldier) &&
+            soldier.isActiveAndEnabled && soldier._target == enemy;
+
+        internal static Health FindAssignedOpponent(Health enemy, Vector3 origin, float range)
+        {
+            if (enemy == null || !Engagements.TryGetValue(enemy, out var assigned)) return null;
+            Health closest = null;
+            float best = range * range;
+            foreach (var soldier in assigned)
+            {
+                var health = soldier._health;
+                if (!soldier.isActiveAndEnabled || health == null || health.IsDead) continue;
+                float distance = PlanarSqrDistance(origin, soldier.transform.position);
+                if (distance > best) continue;
+                best = distance;
+                closest = health;
+            }
+            return closest;
         }
 
         private bool IsTargetValid(Health candidate)
@@ -438,6 +494,7 @@ namespace Core.BarracksSystem
 
         private void HandleDeath()
         {
+            SetTarget(null);
             _target = null;
             _isAttacking = false;
             StopAgent();

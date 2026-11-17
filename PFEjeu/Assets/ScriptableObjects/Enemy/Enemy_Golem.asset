@@ -26,3 +26,4 @@ MonoBehaviour:
   baseDamage: 4
   goldReward: 30
   lootTable: {fileID: 0}
+  swordRecoil: 0

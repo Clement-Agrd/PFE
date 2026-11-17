@@ -43,7 +43,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   impactFraction: 0.45
   intensity: 10
-  scale: 1.4
+  scale: 1
   mirror: 0
   tiltDegrees: 0
   pitchDegrees: -50

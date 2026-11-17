@@ -4,7 +4,7 @@ namespace SlashVFX
 {
     /// <summary>
     /// Plays the slash VFX of a SlashComboController when your own combo starts a step.
-    /// Hook it to any "step started" event: see ProfessionalTPS.MeleeCombatModule.StepStarted.
+    /// Hook it to any "step started" event: see ProfessionalTPS.MeleeCombatModule.SlashStarted.
     /// </summary>
     [AddComponentMenu("Slash VFX/Slash Melee Bridge")]
     public sealed class SlashMeleeBridge : MonoBehaviour

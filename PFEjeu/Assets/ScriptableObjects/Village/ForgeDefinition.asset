@@ -151,4 +151,4 @@ MonoBehaviour:
   staff: {fileID: 11400000, guid: b851f246768f00d4aaec90aade005bfd, type: 2}
   fireSpell: {fileID: 11400000, guid: 75a01fe127915964a99ca4fa496d8686, type: 2}
   iceSpell: {fileID: 11400000, guid: ad3df1ce4754b7247bbb0daea62451a1, type: 2}
-  swordFinisher: {fileID: 6547965365630005983, guid: a5f2e1a561eda814091741bf454dd28c, type: 3}
+  swordFinisher: {fileID: 7601858637132441191, guid: 1422e2b2f512ddb4bbe4d1496a4c393b, type: 3}
