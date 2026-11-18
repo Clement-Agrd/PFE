@@ -1,4 +1,4 @@
-﻿using TMPro;
+using TMPro;
 using UnityEngine;
 
 namespace Core.DamageNumberSystem
@@ -31,12 +31,20 @@ namespace Core.DamageNumberSystem
         [Tooltip("Transparence du texte sur la durée de vie.")]
         [SerializeField] private AnimationCurve alphaCurve = AnimationCurve.EaseInOut(0f, 1f, 1f, 0f);
 
+        private Core.PoolingSystem.PooledObject _pooled;
+        private bool _initialized;
         private float _elapsed;
+
+        private void Awake() => TryGetComponent(out _pooled);
+        private void OnDisable() => _initialized = false;
         private Color _baseColor = Color.white;
         private Vector3 _targetScale = Vector3.one;
 
         public void Initialize(int amount, string text, Color color, bool isCrit)
         {
+            if (_pooled == null) TryGetComponent(out _pooled);
+            _elapsed = 0f;
+            _initialized = true;
             // 1. Décalage aléatoire pour ne pas empiler les chiffres
             Vector3 jitterOffset = new Vector3(
                 Random.Range(-randomJitter.x, randomJitter.x),
@@ -63,13 +71,20 @@ namespace Core.DamageNumberSystem
             _targetScale = Vector3.one * calculatedScale;
             transform.localScale = Vector3.zero;
 
-            // Auto-destruction à la fin du lifetime
-            Destroy(gameObject, lifetime);
+            // La durée est suivie dans Update pour pouvoir réutiliser ce texte.
         }
 
         private void Update()
         {
+            if (!_initialized) return;
             _elapsed += Time.deltaTime;
+            if (_elapsed >= lifetime)
+            {
+                _initialized = false;
+                if (_pooled != null) _pooled.Release();
+                else Destroy(gameObject);
+                return;
+            }
             float progress = Mathf.Clamp01(_elapsed / lifetime);
 
             // Montée progressive

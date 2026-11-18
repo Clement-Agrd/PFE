@@ -18,6 +18,7 @@ public class IATower : MonoBehaviour
     private Collider currentTarget;
     public Collider CurrentTarget => currentTarget ;
     
+    private Collider[] _targetBuffer = new Collider[32];
     private List<Collider> allTargets = new List<Collider>();
     public List<Collider> AllTargets => allTargets;
     
@@ -49,15 +50,18 @@ public class IATower : MonoBehaviour
         timer = 0f;
 
         // Cherche tous les colliders ennemis dans le rayon de détection de la tour.
-        Collider[] targets = Physics.OverlapSphere(
-            transform.position,
-            tower.DetectionRange,
+        int count = Physics.OverlapSphereNonAlloc(transform.position, tower.DetectionRange, _targetBuffer,
             tower.TowerData.TargetLayer);
-        
-        SelectTarget(targets);
+        while (count == _targetBuffer.Length)
+        {
+            System.Array.Resize(ref _targetBuffer, _targetBuffer.Length * 2);
+            count = Physics.OverlapSphereNonAlloc(transform.position, tower.DetectionRange, _targetBuffer,
+                tower.TowerData.TargetLayer);
+        }
+        SelectTarget(_targetBuffer, count);
     }
 
-    private void SelectTarget(Collider[] targets)
+    private void SelectTarget(Collider[] targets, int count)
     {
         SOTower profile = tower.TowerData;
         Priority priority = profile.TargetPriority;
@@ -66,8 +70,9 @@ public class IATower : MonoBehaviour
         allTargets.Clear();
         float best = float.PositiveInfinity;
 
-        foreach (var target in targets)
+        for (int i = 0; i < count; i++)
         {
+            var target = targets[i];
             var health = target.GetComponentInParent<Health>();
             if (health != null && (health.IsDead || !health.isActiveAndEnabled)) continue;
 

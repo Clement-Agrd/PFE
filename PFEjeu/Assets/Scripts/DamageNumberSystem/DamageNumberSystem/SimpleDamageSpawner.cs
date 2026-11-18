@@ -21,7 +21,7 @@ public class SimpleDamageSpawner : MonoBehaviour
             return;
         }
 
-        GameObject go = Instantiate(prefab, worldPos, Quaternion.identity);
+        GameObject go = Core.PoolingSystem.PoolManager.Instance.Spawn(prefab, worldPos, Quaternion.identity);
 
         if (go.TryGetComponent(out DamageNumber damageNumber))
         {

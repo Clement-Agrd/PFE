@@ -25,6 +25,7 @@ public class TowerShoot : MonoBehaviour
     // Temps de vol estimé des flèches, utilisé pour anticiper le déplacement de la cible.
     [SerializeField] private float estimatedFlightTime = 1f;
     
+    private Collider[] _areaBuffer = new Collider[32];
     private readonly RaycastHit[] groundHits = new RaycastHit[24];
     private readonly List<Health> healthsTouched = new List<Health>();
 
@@ -286,17 +287,18 @@ public class TowerShoot : MonoBehaviour
     {
         if (profile == null) return;
 
-        Collider[] enemiesInZone = Physics.OverlapSphere(
-            impactPosition,
-            radius,
-            profile.TargetLayer
-        );
+        int count = Physics.OverlapSphereNonAlloc(impactPosition, radius, _areaBuffer, profile.TargetLayer);
+        while (count == _areaBuffer.Length)
+        {
+            Array.Resize(ref _areaBuffer, _areaBuffer.Length * 2);
+            count = Physics.OverlapSphereNonAlloc(impactPosition, radius, _areaBuffer, profile.TargetLayer);
+        }
 
         healthsTouched.Clear();
 
-        for (int i = 0; i < enemiesInZone.Length; i++)
+        for (int i = 0; i < count; i++)
         {
-            Collider enemy = enemiesInZone[i];
+            Collider enemy = _areaBuffer[i];
 
             if (enemy == null) continue;
 

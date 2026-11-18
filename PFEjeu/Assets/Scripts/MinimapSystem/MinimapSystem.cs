@@ -179,7 +179,8 @@ namespace Core.Minimap
         {
             float now = Time.unscaledTime;
 
-            if (_miniVisible && now >= _nextMiniTick)
+            bool miniTick = _miniVisible && now >= _nextMiniTick;
+            if (miniTick)
             {
                 _nextMiniTick = now + 1f / miniUpdateRate;
                 MiniStamp++;
@@ -192,7 +193,7 @@ namespace Core.Minimap
             }
 
             // Liste des ennemis : copie du registre, seulement quand une vue va se redessiner.
-            if (_miniVisible || _worldUsers > 0)
+            if (miniTick || _worldUsers > 0)
             {
                 _enemies.Clear();
                 foreach (var e in EnemyController.Active)
