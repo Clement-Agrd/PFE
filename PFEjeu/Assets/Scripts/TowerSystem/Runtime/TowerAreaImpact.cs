@@ -3,6 +3,7 @@ using UnityEngine;
 public sealed class TowerAreaImpact : MonoBehaviour
 {
     [SerializeField] private ParticleSystem[] fullRadiusEffects;
+    [SerializeField] private Transform[] groundedEffects;
 
     public static Vector3 FindGround(Vector3 position, RaycastHit[] hits, out Vector3 normal)
     {
@@ -28,8 +29,24 @@ public sealed class TowerAreaImpact : MonoBehaviour
         return ground;
     }
 
-    public void Play(float radius)
+    public void Play(float radius) => Play(radius, transform.position, transform.forward);
+
+    public void Play(float radius, Vector3 ground, Vector3 normal, bool showGroundEffects = true)
     {
+        // Restart after positioning and sizing so bursts and randomized spikes use the final settings.
+        gameObject.SetActive(false);
+        Vector3 offset = ground + normal * .055f - transform.position;
+        if (groundedEffects != null)
+        {
+            foreach (var effect in groundedEffects)
+            {
+                if (effect == null) continue;
+                effect.gameObject.SetActive(showGroundEffects);
+                if (!showGroundEffects) continue;
+                effect.position += offset;
+                effect.rotation = Quaternion.FromToRotation(Vector3.forward, normal);
+            }
+        }
         foreach (var effect in fullRadiusEffects)
         {
             if (effect == null) continue;
@@ -48,5 +65,10 @@ public sealed class TowerAreaImpact : MonoBehaviour
         }
 
         gameObject.SetActive(true);
+        foreach (var particles in GetComponentsInChildren<ParticleSystem>())
+        {
+            particles.Stop(false, ParticleSystemStopBehavior.StopEmittingAndClear);
+            particles.Play(false);
+        }
     }
 }

@@ -328,13 +328,14 @@ namespace ProfessionalTPS
         private void Explode(RaycastHit hit)
         {
             var struck = hit.collider.GetComponentInParent<Health>();
-            Vector3 floor = hit.point;
+            Vector3 impact = hit.point + hit.normal * .08f;
+            Vector3 floor = impact;
             if (struck != null) floor.y = hit.collider.bounds.min.y;
             var ground = TowerAreaImpact.FindGround(floor, GroundHits, out var normal);
             var mask = _element != null ? _element.TargetLayer.value : LayerMask.GetMask("Enemy");
             var hitHealths = new System.Collections.Generic.HashSet<Health>();
             if (struck != null && (mask & (1 << hit.collider.gameObject.layer)) != 0) hitHealths.Add(struck);
-            foreach (var body in Physics.OverlapSphere(ground, _explosionRadius, mask, triggerInteraction))
+            foreach (var body in Physics.OverlapSphere(impact, _explosionRadius, mask, triggerInteraction))
             {
                 var health = body.GetComponentInParent<Health>();
                 if (health != null) hitHealths.Add(health);
@@ -348,8 +349,11 @@ namespace ProfessionalTPS
 
             var effectPrefab = _element != null ? _element.ImpactPrefab : impactPrefab;
             if (effectPrefab == null) return;
-            var effect = Instantiate(effectPrefab, ground + normal * .01f, Quaternion.FromToRotation(Vector3.forward, normal));
-            if (effect.TryGetComponent<TowerAreaImpact>(out var area)) area.Play(_explosionRadius);
+            bool showGround = struck != null || hit.normal.y >= .35f;
+            Vector3 effectNormal = showGround ? normal : hit.normal;
+            var effect = Instantiate(effectPrefab, impact, Quaternion.FromToRotation(Vector3.forward, effectNormal));
+            if (effect.TryGetComponent<TowerAreaImpact>(out var area))
+                area.Play(_explosionRadius, ground, normal, showGround);
             else
             {
                 foreach (var particles in effect.GetComponentsInChildren<ParticleSystem>(true))

@@ -2834,7 +2834,7 @@ Transform:
   m_GameObject: {fileID: 2543196143126949507}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.045}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -7686,6 +7686,12 @@ MonoBehaviour:
   fullRadiusEffects:
   - {fileID: 7607518127934579561}
   - {fileID: 8837731770472761013}
+  groundedEffects:
+  - {fileID: 6631963932424243200}
+  - {fileID: 1122494849345062184}
+  - {fileID: 2237930498630666076}
+  - {fileID: 3986504853181057765}
+  - {fileID: 5980175610061392768}
 --- !u!1 &4685003484971424223
 GameObject:
   m_ObjectHideFlags: 0
@@ -10222,7 +10228,7 @@ Transform:
   m_GameObject: {fileID: 6249833371865235928}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0.02}
+  m_LocalPosition: {x: 0, y: 0, z: 0.045}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -19709,7 +19715,7 @@ Transform:
   m_GameObject: {fileID: 7976428963709384885}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0.045}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
