@@ -55,6 +55,8 @@ MonoBehaviour:
   ascendTime: 1.9
   settleTime: 1.4
   playOnStart: 0
+  useUnscaledTime: 0
+  animateScale: 1
   teamColor: {r: 2.2, g: 1.1, b: 0.25, a: 1}
   dustColor: {r: 0.72, g: 0.64, b: 0.52, a: 1}
   edgeWidth: 0.6
@@ -182,6 +184,7 @@ MonoBehaviour:
   buildTime: 4.5
   tremorTime: 0.35
   playOnStart: 0
+  useUnscaledTime: 0
   teamColor: {r: 2.2, g: 1.1, b: 0.25, a: 1}
   dustColor: {r: 0.72, g: 0.64, b: 0.52, a: 1}
   edgeWidth: 0.7
@@ -198,8 +201,8 @@ MonoBehaviour:
   revealShader: {fileID: 4800000, guid: 9e8526052dc07104a9cdcd9ad8f09929, type: 3}
   constructFx: {fileID: 8904515764162850694, guid: 252e8063400d0da4a86469ad8e98ff83, type: 3}
   impactFx: {fileID: 2500757465385844478, guid: d514e7643c6be0b46aa5d71e695fd0d1, type: 3}
-  poleMesh: {fileID: -2432090755550338912, guid: 902f0c42d11495342819477cbcc15a07, type: 3}
-  plankMesh: {fileID: -2432090755550338912, guid: 43903fc7b08f4d94795096d2a52e8602, type: 3}
+  poleMesh: {fileID: -1747086821578303485, guid: 4f3d6f0769ea9b64fa841b274a39bba2, type: 3}
+  plankMesh: {fileID: 3663920089763608293, guid: efd17f3f8ba6bec40afbd22875788dcf, type: 3}
   foundationMesh: {fileID: -2432090755550338912, guid: e7d2ee7d048ab76439b9faf449391cc2, type: 3}
   scaffoldMat: {fileID: 2100000, guid: 03e45cb73eca17941819f48b0c6c26a0, type: 2}
   foundationMat: {fileID: 2100000, guid: e97760ba34901f343beacc9c2cfd67bf, type: 2}

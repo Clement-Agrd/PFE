@@ -181,6 +181,14 @@ namespace BuildVFX
                     for (int i = 0; i < n; i++) { A.Add(Vector2.Lerp(a, c, i / (float)n)); B.Add(Vector2.Lerp(a, c, (i + 1) / (float)n)); }
                 }
             }
+            // Les maillages (poteau, planche) peuvent avoir n'importe quelle taille : on normalise d'après leurs bounds
+            // (poteau : hauteur totale = H, pied posé sur baseY ; planche : longueur = côté du module, largeur 0,9 m).
+            Bounds pb = poleMesh.bounds;
+            float poleScaleY = H / Mathf.Max(0.01f, pb.size.y), poleFootY = -pb.min.y * poleScaleY;
+            Bounds kb = plankMesh ? plankMesh.bounds : default;
+            float plankScaleZ = plankMesh ? 0.9f / Mathf.Max(0.01f, kb.size.z) : 1f;
+            float plankLenInv = plankMesh ? 1f / Mathf.Max(0.01f, kb.size.x) : 1f;
+            float plankFootY = plankMesh ? -kb.min.y : 0f;
             int total = A.Count, levels = Mathf.Clamp(Mathf.RoundToInt(H / 3.2f), 3, 9);
             float stag = 0.9f * Mathf.Min(1f, buildTime / 3f);
             for (int i = 0; i < total; i++)
@@ -188,11 +196,11 @@ namespace BuildVFX
                 Vector3 p0 = cen + q * new Vector3(A[i].x, 0, A[i].y), p1 = cen + q * new Vector3(B[i].x, 0, B[i].y), mid = (p0 + p1) * 0.5f;
                 Vector3 dir = (p1 - p0); float len = dir.magnitude; dir.y = 0; dir.Normalize();
                 var rot = Quaternion.LookRotation(dir) * Quaternion.Euler(0, 90, 0);
-                AddPiece(list, root, poleMesh, scaffoldMat, new Vector3(p0.x, baseY, p0.z), Quaternion.identity, new Vector3(1, H, 1), i / (float)total * stag, true);
+                AddPiece(list, root, poleMesh, scaffoldMat, new Vector3(p0.x, baseY + poleFootY, p0.z), Quaternion.identity, new Vector3(1, poleScaleY, 1), i / (float)total * stag, true);
                 if (plankMesh) for (int k = 0; k < levels; k++)
                 {
                     float l = Mathf.Lerp(0.2f, 0.92f, levels == 1 ? 0f : k / (levels - 1f));
-                    AddPiece(list, root, plankMesh, scaffoldMat, new Vector3(mid.x, baseY + H * l, mid.z), rot, new Vector3(len * (circle ? 1.06f : 1f), 1f, 0.9f), l * buildTime * 0.8f, false);
+                    AddPiece(list, root, plankMesh, scaffoldMat, new Vector3(mid.x, baseY + H * l + plankFootY, mid.z), rot, new Vector3(len * (circle ? 1.06f : 1f) * plankLenInv, 1f, plankScaleZ), l * buildTime * 0.8f, false);
                 }
             }
             foreach (var p in list) { p.dur = p.pole ? 0.4f : 0.3f; }

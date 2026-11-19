@@ -149,7 +149,13 @@ namespace BuildVFX.EditorTools
         static void Tumble(ParticleSystem ps) { var m = ps.main; m.startRotation3D = true; m.startRotationX = C(0, 6.28f); m.startRotationY = C(0, 6.28f); m.startRotationZ = C(0, 6.28f); }
         static void World(ParticleSystem ps, float bounce = 0.3f) { var c = ps.collision; c.enabled = true; c.type = ParticleSystemCollisionType.World; c.mode = ParticleSystemCollisionMode.Collision3D; c.bounce = bounce; c.dampen = 0.5f; c.lifetimeLoss = 0.02f; c.radiusScale = 0.5f; }
         static void ShrinkEnd(ParticleSystem ps) { var s = ps.sizeOverLifetime; s.enabled = true; s.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(new Keyframe(0, 1), new Keyframe(0.75f, 1), new Keyframe(1, 0))); }
-        static Mesh LoadMesh(string n) { foreach (var o in AssetDatabase.LoadAllAssetsAtPath(R + "/Meshes/" + n + ".obj")) if (o is Mesh m) return m; return null; }
+        static Mesh LoadMesh(string n)
+        {
+            // .obj généré, ou .fbx fourni (Poteau_echafaudage / planche_echafaudage)
+            foreach (var ext in new[] { ".obj", ".fbx" })
+                foreach (var o in AssetDatabase.LoadAllAssetsAtPath(R + "/Meshes/" + n + ext)) if (o is Mesh m) return m;
+            return null;
+        }
         static Material LoadMat(string n) => AssetDatabase.LoadAssetAtPath<Material>(R + "/Materials/" + n + ".mat");
 
         [MenuItem("Tools/Build VFX/Setup URP")]
@@ -255,7 +261,7 @@ namespace BuildVFX.EditorTools
             s.revealShader = Shader.Find("BuildVFX/BuildReveal");
             s.constructFx = AssetDatabase.LoadAssetAtPath<GameObject>(R + "/Prefabs/BuildConstructFX.prefab");
             s.impactFx = AssetDatabase.LoadAssetAtPath<GameObject>(R + "/Prefabs/BuildImpact.prefab");
-            s.poleMesh = LoadMesh("Scaffold_Pole"); s.plankMesh = LoadMesh("Scaffold_Plank"); s.foundationMesh = LoadMesh("BuildFoundation");
+            s.poleMesh = LoadMesh("Poteau_echafaudage"); s.plankMesh = LoadMesh("planche_echafaudage"); s.foundationMesh = LoadMesh("BuildFoundation");
             s.scaffoldMat = LoadMat("M_Scaffold"); s.foundationMat = LoadMat("M_Foundation");
             EditorUtility.SetDirty(s);
         }
