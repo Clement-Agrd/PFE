@@ -47,6 +47,7 @@ GameObject:
   - component: {fileID: 2236195891170485019}
   - component: {fileID: 8542806672554129989}
   - component: {fileID: 8484049186551131935}
+  - component: {fileID: 4094781387316950837}
   m_Layer: 0
   m_Name: Constructible_TourArcher
   m_TagString: Untagged
@@ -211,3 +212,17 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3.2, y: 5.6, z: 3.2}
   m_Center: {x: 0, y: 2.8, z: 0}
+--- !u!114 &4094781387316950837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8743156393210898755}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00a41f291d6bc434c8b4f6902c4d75ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageFx.DamageFxTag
+  role: 1
+  chest: {fileID: 0}

@@ -31,7 +31,7 @@ namespace DamageFx
 
         [Header("Taille")]
         [SerializeField, Min(0.001f), Tooltip("Échelle monde d'un chiffre à la distance de référence (à régler selon la taille de police du prefab).")]
-        private float baseWorldScale = 0.45f;
+        private float baseWorldScale = 0.7f;
         [SerializeField, Min(0.1f)] private float minSizeMultiplier = 0.8f;
         [SerializeField, Min(0.1f)] private float maxSizeMultiplier = 1.9f;
         [SerializeField, Min(1f), Tooltip("Dégâts pour atteindre la taille maximale.")] private float maxDamageReference = 120f;

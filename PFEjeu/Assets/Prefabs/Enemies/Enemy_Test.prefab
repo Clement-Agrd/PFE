@@ -23,6 +23,7 @@ GameObject:
   - component: {fileID: 6765001367769977471}
   - component: {fileID: 6550145341354955439}
   - component: {fileID: 4887090801734402355}
+  - component: {fileID: 8466225940045856987}
   m_Layer: 3
   m_Name: Enemy_Test
   m_TagString: Untagged
@@ -231,6 +232,7 @@ MonoBehaviour:
   detectionRange: 7
   loseTargetRange: 10
   detectionInterval: 0.15
+  playerFieldOfView: 110
   requireLineOfSight: 0
   sightBlockingMask:
     serializedVersion: 2
@@ -344,6 +346,43 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 775d0db067c661a46aa42a5621f17644, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::EtatManager
+--- !u!114 &8466225940045856987
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2454647618617984211}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c8d8448a58f64c4097a904c70cdbe51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.FootstepDust
+  source: 0
+  footL: {fileID: 0}
+  footR: {fileID: 0}
+  groundOffset: 0.1
+  footCooldown: 0.15
+  minFootDownSpeed: 0.1
+  stepLength: 1.5
+  footSpread: 0.12
+  walkSpeed: 2.2
+  sprintSpeed: 6.5
+  minStepSpeed: 0.4
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundRayLength: 1.2
+  groundedDistance: 0.25
+  landMinSpeed: 3
+  landMaxSpeed: 12
+  turnAngle: 110
+  stopFraction: 0.3
+  slideDuration: 0.45
+  autoDetectLandingAndTurns: 1
+  groundTintAmount: 0.8
+  debugLog: 0
+  drawGizmos: 1
 --- !u!1 &2881719834808192795
 GameObject:
   m_ObjectHideFlags: 0

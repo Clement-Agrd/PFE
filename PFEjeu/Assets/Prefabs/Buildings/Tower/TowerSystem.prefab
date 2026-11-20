@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8220032235991510549}
   - component: {fileID: 9113911517627355642}
   - component: {fileID: -5941803406922902233}
+  - component: {fileID: 4590326957672514061}
   m_Layer: 0
   m_Name: TowerSystem
   m_TagString: Untagged
@@ -100,9 +101,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IATower
   tower: {fileID: 0}
-  enemyLayer:
-    serializedVersion: 2
-    m_Bits: 8
 --- !u!114 &-5941803406922902233
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -118,6 +116,21 @@ MonoBehaviour:
   tower: {fileID: 0}
   stats: {fileID: 0}
   poolManager: {fileID: 0}
-  slowPower: -0.3
   zoneImpact: 3
   arrowCount: 10
+  predictMovement: 1
+  estimatedFlightTime: 1
+--- !u!114 &4590326957672514061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8740322642456599338}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00a41f291d6bc434c8b4f6902c4d75ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageFx.DamageFxTag
+  role: 1
+  chest: {fileID: 0}

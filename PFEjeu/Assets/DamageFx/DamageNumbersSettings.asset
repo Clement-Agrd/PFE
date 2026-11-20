@@ -12,6 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d15197fa6ba7f44d8b42023e2e56c0c, type: 3}
   m_Name: DamageNumbersSettings
   m_EditorClassIdentifier: Assembly-CSharp::DamageFx.DamageNumbersSettings
+  showIcons: 0
   accumulationWindow: 0.4
   smallAccumulationWindow: 0.8
   maxAccumulationTime: 1.6
@@ -20,7 +21,7 @@ MonoBehaviour:
   smallDamageFraction: 0.03
   smallScale: 0.6
   bigHit: 50
-  baseWorldScale: 0.45
+  baseWorldScale: 0.7
   minSizeMultiplier: 0.8
   maxSizeMultiplier: 1.9
   maxDamageReference: 120

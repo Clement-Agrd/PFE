@@ -19,6 +19,7 @@ GameObject:
   - component: {fileID: 1735159095192222324}
   - component: {fileID: 4796347209484445091}
   - component: {fileID: 6812832825620296051}
+  - component: {fileID: 1662564247445383541}
   m_Layer: 3
   m_Name: EnemyClem
   m_TagString: Untagged
@@ -285,6 +286,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HealthBarLink
   healthBar: {fileID: 1068510994971344398}
+--- !u!114 &1662564247445383541
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5298265848249930004}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c8d8448a58f64c4097a904c70cdbe51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.FootstepDust
+  source: 0
+  footL: {fileID: 0}
+  footR: {fileID: 0}
+  groundOffset: 0.1
+  footCooldown: 0.15
+  minFootDownSpeed: 0.1
+  stepLength: 1.5
+  footSpread: 0.12
+  walkSpeed: 2.2
+  sprintSpeed: 6.5
+  minStepSpeed: 0.4
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundRayLength: 1.2
+  groundedDistance: 0.25
+  landMinSpeed: 3
+  landMaxSpeed: 12
+  turnAngle: 110
+  stopFraction: 0.3
+  slideDuration: 0.45
+  autoDetectLandingAndTurns: 1
+  groundTintAmount: 0.8
+  debugLog: 0
+  drawGizmos: 1
 --- !u!1 &8529551993204236278
 GameObject:
   m_ObjectHideFlags: 0

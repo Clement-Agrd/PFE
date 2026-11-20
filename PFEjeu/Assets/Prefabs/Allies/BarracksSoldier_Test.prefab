@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 3201000000000000005}
   - component: {fileID: 3201000000000000006}
   - component: {fileID: 3201000000000000007}
+  - component: {fileID: 2738234567917536548}
   m_Layer: 6
   m_Name: BarracksSoldier_Test
   m_TagString: Untagged
@@ -35,7 +36,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3201000000000000011}
-  - {fileID: 3201000000000000102}
+  - {fileID: 3163363084861171598}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!65 &3201000000000000003
@@ -159,11 +160,48 @@ MonoBehaviour:
   attackRecovery: 0.75
   combatTurnSpeed: 720
   attackDamageType: {fileID: 11400000, guid: b1bd59adeca496143b967b12e62be962, type: 2}
-  animator: {fileID: 3201000000000000103}
+  animator: {fileID: 9009074075305655796}
   movementSpeedParameter: Speed
   attackTrigger: Attack
   attackSpeedParameter: AttackSpeed
   deathDespawnDelay: 0.35
+--- !u!114 &2738234567917536548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3201000000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c8d8448a58f64c4097a904c70cdbe51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.FootstepDust
+  source: 0
+  footL: {fileID: 0}
+  footR: {fileID: 0}
+  groundOffset: 0.1
+  footCooldown: 0.15
+  minFootDownSpeed: 0.1
+  stepLength: 1.5
+  footSpread: 0.12
+  walkSpeed: 2.2
+  sprintSpeed: 6.5
+  minStepSpeed: 0.4
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundRayLength: 1.2
+  groundedDistance: 0.25
+  landMinSpeed: 3
+  landMaxSpeed: 12
+  turnAngle: 110
+  stopFraction: 0.3
+  slideDuration: 0.45
+  autoDetectLandingAndTurns: 1
+  groundTintAmount: 0.8
+  debugLog: 0
+  drawGizmos: 1
 --- !u!1 &3201000000000000010
 GameObject:
   m_ObjectHideFlags: 0
@@ -234,7 +272,9 @@ MeshRenderer:
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
   m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
   m_ReceiveGI: 1
   m_PreserveUVs: 0
@@ -252,7 +292,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
-
 --- !u!1001 &3201000000000000101
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -295,7 +334,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5866666021909216657, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       propertyPath: m_Controller
-      value:
+      value: 
       objectReference: {fileID: 9100000, guid: 2dd26c6dc4e34765ab63a503af56bba1, type: 2}
     - target: {fileID: 5866666021909216657, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
       propertyPath: m_ApplyRootMotion
@@ -303,22 +342,25 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -6574882734343921810, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6524597137726309235}
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
---- !u!4 &3201000000000000102 stripped
+--- !u!4 &625277382090186507 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: -6574882734343921810, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
+  m_PrefabInstance: {fileID: 3201000000000000101}
+  m_PrefabAsset: {fileID: 0}
+--- !u!4 &3163363084861171598 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
   m_PrefabInstance: {fileID: 3201000000000000101}
   m_PrefabAsset: {fileID: 0}
---- !u!95 &3201000000000000103 stripped
+--- !u!95 &9009074075305655796 stripped
 Animator:
   m_CorrespondingSourceObject: {fileID: 5866666021909216657, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
-  m_PrefabInstance: {fileID: 3201000000000000101}
-  m_PrefabAsset: {fileID: 0}
---- !u!4 &3201000000000000104 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: -6574882734343921810, guid: 2faa610713d3b3c439473daa55e8c60a, type: 3}
   m_PrefabInstance: {fileID: 3201000000000000101}
   m_PrefabAsset: {fileID: 0}
 --- !u!1001 &3201000000000000111
@@ -327,7 +369,7 @@ PrefabInstance:
   serializedVersion: 2
   m_Modification:
     serializedVersion: 3
-    m_TransformParent: {fileID: 3201000000000000104}
+    m_TransformParent: {fileID: 625277382090186507}
     m_Modifications:
     - target: {fileID: 8565910320893362972, guid: 4340f4c2a8d13cf4b82d9438b74c6a67, type: 3}
       propertyPath: m_LocalPosition.x
@@ -366,3 +408,8 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 4340f4c2a8d13cf4b82d9438b74c6a67, type: 3}
+--- !u!4 &6524597137726309235 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8565910320893362972, guid: 4340f4c2a8d13cf4b82d9438b74c6a67, type: 3}
+  m_PrefabInstance: {fileID: 3201000000000000111}
+  m_PrefabAsset: {fileID: 0}

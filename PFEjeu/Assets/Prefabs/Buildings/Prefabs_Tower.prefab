@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 9036243069973542112}
   - component: {fileID: 8325061425129270176}
   - component: {fileID: 6267190341995682530}
+  - component: {fileID: 4055416407894714123}
   m_Layer: 0
   m_Name: Prefabs_Tower
   m_TagString: Untagged
@@ -47,10 +48,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Tower
   towerData: {fileID: 11400000, guid: d531276bf8165564fa33574690a4baf7, type: 2}
+  heroData: {fileID: 0}
   currentLevel: 0
   modelParent: {fileID: 9036243069973542112}
   firePoint: {fileID: 0}
   poolManager: {fileID: 0}
+  iaTower: {fileID: 0}
+  towerShoot: {fileID: 0}
   enemyLayer:
     serializedVersion: 2
     m_Bits: 8
@@ -83,6 +87,20 @@ MonoBehaviour:
     baseValue: 5.5
   - type: 7
     baseValue: 1
+--- !u!114 &4055416407894714123
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4805345431003981923}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00a41f291d6bc434c8b4f6902c4d75ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageFx.DamageFxTag
+  role: 1
+  chest: {fileID: 0}
 --- !u!1 &9136211671197413775
 GameObject:
   m_ObjectHideFlags: 0

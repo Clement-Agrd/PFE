@@ -141,6 +141,7 @@ GameObject:
   - component: {fileID: 4137077392185794383}
   - component: {fileID: 3243765941033323347}
   - component: {fileID: 2205894701985005552}
+  - component: {fileID: 7959152173409974174}
   m_Layer: 6
   m_Name: BarracksSoldier_SpiritWood
   m_TagString: Untagged
@@ -290,6 +291,43 @@ MonoBehaviour:
   attackTrigger: Attack
   attackSpeedParameter: AttackSpeed
   deathDespawnDelay: 0.35
+--- !u!114 &7959152173409974174
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7582639430425303973}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7c8d8448a58f64c4097a904c70cdbe51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DustVFX.FootstepDust
+  source: 0
+  footL: {fileID: 0}
+  footR: {fileID: 0}
+  groundOffset: 0.1
+  footCooldown: 0.15
+  minFootDownSpeed: 0.1
+  stepLength: 1.5
+  footSpread: 0.12
+  walkSpeed: 2.2
+  sprintSpeed: 6.5
+  minStepSpeed: 0.4
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  groundRayLength: 1.2
+  groundedDistance: 0.25
+  landMinSpeed: 3
+  landMaxSpeed: 12
+  turnAngle: 110
+  stopFraction: 0.3
+  slideDuration: 0.45
+  autoDetectLandingAndTurns: 1
+  groundTintAmount: 0.8
+  debugLog: 0
+  drawGizmos: 1
 --- !u!1001 &1458683450935411365
 PrefabInstance:
   m_ObjectHideFlags: 0
