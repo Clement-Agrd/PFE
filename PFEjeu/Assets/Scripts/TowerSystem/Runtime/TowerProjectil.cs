@@ -174,7 +174,7 @@ public class TowerProjectil : MonoBehaviour
     private void HitTarget()
     {
         if (dealsDamage && target != null && target.GetComponentInParent<Health>() is Health health)
-            health.TakeDamage(new DamageInfo(damage, damageType, armorPenetration: armorPenetration));
+            health.TakeDamage(new DamageInfo(damage, damageType, armorPenetration: armorPenetration, hitPoint: transform.position));
 
         onImpact?.Invoke(targetPosition);
 

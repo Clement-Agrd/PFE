@@ -42,5 +42,7 @@ namespace DustVFX
         public float impact01;
         public DustSurface surface;
         public int foot;
+        /// <summary>Colour of the ground actually walked on (rgb); alpha = how much it tints the dust (0 = none, the default).</summary>
+        public Color groundTint;
     }
 }

@@ -1483,6 +1483,7 @@ MonoBehaviour:
   stopFraction: 0.3
   slideDuration: 0.45
   autoDetectLandingAndTurns: 1
+  groundTintAmount: 0.45
   debugLog: 0
   drawGizmos: 1
 --- !u!114 &8155211255134977568

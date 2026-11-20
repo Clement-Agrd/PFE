@@ -69,6 +69,10 @@ namespace DustVFX
         [Min(0.05f)] public float slideDuration = 0.45f;
         public bool autoDetectLandingAndTurns = true;
 
+        [Header("Ground tint")]
+        [Tooltip("How much the dust takes the colour of the ground under the foot (terrain layer / material albedo). 0 = surface colour only.")]
+        [Range(0f, 1f)] public float groundTintAmount = 0.8f;
+
         [Header("Debug")]
         public bool debugLog;
         public bool drawGizmos = true;
@@ -222,7 +226,8 @@ namespace DustVFX
                 moveDir = dir,
                 speed01 = Speed01(),
                 impact01 = Mathf.Clamp01(impact),
-                surface = s
+                surface = s,
+                groundTint = GroundTint(c, p)
             });
         }
 
@@ -268,7 +273,8 @@ namespace DustVFX
                         moveDir = d,
                         speed01 = Mathf.Clamp01(Mathf.InverseLerp(walkSpeed, sprintSpeed, speedLag)),
                         impact01 = Mathf.Clamp01(Mathf.InverseLerp(walkSpeed, sprintSpeed, speedLag)),
-                        surface = DustSurfaceResolver.Resolve(c, p)
+                        surface = DustSurfaceResolver.Resolve(c, p),
+                        groundTint = GroundTint(c, p)
                     });
                 }
             }
@@ -388,8 +394,18 @@ namespace DustVFX
                 moveDir = dir,
                 speed01 = Speed01(),
                 surface = s,
-                foot = foot
+                foot = foot,
+                groundTint = GroundTint(h.collider, h.point)
             });
+        }
+
+        /// <summary>Colour of the ground under the foot (terrain layer / material albedo), weighted by groundTintAmount.</summary>
+        Color GroundTint(Collider c, Vector3 p)
+        {
+            if (groundTintAmount <= 0f) return default;
+            Color t = DustSurfaceResolver.GroundColor(c, p);
+            t.a *= groundTintAmount;
+            return t;
         }
 
         void Submit(DustRequest r)
@@ -428,7 +444,8 @@ namespace DustVFX
                 normal = n,
                 moveDir = speed > 0.3f ? dir : new Vector3(dirLag.x, 0f, dirLag.z).normalized,
                 speed01 = Mathf.Max(0.5f, Speed01()),
-                surface = s
+                surface = s,
+                groundTint = GroundTint(c, p)
             });
         }
 

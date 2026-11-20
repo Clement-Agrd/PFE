@@ -377,7 +377,9 @@ namespace Core.HealthSystem
                     ? critColor
                     : normalColor,
                 "",
-                isCrit
+                isCrit,
+                info.Type,
+                info.HasHitPoint ? info.HitPoint : (Vector3?)null
             );
 
 
@@ -798,11 +800,20 @@ namespace Core.HealthSystem
             int amount,
             Color color,
             string prefix = "",
-            bool isCrit = false)
+            bool isCrit = false,
+            DamageType damageType = null,
+            Vector3? hitPoint = null)
         {
             if (!showDamageNumbers)
                 return;
 
+            // Nouveau système (DamageFx) : actif dès qu'un DamageNumbersManager est présent dans la scène.
+            // Sinon on retombe sur l'ancien SimpleDamageSpawner ci-dessous (conservé tant que le nouveau n'est pas validé).
+            if (DamageFx.DamageNumbers.IsActive)
+            {
+                ShowNumberFx(amount, prefix, isCrit, damageType, hitPoint);
+                return;
+            }
 
             var spawner = _damageSpawner != null ? _damageSpawner : SimpleDamageSpawner.Instance;
             if (spawner == null) return;
@@ -828,6 +839,57 @@ namespace Core.HealthSystem
                 spawner.ShowAt(position, amount, prefix + amount, color, isCrit);
             }
             else spawner.Show(position, amount, prefix + amount, color, isCrit);
+        }
+
+        // ============================================================
+        // DAMAGE NUMBERS (DamageFx)
+        // ============================================================
+
+        private DamageFx.DamageFxTag _fxTag;
+        private bool _fxTagResolved;
+
+        /// <summary>Envoie le chiffre au nouveau système : point d'impact (ou torse), famille, rôle de la cible (tour / mur / boss).</summary>
+        private void ShowNumberFx(int amount, string prefix, bool isCrit, DamageType damageType, Vector3? hitPoint)
+        {
+            if (!_fxTagResolved)
+            {
+                _fxTag = GetComponentInParent<DamageFx.DamageFxTag>();
+                _fxTagResolved = true;
+            }
+
+            Vector3 point = hitPoint ?? ChestPoint();
+            bool isHeal = prefix == "+";
+
+            if (isHeal)
+            {
+                DamageFx.DamageNumbers.Show(amount, point, DamageFx.DamageFxKind.Heal, false, transform, maxHealth);
+                return;
+            }
+
+            bool alertTarget = _fxTag != null && _fxTag.IsAlertTarget;
+            bool boss = _fxTag != null && _fxTag.IsBoss;
+            if (alertTarget)
+                DamageFx.DamageNumbers.Show(amount, point, DamageFx.DamageFxKind.TowerHit, isCrit, transform, maxHealth, false);
+            else
+                DamageFx.DamageNumbers.Show(amount, point, damageType, isCrit, transform, maxHealth, boss);
+        }
+
+        /// <summary>Torse de la cible : repère DamageFxTag.Chest si présent, sinon ~65 % de la hauteur des colliders.</summary>
+        private Vector3 ChestPoint()
+        {
+            if (_fxTag != null && _fxTag.Chest != null) return _fxTag.Chest.position;
+
+            _damageNumberColliders ??= GetComponentsInChildren<Collider>(true);
+            bool any = false;
+            Bounds bounds = default;
+            foreach (var collider in _damageNumberColliders)
+            {
+                if (collider == null || !collider.enabled || collider.isTrigger || !collider.gameObject.activeInHierarchy) continue;
+                if (!any) { bounds = collider.bounds; any = true; }
+                else bounds.Encapsulate(collider.bounds);
+            }
+            if (!any) return transform.position + Vector3.up;
+            return new Vector3(bounds.center.x, bounds.min.y + bounds.size.y * 0.65f, bounds.center.z);
         }
     }
 }

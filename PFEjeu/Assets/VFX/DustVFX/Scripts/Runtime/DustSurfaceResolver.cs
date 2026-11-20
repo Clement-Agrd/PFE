@@ -24,12 +24,16 @@ namespace DustVFX
         {
             colliderCache.Clear();
             terrainCache.Clear();
+            averageColorCache.Clear();
+            colliderColorCache.Clear();
         }
 
         public static void ClearCache()
         {
             colliderCache.Clear();
             terrainCache.Clear();
+            averageColorCache.Clear();
+            colliderColorCache.Clear();
         }
 
         public static DustSurface Resolve(Collider col, Vector3 point)
@@ -54,6 +58,99 @@ namespace DustVFX
             DustSurface result = ResolveUncached(col, settings);
             colliderCache[col] = result;
             return result;
+        }
+
+        // ------------------------------------------------------------------ ground colour
+
+        static readonly Dictionary<Object, Color> averageColorCache = new Dictionary<Object, Color>(32);
+        static readonly Dictionary<Collider, Color> colliderColorCache = new Dictionary<Collider, Color>(64);
+        static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
+        static readonly int ColorId = Shader.PropertyToID("_Color");
+        static readonly int BaseMapId = Shader.PropertyToID("_BaseMap");
+        static readonly int MainTexId = Shader.PropertyToID("_MainTex");
+
+        /// <summary>
+        /// Average colour of the ground under 'point' (rgb) with alpha 1, or alpha 0 when unknown.
+        /// Terrain: dominant splat layer's diffuse texture. Other colliders: renderer material (_BaseColor x _BaseMap).
+        /// Cached per terrain layer / material / collider: steady state allocates nothing.
+        /// </summary>
+        public static Color GroundColor(Collider col, Vector3 point)
+        {
+            if (col == null) return default;
+
+            if (col is TerrainCollider)
+            {
+                Terrain terrain = col.GetComponent<Terrain>();
+                TerrainLayer layer = terrain != null ? DominantLayer(terrain, point) : null;
+                return layer != null ? AverageTexture(layer, layer.diffuseTexture, Color.white) : default;
+            }
+
+            if (colliderColorCache.TryGetValue(col, out Color cached)) return cached;
+
+            Color result = default;
+            Renderer r = col.GetComponent<Renderer>();
+            if (r == null) r = col.GetComponentInParent<Renderer>();
+            if (r != null && r.sharedMaterial != null)
+            {
+                Material m = r.sharedMaterial;
+                Color tint = m.HasProperty(BaseColorId) ? m.GetColor(BaseColorId) : m.HasProperty(ColorId) ? m.GetColor(ColorId) : Color.white;
+                Texture tex = m.HasProperty(BaseMapId) ? m.GetTexture(BaseMapId) : m.HasProperty(MainTexId) ? m.GetTexture(MainTexId) : null;
+                result = AverageTexture(m, tex, tint);
+            }
+            colliderColorCache[col] = result;
+            return result;
+        }
+
+        static TerrainLayer DominantLayer(Terrain terrain, Vector3 point)
+        {
+            TerrainData data = terrain.terrainData;
+            if (data == null) return null;
+            if (!terrainCache.TryGetValue(data, out TerrainMap map))
+            {
+                map = BuildTerrainMap(data, DustSettings.Instance);
+                terrainCache[data] = map;
+            }
+            if (map.dominant == null) return null;
+
+            Vector3 local = point - terrain.transform.position;
+            Vector3 size = data.size;
+            int x = Mathf.Clamp((int)(local.x / size.x * map.width), 0, map.width - 1);
+            int y = Mathf.Clamp((int)(local.z / size.z * map.height), 0, map.height - 1);
+            int layer = map.dominant[y * map.width + x];
+            TerrainLayer[] layers = data.terrainLayers;
+            return layers != null && layer < layers.Length ? layers[layer] : null;
+        }
+
+        /// <summary>One-off per texture: downscale to 8x8 on the GPU and average (works on non-readable textures).</summary>
+        static Color AverageTexture(Object key, Texture tex, Color tint)
+        {
+            if (averageColorCache.TryGetValue(key, out Color cached)) return cached;
+
+            Color avg = Color.white;
+            if (tex != null)
+            {
+                RenderTexture rt = RenderTexture.GetTemporary(8, 8, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.sRGB);
+                RenderTexture prev = RenderTexture.active;
+                Graphics.Blit(tex, rt);
+                RenderTexture.active = rt;
+                var small = new Texture2D(8, 8, TextureFormat.RGBA32, false, false);
+                small.ReadPixels(new Rect(0, 0, 8, 8), 0, 0);
+                RenderTexture.active = prev;
+                RenderTexture.ReleaseTemporary(rt);
+                Color[] px = small.GetPixels();
+                Destroy(small);
+                float r = 0, g = 0, b = 0;
+                for (int i = 0; i < px.Length; i++) { r += px[i].r; g += px[i].g; b += px[i].b; }
+                avg = new Color(r / px.Length, g / px.Length, b / px.Length, 1f);
+            }
+            avg = new Color(avg.r * tint.r, avg.g * tint.g, avg.b * tint.b, 1f);
+            averageColorCache[key] = avg;
+            return avg;
+        }
+
+        static void Destroy(Object o)
+        {
+            if (Application.isPlaying) Object.Destroy(o); else Object.DestroyImmediate(o);
         }
 
         static DustSurface ResolveUncached(Collider col, DustSettings settings)

@@ -38,14 +38,23 @@ namespace Core.HealthSystem
 
         public readonly DamageSourceKind SourceKind;
 
+        /// <summary>Point d'impact monde (optionnel) : les chiffres de dégâts y apparaissent. Sans lui, le torse de la cible est utilisé.</summary>
+        public readonly Vector3 HitPoint;
+
+        public readonly bool HasHitPoint;
+
 
         public DamageInfo(
             int amount,
             DamageType type = null,
             GameObject source = null,
             DamageSourceKind sourceKind = DamageSourceKind.None,
-            float armorPenetration = 0f)
+            float armorPenetration = 0f,
+            Vector3? hitPoint = null)
         {
+            HitPoint = hitPoint ?? default;
+            HasHitPoint = hitPoint.HasValue;
+
             Amount = amount;
 
             Type = type;

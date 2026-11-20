@@ -105,6 +105,7 @@ namespace DustVFX
             DustSurface surf = r.surface;
             if (surf == null || !surf.EmitsDust) return;
 
+            SetTint(in r);
             StartTime = Time.time;
             Dying = false;
 
@@ -213,6 +214,7 @@ namespace DustVFX
             float k = st.intensity * surf.densityMul * (1f - 0.85f * st.wetness);
             if (k <= 0.02f) return;
 
+            SetTint(in r);
             StartTime = Time.time;
             Frame f = MakeFrame(r);
             transform.SetPositionAndRotation(f.origin, Quaternion.LookRotation(f.back, f.normal));
@@ -256,9 +258,33 @@ namespace DustVFX
             return f;
         }
 
+        // Ground tint of the request being built (steps are built one at a time on the main thread, so a static is safe).
+        static Color tintColor;
+        static float tintAmount;
+
+        static void SetTint(in DustRequest r)
+        {
+            tintColor = r.groundTint;
+            tintAmount = Mathf.Clamp01(r.groundTint.a);
+        }
+
+        /// <summary>
+        /// Moves the surface colour toward the ground colour while keeping the surface brightness
+        /// (dust stays light, only its hue follows the ground).
+        /// </summary>
+        static Color Tinted(Color c)
+        {
+            if (tintAmount <= 0.001f) return c;
+            float lumC = c.r * 0.299f + c.g * 0.587f + c.b * 0.114f;
+            float lumG = tintColor.r * 0.299f + tintColor.g * 0.587f + tintColor.b * 0.114f;
+            float k = Mathf.Clamp(lumC / Mathf.Max(0.05f, lumG), 0.3f, 3f);
+            var target = new Color(Mathf.Clamp01(tintColor.r * k), Mathf.Clamp01(tintColor.g * k), Mathf.Clamp01(tintColor.b * k), c.a);
+            return Color.Lerp(c, target, tintAmount);
+        }
+
         static Color SurfaceColor(DustSurface s, float alpha)
         {
-            Color c = s.color;
+            Color c = Tinted(s.color);
             c.a = Mathf.Clamp01(alpha);
             return c;
         }
@@ -330,7 +356,7 @@ namespace DustVFX
                 }
 
                 float s = Random.Range(surf.grainSize.x, surf.grainSize.y);
-                Color gc = surf.grainColor;
+                Color gc = Tinted(surf.grainColor);
                 float shade = Random.Range(0.75f, 1.15f);
                 gc = new Color(gc.r * shade, gc.g * shade, gc.b * shade, 1f);
 
