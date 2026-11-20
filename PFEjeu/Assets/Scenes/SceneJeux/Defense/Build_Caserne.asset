@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b3accb5c3c9340d49928ba77a9389c51, type: 3}
   m_Name: Build_Caserne
   m_EditorClassIdentifier: Assembly-CSharp::Core.TowerDefense.DefenseBuildingDefinition
-  displayName: Caserne
+  displayName: "Autel d\u2019invocation"
   prefab: {fileID: 2869989534083465915, guid: 44e79864ff0adbc4090f3aa838749c17, type: 3}
   requiredTownHallLevel: 1
   costs:

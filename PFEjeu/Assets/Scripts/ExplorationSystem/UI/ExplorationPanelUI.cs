@@ -149,6 +149,7 @@ namespace Core.Village.Exploration.UI
                     : hero.DefenseAssignment != null ? $"Affecté à {hero.DefenseAssignment.name}"
                     : selectable ? "Disponible" : manager.GetHeroUnavailableReason(hero);
                 choice.Label.text = $"{hero.HeroName} · {hero.ClasseName} · Nv {hero.Level}\n{hero.ExperienceLabel} · {status}";
+                HeroClassIcons.Decorate(choice, hero.Classe);
                 choice.SetActive(_selectedHeroes.Contains(hero));
                 choice.GetComponent<UnityEngine.UI.Button>().interactable = selectable || cancellable;
                 choice.GetComponent<CanvasGroup>().alpha = selectable || cancellable ? 1f : .5f;

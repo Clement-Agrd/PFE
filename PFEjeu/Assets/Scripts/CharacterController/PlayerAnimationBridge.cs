@@ -308,6 +308,20 @@ namespace ProfessionalTPS
             }
         }
 
+        public bool IsBowReleasePlaying
+        {
+            get
+            {
+                if (animator == null || !animator.isActiveAndEnabled) return false;
+                int layer = animator.GetLayerIndex("Upper Body Bow");
+                if (layer < 0) return false;
+                var state = animator.GetCurrentAnimatorStateInfo(layer);
+                if (state.IsName("Upper Body Bow.Bow Release") && state.normalizedTime < 1f) return true;
+                return animator.IsInTransition(layer) &&
+                    animator.GetNextAnimatorStateInfo(layer).IsName("Upper Body Bow.Bow Release");
+            }
+        }
+
         public void PlayBowAttack()
         {
             if (animator == null)

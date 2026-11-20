@@ -64,15 +64,15 @@ public class EtatManager : MonoBehaviour
         _effects.Clear();
     }
 
-    public static void ApplyTo(Health target, SOEtat data)
+    public static void ApplyTo(Health target, SOEtat data, int? damageOverride = null)
     {
         if (data == null || target == null || target.IsDead || !target.isActiveAndEnabled) return;
         if (!target.TryGetComponent<EtatManager>(out var manager))
             manager = target.gameObject.AddComponent<EtatManager>();
-        manager.AddEtat(data);
+        manager.AddEtat(data, damageOverride);
     }
 
-    public void AddEtat(SOEtat etatData)
+    public void AddEtat(SOEtat etatData, int? damageOverride = null)
     {
         if (etatData == null || !isActiveAndEnabled || (health != null && health.IsDead)) return;
 
@@ -81,13 +81,13 @@ public class EtatManager : MonoBehaviour
         {
             if (etat.EtatData == etatData)
             {
-                etat.ResetDuration();
+                etat.ResetDuration(damageOverride);
                 return;
             }
         }
 
         // Créer un nouvel état
-        Etat nouvelEtat = new Etat(etatData, entityStats, health);
+        Etat nouvelEtat = new Etat(etatData, entityStats, health, damageOverride);
 
         nouvelEtat.ApplyStatModifier();
 

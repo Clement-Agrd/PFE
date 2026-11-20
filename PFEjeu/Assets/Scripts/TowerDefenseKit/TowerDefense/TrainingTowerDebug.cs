@@ -41,7 +41,7 @@ namespace Core.TowerDefense
 
             var message = NewText("Recruitment", card, "Choisis une classe à recruter.", 22, TextMain);
             Layout(message.gameObject, height: 50);
-            AddClasses(card, "Caserne", message, ClasseHeros.Tank, ClasseHeros.Degats, ClasseHeros.Invocateur);
+            AddClasses(card, "Invocateurs", message, ClasseHeros.Tank, ClasseHeros.Degats, ClasseHeros.Invocateur);
             AddClasses(card, "Tour d’archer", message, ClasseHeros.ArcLong, ClasseHeros.ArcCourt, ClasseHeros.Arbalete);
             AddClasses(card, "Tour de chaman", message, ClasseHeros.ChamanFeu, ClasseHeros.ChamanGlace, ClasseHeros.ChamanVie);
         }

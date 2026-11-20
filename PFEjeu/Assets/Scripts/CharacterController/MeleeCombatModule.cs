@@ -103,10 +103,6 @@ namespace ProfessionalTPS
             }
         };
 
-        [Header("Movement")]
-        [SerializeField, Range(0f, 1f)]
-        private float attackMovementMultiplier = 0.35f;
-
         private readonly Collider[] _hits =
             new Collider[24];
 
@@ -157,10 +153,7 @@ namespace ProfessionalTPS
         public override CombatMode Mode =>
             CombatMode.Melee;
 
-        public override float MovementMultiplier =>
-            IsBusy
-                ? attackMovementMultiplier
-                : 1f;
+        public override float MovementMultiplier => 1f;
 
         public override void AttackPressed()
         {

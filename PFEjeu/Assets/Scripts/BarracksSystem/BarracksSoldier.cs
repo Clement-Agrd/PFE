@@ -47,6 +47,10 @@ namespace Core.BarracksSystem
         private EntityStats _stats;
         private Health _health;
         private Health _target;
+        private Health _secondaryTarget;
+        private readonly System.Collections.Generic.HashSet<Health> _areaVictims = new();
+        public int MaximumEngagedEnemies => _owner != null && _owner.AssignedHero != null &&
+            _owner.AssignedHero.Classe == ClasseHeros.Tank ? 2 : 1;
 
         private int _slotIndex = -1;
         private int _speedHash;
@@ -155,6 +159,8 @@ namespace Core.BarracksSystem
 
         private void TickCombat()
         {
+            if (MaximumEngagedEnemies < 2 || !IsTargetValid(_secondaryTarget))
+                SetSecondaryTarget(null);
             if (_isAttacking)
             {
                 TickAttack();
@@ -174,6 +180,8 @@ namespace Core.BarracksSystem
                     var better = FindNearestEnemy(_target == null ? MaxSoldiersPerEnemy - 1 : currentCount - 2);
                     if (better != null) SetTarget(better);
                 }
+                if (MaximumEngagedEnemies == 2 && _target != null && _secondaryTarget == null)
+                    SetSecondaryTarget(FindNearestEnemy(0));
             }
 
             if (_target == null)
@@ -273,6 +281,44 @@ namespace Core.BarracksSystem
                 DamageSourceKind.Sword);
 
             _target.TakeDamage(in info);
+            var data = _owner != null ? _owner.Data : null;
+            var hero = _owner != null ? _owner.AssignedHero : null;
+            if (data == null || hero == null) return;
+            if (hero.Classe == ClasseHeros.Degats && !_target.IsDead)
+            {
+                int burn = Mathf.Max(0, Mathf.RoundToInt(_stats.GetStat(StatType.MagicDamage)));
+                if (burn > 0) EtatManager.ApplyTo(_target, data.IncandescentBurn, burn);
+            }
+            else if (hero.Classe == ClasseHeros.Tank)
+                ApplyStoneAreaDamage(data, damage);
+        }
+
+        private void ApplyStoneAreaDamage(SOBarracks data, int directDamage)
+        {
+            int splashDamage = Mathf.RoundToInt(directDamage * data.StoneAreaDamageFraction);
+            if (splashDamage <= 0) return;
+            float radius = data.StoneAreaRadius;
+            int count = Physics.OverlapSphereNonAlloc(transform.position, radius, _targetBuffer,
+                enemyMask, QueryTriggerInteraction.Ignore);
+            while (count == _targetBuffer.Length)
+            {
+                System.Array.Resize(ref _targetBuffer, _targetBuffer.Length * 2);
+                count = Physics.OverlapSphereNonAlloc(transform.position, radius, _targetBuffer,
+                    enemyMask, QueryTriggerInteraction.Ignore);
+            }
+            _areaVictims.Clear();
+            // The main target already received the full physical hit.
+            for (int i = 0; i < count; i++)
+            {
+                var hit = _targetBuffer[i];
+                var victim = hit != null ? hit.GetComponentInParent<Health>() : null;
+                if (victim == null || victim == _target || victim == _health || victim.IsDead ||
+                    !victim.isActiveAndEnabled || (enemyMask.value & (1 << victim.gameObject.layer)) == 0 ||
+                    Mathf.Abs(victim.transform.position.y - transform.position.y) > data.StoneAreaHeightTolerance ||
+                    PlanarSqrDistance(transform.position, victim.transform.position) > radius * radius ||
+                    !_areaVictims.Add(victim)) continue;
+                victim.TakeDamage(new DamageInfo(splashDamage, attackDamageType, gameObject, DamageSourceKind.Sword));
+            }
         }
 
         private Health FindNearestEnemy(int maxExistingSoldiers)
@@ -298,7 +344,7 @@ namespace Core.BarracksSystem
 
                 Health candidate = candidateCollider.GetComponentInParent<Health>();
 
-                if (candidate == _target || !IsTargetValid(candidate))
+                if (candidate == _target || candidate == _secondaryTarget || !IsTargetValid(candidate))
                     continue;
 
                 int assigned = EngagementCount(candidate);
@@ -320,6 +366,7 @@ namespace Core.BarracksSystem
 
         private void SetTarget(Health next)
         {
+            if (next == null || next == _secondaryTarget) SetSecondaryTarget(null);
             if (ReferenceEquals(_target, next)) return;
             if (!ReferenceEquals(_target, null) && Engagements.TryGetValue(_target, out var previous))
             {
@@ -336,12 +383,31 @@ namespace Core.BarracksSystem
             assigned.Add(this);
         }
 
+        private void SetSecondaryTarget(Health next)
+        {
+            if (ReferenceEquals(_secondaryTarget, next)) return;
+            if (!ReferenceEquals(_secondaryTarget, null) && Engagements.TryGetValue(_secondaryTarget, out var previous))
+            {
+                previous.Remove(this);
+                if (previous.Count == 0) Engagements.Remove(_secondaryTarget);
+            }
+            _secondaryTarget = next;
+            if (next == null) return;
+            if (!Engagements.TryGetValue(next, out var assigned))
+            {
+                assigned = new System.Collections.Generic.List<BarracksSoldier>(MaxSoldiersPerEnemy);
+                Engagements.Add(next, assigned);
+            }
+            assigned.Add(this);
+        }
+
         private static int EngagementCount(Health target) =>
             Engagements.TryGetValue(target, out var assigned) ? assigned.Count : 0;
 
         internal static bool IsAssignedOpponent(Health enemy, Health opponent) =>
             opponent != null && opponent.TryGetComponent<BarracksSoldier>(out var soldier) &&
-            soldier.isActiveAndEnabled && soldier._target == enemy;
+            soldier.isActiveAndEnabled && (soldier._target == enemy ||
+                (soldier.MaximumEngagedEnemies == 2 && soldier._secondaryTarget == enemy));
 
         internal static Health FindAssignedOpponent(Health enemy, Vector3 origin, float range)
         {
@@ -351,7 +417,7 @@ namespace Core.BarracksSystem
             foreach (var soldier in assigned)
             {
                 var health = soldier._health;
-                if (!soldier.isActiveAndEnabled || health == null || health.IsDead) continue;
+                if (!soldier.isActiveAndEnabled || health == null || health.IsDead || !IsAssignedOpponent(enemy, health)) continue;
                 float distance = PlanarSqrDistance(origin, soldier.transform.position);
                 if (distance > best) continue;
                 best = distance;

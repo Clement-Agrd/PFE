@@ -83,7 +83,7 @@ namespace Core.BarracksSystem
                 var identity = NewText("Identity", card.transform, "", 25, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
                 identity.rectTransform.anchorMin = Vector2.zero;
                 identity.rectTransform.anchorMax = new Vector2(0.55f, 1);
-                identity.rectTransform.offsetMin = new Vector2(26, 10);
+                identity.rectTransform.offsetMin = new Vector2(106, 10);
                 identity.rectTransform.offsetMax = new Vector2(-12, -10);
                 var assignment = NewText("Assignment", card.transform, "", 23, TextMuted, TextAlignmentOptions.Right);
                 assignment.rectTransform.anchorMin = new Vector2(0.55f, 0);
@@ -98,10 +98,11 @@ namespace Core.BarracksSystem
                 row.Root.SetActive(i < count);
                 if (i >= count) continue;
                 var hero = heroes[i];
+                HeroClassIcons.Apply(row.Root.transform, hero.Classe, 64f, 26f);
                 row.Identity.text = $"{hero.HeroName}\n{hero.ClasseName} · Niveau {hero.Level} / 5\n{hero.ExperienceLabel}";
                 var barracks = hero.AssignedBarracks;
                 row.Assignment.text = hero.IsOnExpedition ? $"{(hero.IsExpeditionPending ? "Départ en attente" : "En expédition")} : {hero.ExpeditionName}" : barracks != null
-                    ? $"Affecté à : {barracks.name}\nCaserne niveau {barracks.CurrentLevel}"
+                    ? $"Affecté à : {barracks.Data.BarracksName}\nAutel niveau {barracks.CurrentLevel}"
                     : hero.AssignedTower != null ? $"Affecté à : {hero.AssignedTower.name}" : "Disponible · Aucune affectation";
                 row.Assignment.color = hero.HasAssignment ? Accent : Good;
             }

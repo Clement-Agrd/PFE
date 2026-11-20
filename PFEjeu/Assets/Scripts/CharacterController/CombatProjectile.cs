@@ -91,8 +91,10 @@ namespace ProfessionalTPS
             DamageType damageType,
             DamageSourceKind sourceKind)
         {
-            _owner =
-                owner;
+            _owner = owner;
+            // Collision is swept by this script. A solid collider can push the shooter at the muzzle.
+            foreach (var collider in GetComponentsInChildren<Collider>(true))
+                collider.enabled = false;
 
             _damage =
                 Mathf.Max(

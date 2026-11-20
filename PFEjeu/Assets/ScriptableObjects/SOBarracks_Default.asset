@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c9b7e52d5fe44b14b5b2e123b8af9021, type: 3}
   m_Name: SOBarracks_Default
   m_EditorClassIdentifier: Assembly-CSharp::Core.BarracksSystem.SOBarracks
-  barracksName: Caserne
+  barracksName: "Autel d\u2019invocation"
   soldierPrefab: {fileID: 7582639430425303973, guid: a878a0ed70b17354fad1689bb1ef27f9, type: 3}
   flagPrefab: {fileID: 100100000, guid: 13a3b24c4edb49dc8dd4e5c6463e7d11, type: 3}
   flagPreviewPrefab: {fileID: 100100000, guid: 9955d65aa9b04eef85338309a4c2f351, type: 3}
@@ -115,4 +115,10 @@ MonoBehaviour:
     bonusSoldierFractionPerHeroLevel: 0.125
     respawnMultiplier: 0.95
     respawnReductionPerHeroLevel: 0.04
+  incandescentBurn: {fileID: 11400000, guid: bdddd8325434ab8479579d9eed916b9e, type: 2}
+  incandescentPhysicalFraction: 0.7
+  incandescentBurnFraction: 0.3
+  stoneAreaRadius: 2
+  stoneAreaDamageFraction: 0.3
+  stoneAreaHeightTolerance: 1.25
   models: []

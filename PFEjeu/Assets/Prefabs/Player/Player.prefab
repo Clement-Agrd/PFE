@@ -809,7 +809,6 @@ MonoBehaviour:
     queueOpensAt: 0.17
     hitRadius: 3
     forwardOffset: 0.5
-  attackMovementMultiplier: 0.488
 --- !u!114 &8476859788016329439
 MonoBehaviour:
   m_ObjectHideFlags: 0

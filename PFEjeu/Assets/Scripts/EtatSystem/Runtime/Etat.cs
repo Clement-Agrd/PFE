@@ -11,6 +11,7 @@ public class Etat
     private Health health;
     
     // Temps
+    private int? damageOverride;
     private float damageTimer;
     private float durationTimer;
     public bool IsFinished => durationTimer >= etatData.Duration;
@@ -24,18 +25,20 @@ public class Etat
         while (damageTimer >= etatData.Interval) 
         {
             damageTimer -= etatData.Interval;
-            if (health != null && etatData.Damage > 0)
+            int damage = damageOverride ?? etatData.Damage;
+            if (health != null && damage > 0)
             {
-                health.TakeDamage(new DamageInfo(etatData.Damage, etatData.DamageType));
+                health.TakeDamage(new DamageInfo(damage, etatData.DamageType));
             }
         }
     }
     
-    public Etat(SOEtat etatData, EntityStats entityStats, Health health)
+    public Etat(SOEtat etatData, EntityStats entityStats, Health health, int? damageOverride = null)
     {
         this.etatData = etatData;
         this.entityStats = entityStats;
         this.health = health;
+        this.damageOverride = damageOverride.HasValue ? System.Math.Max(0, damageOverride.Value) : null;
     }
     
     public void ApplyStatModifier()
@@ -54,9 +57,10 @@ public class Etat
         }
     }
     
-    public void ResetDuration()
+    public void ResetDuration(int? damageOverride = null)
     {
         durationTimer = 0f;
+        this.damageOverride = damageOverride.HasValue ? System.Math.Max(0, damageOverride.Value) : null;
     }
 
     public void RemoveEtat()

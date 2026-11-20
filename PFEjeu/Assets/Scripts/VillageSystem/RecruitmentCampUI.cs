@@ -16,6 +16,9 @@ namespace Core.Village
         private Core.PauseMenu.PauseButton _confirm,_dismiss;
         private ClasseHeros? _selectedClass;
         private heros _selectedHero;
+        private HeroFamily _selectedFamily = HeroFamily.Barracks;
+        private UnityEngine.UI.ScrollRect _classScroll;
+        private readonly System.Collections.Generic.List<Core.PauseMenu.PauseButton> _familyButtons = new();
         private readonly System.Collections.Generic.Dictionary<heros,Core.PauseMenu.PauseButton> _heroButtons=new();
         private readonly System.Collections.Generic.List<Core.PauseMenu.PauseButton> _buttons=new();
         public bool IsShown=>_canvas!=null&&_canvas.activeSelf;
@@ -61,7 +64,12 @@ namespace Core.Village
             if(_summary==null)return;
             _summary.text=$"Niveau {camp.Building.CurrentLevel} / {camp.Building.Definition.MaxLevel} · Héros {camp.Roster.Count} / {camp.Capacity}\nChaque héros commence au niveau 1.\nCoût : "+string.Join(" · ",camp.Costs().Select(c=>$"{c.Value} {c.Key.DisplayName}"));
             _feedback.text="Sélectionne une classe, puis valide le recrutement.";
-            for(int i=0;i<_buttons.Count;i++)_buttons[i].SetActive(_selectedClass==(ClasseHeros)i);
+            for(int i=0;i<_buttons.Count;i++)
+            {
+                _buttons[i].gameObject.SetActive(heros.FamilyOf((ClasseHeros)i)==_selectedFamily);
+                _buttons[i].SetActive(_selectedClass==(ClasseHeros)i);
+            }
+            for(int i=0;i<_familyButtons.Count;i++)_familyButtons[i].SetActive((HeroFamily)i==_selectedFamily);
             bool canRecruit=false;
             if(_selectedClass.HasValue)
             {
@@ -87,12 +95,21 @@ namespace Core.Village
                 }
                 row.transform.SetSiblingIndex(index++);
                 row.Label.text=$"{hero.HeroName} · {hero.ClasseName} · Niv. {hero.Level}\n{hero.ExperienceLabel} · {Assignment(hero)}";
+                HeroClassIcons.Decorate(row, hero.Classe);
                 row.SetActive(_selectedHero==hero);
             }
             _empty.gameObject.SetActive(camp.Roster.Count==0);
             bool canDismiss=camp.CanDismissHero(_selectedHero,out var dismissReason);
             SetEnabled(_dismiss,canDismiss);
             _heroStatus.text=_selectedHero==null?"Sélectionne un héros pour voir son affectation.":canDismiss?$"{_selectedHero.HeroName} est disponible.\nLe renvoi ne rembourse pas le recrutement.":dismissReason;
+        }
+        private void SelectFamily(HeroFamily family)
+        {
+            if(_selectedFamily==family)return;
+            _selectedFamily=family;
+            _selectedClass=null;
+            Refresh();
+            if(_classScroll!=null)_classScroll.verticalNormalizedPosition=1f;
         }
         private static string ClassName(ClasseHeros type)=>heros.ClassName(type);
         private static string Assignment(heros hero)
@@ -136,18 +153,28 @@ namespace Core.Village
             var left=NewRect("Recruitment",card.transform);Anchor(left,new Vector2(0,1),new Vector2(0,1),new Vector2(38,-105),new Vector2(740,710));
             var right=NewRect("VillageHeroes",card.transform);Anchor(right,new Vector2(1,1),new Vector2(1,1),new Vector2(-38,-105),new Vector2(770,710));
             _summary=NewText("Summary",left,"",25,TextMain,TextAlignmentOptions.TopLeft);Anchor(_summary.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),Vector2.zero,new Vector2(710,125));
-            var choices=NewScroll(left,"Classes",10,new RectOffset(8,8,8,8),out var classScroll);
-            Anchor((RectTransform)classScroll.transform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-145),new Vector2(710,330));
+            var families=NewRect("HeroFamilyTabs",left);
+            Anchor(families,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-145),new Vector2(710,48));
+            HStack(families.gameObject,10);
+            foreach(HeroFamily family in System.Enum.GetValues(typeof(HeroFamily)))
+            {
+                string familyName=family switch{HeroFamily.Barracks=>"Invocateurs",HeroFamily.Archer=>"Archers",_=>"Chamans"};
+                var tab=NewButton(families,familyName,()=>SelectFamily(family),ButtonStyle.Tab,24);
+                tab.name="Family_"+family;Layout(tab.gameObject,flexW:1);_familyButtons.Add(tab);
+            }
+            var choices=NewScroll(left,"Classes",10,new RectOffset(8,8,8,8),out _classScroll);
+            Anchor((RectTransform)_classScroll.transform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-207),new Vector2(710,270));
             foreach(ClasseHeros type in System.Enum.GetValues(typeof(ClasseHeros)))
             {
                 string description=heros.FamilyOf(type) switch
                 {
                     HeroFamily.Archer => "Tour d’archer",
                     HeroFamily.Chaman => "Tour de chaman",
-                    _ => "Caserne"
+                    _ => "Autel d’invocation"
                 };
                 var choice=NewButton(choices,ClassName(type)+"\n"+description,()=>{_selectedClass=type;Refresh();},fontSize:25);
-                choice.name="Recruit_"+type;Layout(choice.gameObject,height:96);_buttons.Add(choice);
+                choice.name="Recruit_"+type;Layout(choice.gameObject,height:76);_buttons.Add(choice);
+                HeroClassIcons.Decorate(choice,type);
             }
             _feedback=NewText("Feedback",left,"",24,TextMuted,TextAlignmentOptions.Center);Anchor(_feedback.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-490),new Vector2(710,85));
             _confirm=NewButton(left,"Valider le recrutement",Recruit,ButtonStyle.Primary,27);_confirm.name="ConfirmRecruit";_confirm.gameObject.AddComponent<CanvasGroup>();Anchor((RectTransform)_confirm.transform,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,20),new Vector2(710,72));

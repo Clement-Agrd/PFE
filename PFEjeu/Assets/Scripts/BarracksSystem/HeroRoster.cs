@@ -74,6 +74,23 @@ namespace Core.BarracksSystem
         [SerializeField] private bool enableDebugRecruitment = true;
         [SerializeField] private Key debugRecruitKey = Key.F8;
 
+        private static readonly string[] FirstNames =
+        {
+            "Clément", "Maxence", "Naomi", "Chloé", "Flavio", "Brandon", "Florian", "Alexis",
+            "Antonin", "Juliette", "Léna", "Magalie", "Claude", "Joe", "Adrien", "Quentin",
+            "Adam", "Antoine", "Xavier", "Valentin", "Chris", "Mathieu", "Zoé", "Justine",
+            "Raphaël", "Lola", "Manon", "Ines", "Ornella", "Martin", "Jules", "Héloïse",
+            "Julie", "Amandine", "Marie", "Emma", "Lucie", "Léo", "Ambre", "Jade",
+            "Sophia", "Aymeric", "Enzo", "Louis", "Pierre", "Louise", "Arnaud", "Jeremy",
+            "Alice", "Gabriel", "Hugo", "Arthur", "Lucas", "Nathan", "Paul", "Victor",
+            "Oscar", "Ethan", "Noah", "Sacha", "Théo", "Tom", "Baptiste", "Maël",
+            "Malo", "Samuel", "Simon", "Romain", "Thomas", "Nicolas", "Alexandre", "Benjamin",
+            "Émile", "Augustin", "Eliott", "Noé", "Camille", "Charlotte", "Sarah", "Léa",
+            "Clara", "Anna", "Eva", "Mia", "Rose", "Romane", "Agathe", "Margot",
+            "Jeanne", "Iris", "Élise", "Adèle", "Célia", "Anaïs", "Émilie", "Mathilde",
+            "Nina", "Olivia", "Axel", "Valentine",
+        };
+
         private readonly List<heros> _heroes = new();
         private int _nextId = 1;
 
@@ -97,11 +114,15 @@ namespace Core.BarracksSystem
             if (!Enum.IsDefined(typeof(ClasseHeros), classe))
                 throw new ArgumentOutOfRangeException(nameof(classe));
             if (!HasRecruitmentSpace) return null;
+            // Prefer a name not already used by a hero in this village.
+            var availableNames = FirstNames.Where(name => !_heroes.Any(h => h != null && h.HeroName == name)).ToArray();
+            var names = availableNames.Length > 0 ? availableNames : FirstNames;
+            string firstName = names[UnityEngine.Random.Range(0, names.Length)];
             string label = heros.ClassName(classe);
-            var go = new GameObject($"Héros {label} #{_nextId++}");
+            var go = new GameObject($"{firstName} · {label} #{_nextId++}");
             go.transform.SetParent(transform, false);
             var hero = go.AddComponent<heros>();
-            hero.Initialize(go.name, classe, level);
+            hero.Initialize(firstName, classe, level);
             _heroes.Add(hero);
             hero.Changed += HandleHeroChanged;
             hero.Destroyed += RemoveDestroyedHero;

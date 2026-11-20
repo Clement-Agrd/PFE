@@ -13,7 +13,7 @@ namespace Core.BarracksSystem
         private static readonly string[] BarracksLabels =
         {
             "PV", "Endurance", "Dégâts phys.", "Dégâts mag.", "Défense phys.", "Défense mag.",
-            "Déplacement", "Attaques/s", "Soldats", "Réappar. (s)"
+            "Déplacement", "Attaques/s", "Esprits", "Réappar. (s)"
         };
         private static readonly string[] BarracksIconPaths =
         {
@@ -35,7 +35,7 @@ namespace Core.BarracksSystem
         public bool HasChanges { get; private set; }
 
         public BarracksStatsPreview(Transform parent, string name)
-            : this(parent, name, "Statistiques des troupes", BarracksLabels,
+            : this(parent, name, "Statistiques des esprits", BarracksLabels,
                 _barracksIcons ??= Array.ConvertAll(BarracksIconPaths, path => Resources.Load<Texture2D>(path))) { }
 
         public BarracksStatsPreview(Transform parent, string name, string titleText, string[] labels, Texture2D[] icons = null)
@@ -68,7 +68,7 @@ namespace Core.BarracksSystem
             }
             _rows = new Row[labels.Length];
             for (int i = 0; i < labels.Length; i++) _rows[i] = CreateRow(list, $"Stat_{i}", labels[i], compact ? icons[i] : null);
-            var legend = NewText("ComparisonLegend", Root, "Vert : hausse · Rouge : baisse · Gris : identique", 18, TextMuted, TextAlignmentOptions.Center);
+            var legend = NewText("ComparisonLegend", Root, "Vert : mieux · Rouge : moins bien · Gris : identique", 18, TextMuted, TextAlignmentOptions.Center);
             Anchor(legend.rectTransform, new Vector2(.5f, 0), new Vector2(.5f, 0), new Vector2(0, 18), new Vector2(compact ? 398 : 650, 32));
         }
 
@@ -110,14 +110,14 @@ namespace Core.BarracksSystem
         public void Refresh(Barracks barracks, int futureLevel, heros futureHero, string description)
         {
             if (barracks == null || barracks.Data == null) return;
-            _subtitle.text = description;
-            HasChanges = false;
             var data = barracks.Data;
+            _subtitle.text = description + "\n" + data.GetSpiritDescription(futureLevel, futureHero);
+            HasChanges = false;
             int current = barracks.CurrentLevel;
             for (int i = 0; i < _types.Length; i++)
                 SetRow(_rows[i], data.GetSoldierStat(current, _types[i], barracks.AssignedHero), data.GetSoldierStat(futureLevel, _types[i], futureHero));
             SetRow(_rows[_types.Length], data.GetSoldierCount(current, barracks.AssignedHero), data.GetSoldierCount(futureLevel, futureHero));
-            SetRow(_rows[_types.Length + 1], data.GetRespawnTime(current, barracks.AssignedHero), data.GetRespawnTime(futureLevel, futureHero));
+            SetRow(_rows[_types.Length + 1], data.GetRespawnTime(current, barracks.AssignedHero), data.GetRespawnTime(futureLevel, futureHero), true);
         }
 
         public void Compare(string description, float[] current, float[] future)
@@ -127,11 +127,11 @@ namespace Core.BarracksSystem
             for (int i = 0; i < _rows.Length; i++) SetRow(_rows[i], current[i], future[i]);
         }
 
-        private void SetRow(Row row, float current, float future)
+        private void SetRow(Row row, float current, float future, bool lowerIsBetter = false)
         {
             float delta = future - current;
             bool unchanged = Mathf.Abs(delta) < .0001f;
-            Color color = unchanged ? TextMuted : delta > 0 ? Good : Danger;
+            Color color = unchanged ? TextMuted : (lowerIsBetter ? delta < 0 : delta > 0) ? Good : Danger;
             row.Current.text = current.ToString("0.##");
             row.Future.text = future.ToString("0.##");
             row.Future.color = color;

@@ -231,7 +231,7 @@ public sealed class TowerHeroStation : InteractableBase
                     hero.IsExpeditionPending ? "Expédition annulable" :
                     hero.IsOnExpedition ? "En expédition" :
                     hero.DefenseAssignment != null ? hero.DefenseAssignment.name : "Disponible";
-                AddChoice($"{hero.HeroName} · Niveau {hero.Level}\n{status}", hero, CanAssign(hero));
+                AddChoice($"{hero.HeroName} · {hero.ClasseName} · Niv. {hero.Level}\n{status}", hero, CanAssign(hero));
             }
         }
         if (!found)
@@ -245,6 +245,7 @@ public sealed class TowerHeroStation : InteractableBase
     {
         var button = NewButton(_rows, label, () => { _candidate = hero; Refresh(); }, fontSize: 24);
         Layout(button.gameObject, height: 78);
+        if (hero != null) HeroClassIcons.Decorate(button, hero.Classe);
         button.SetActive(hero == _candidate);
         button.GetComponent<Button>().interactable = enabled;
     }

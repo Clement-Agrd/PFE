@@ -125,7 +125,7 @@ namespace Core.BarracksSystem
             if (!IsOpen || _owner == null) return;
             var assigned = _owner.AssignedHero;
             if (!CanChoose(_candidate)) _candidate = assigned;
-            _title.text = $"Caserne · Niveau {_owner.CurrentLevel}\n" +
+            _title.text = $"Autel d’invocation · Niveau {_owner.CurrentLevel}\n" +
                 (assigned != null ? assigned.HeroName : "Forme de base · Sans héros");
             var target = _candidate != null ? $"{_candidate.HeroName} · Niveau {_candidate.Level}" : "Sans héros";
             _stats.Refresh(_owner, _owner.CurrentLevel, _candidate, $"Affectation · {target}");
@@ -142,20 +142,21 @@ namespace Core.BarracksSystem
                 foreach (var hero in heroRoster.OrderedHeroes.Where(hero => hero != null && hero.Family == HeroFamily.Barracks))
                 {
                     hasHeroes = true;
-                    string status = hero == assigned ? "Affecté à cette caserne" :
+                    string status = hero == assigned ? "Affecté à cet autel" :
                         hero.IsExpeditionPending ? "Expédition annulable" :
                         hero.IsOnExpedition ? "En expédition" :
-                        hero.AssignedBarracks != null ? "Affecté à une caserne" : "Disponible";
+                        hero.AssignedBarracks != null ? "Affecté à un autel" : "Disponible";
                     AddChoice($"{hero.HeroName} · {hero.ClasseName} niv. {hero.Level}\n{status}", hero);
                 }
             }
             if (!hasHeroes)
-                Layout(NewText("Empty", _heroes, "Aucun héros de caserne recruté.", 23, TextMuted).gameObject, height: 65);
+                Layout(NewText("Empty", _heroes, "Aucun invocateur recruté.", 23, TextMuted).gameObject, height: 65);
         }
 
         private void AddChoice(string label, heros hero)
         {
             var choice = NewButton(_heroes, label, () => { _candidate = hero; Refresh(); }, fontSize: 24);
+            if (hero != null) HeroClassIcons.Decorate(choice, hero.Classe);
             choice.SetActive(hero == _candidate);
             choice.GetComponent<Button>().interactable = CanChoose(hero);
             Layout(choice.gameObject, height: 78);
@@ -195,7 +196,7 @@ namespace Core.BarracksSystem
             var card = NewImage("Dialogue", overlay.transform, CardRaised, 16);
             Anchor(card.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, new Vector2(650, 275));
             VStack(card.gameObject, 14, new RectOffset(24, 24, 20, 20));
-            var message = $"Démolir cette caserne ? L’emplacement et le héros seront libérés.\nRemboursement · {_construction.RefundLabel(_building)}";
+            var message = $"Démolir cet autel d’invocation ? L’emplacement et le héros seront libérés.\nRemboursement · {_construction.RefundLabel(_building)}";
             Layout(NewText("Message", card.transform, message, 26, TextMain).gameObject, flexH: 1);
             var actions = NewRect("Actions", card.transform);
             Layout(actions.gameObject, height: 55);
@@ -251,12 +252,12 @@ namespace Core.BarracksSystem
             Layout(scroll.gameObject, flexH: 1);
             _assign = NewButton(panel.transform, "Valider l’affectation", Assign, ButtonStyle.Primary, 25).GetComponent<Button>();
             Layout(_assign.gameObject, height: 55);
-            _move = NewButton(panel.transform, "Déplacer les troupes", Confirm, fontSize: 25).GetComponent<Button>();
+            _move = NewButton(panel.transform, "Déplacer les esprits", Confirm, fontSize: 25).GetComponent<Button>();
             Layout(_move.gameObject, height: 55);
             var actions = NewRect("BarracksActions", panel.transform);
             Layout(actions.gameObject, height: 55);
             HStack(actions.gameObject, 12);
-            _upgrade = NewButton(actions, "Améliorer la caserne", OpenUpgrade, fontSize: 23).GetComponent<Button>();
+            _upgrade = NewButton(actions, "Améliorer l’autel", OpenUpgrade, fontSize: 23).GetComponent<Button>();
             Layout(_upgrade.gameObject, flexW: 1);
             _demolish = NewButton(actions, "Démolir", ConfirmDemolition, ButtonStyle.Danger, 23).GetComponent<Button>();
             Layout(_demolish.gameObject, flexW: 1);

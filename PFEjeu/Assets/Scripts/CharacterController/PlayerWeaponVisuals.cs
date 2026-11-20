@@ -56,7 +56,7 @@ namespace ProfessionalTPS
         {
             if (bow == null) return;
             bool visible = combat != null && combat.CurrentMode == CombatMode.Bow &&
-                (combat.IsAiming || combat.IsBowDrawing);
+                (combat.IsAiming || combat.IsBowDrawing || combat.IsBowReleasing);
             if (bow.activeSelf == visible) return;
             bow.SetActive(visible);
             if (!visible) ResetBow();

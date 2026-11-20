@@ -1197,7 +1197,8 @@ namespace ProfessionalTPS
                 &&
                 (
                     allowSprintWhileAttacking ||
-                    !attacking
+                    !attacking ||
+                    (combat != null && combat.CurrentMode == CombatMode.Melee)
                 );
 
             bool wantsSprint =

@@ -120,6 +120,9 @@ namespace ProfessionalTPS
             bow != null &&
             bow.IsDrawing;
 
+        public bool IsBowReleasing => (bow != null && bow.IsBusy && !bow.IsDrawing) ||
+            (Animation != null && Animation.IsBowReleasePlaying);
+
         public float BowCharge01 =>
             bow != null
                 ? bow.Charge01

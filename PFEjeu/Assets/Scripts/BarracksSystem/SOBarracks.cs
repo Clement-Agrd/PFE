@@ -58,7 +58,7 @@ namespace Core.BarracksSystem
         }
 
         [Header("Base Information")]
-        [SerializeField] private string barracksName = "Caserne";
+        [SerializeField] private string barracksName = "Autel d’invocation";
         [SerializeField] private GameObject soldierPrefab;
 
         [Header("Flag")]
@@ -94,6 +94,32 @@ namespace Core.BarracksSystem
             bonusSoldierFraction = 0.25f, bonusSoldierFractionPerHeroLevel = 0.125f,
             respawnMultiplier = 0.95f
         };
+
+        [Header("Esprit incandescent")]
+        [SerializeField] private SOEtat incandescentBurn;
+        [SerializeField, Range(0f, 1f)] private float incandescentPhysicalFraction = .7f;
+        [SerializeField, Range(0f, 1f)] private float incandescentBurnFraction = .3f;
+
+        [Header("Esprit de pierre — frappe au sol")]
+        [SerializeField, Min(.1f)] private float stoneAreaRadius = 2f;
+        [SerializeField, Range(0f, 1f)] private float stoneAreaDamageFraction = .3f;
+        [SerializeField, Min(.1f)] private float stoneAreaHeightTolerance = 1.25f;
+        public SOEtat IncandescentBurn => incandescentBurn;
+        public float StoneAreaRadius => stoneAreaRadius;
+        public float StoneAreaDamageFraction => stoneAreaDamageFraction;
+        public float StoneAreaHeightTolerance => stoneAreaHeightTolerance;
+
+        public string GetSpiritDescription(int level, heros hero)
+        {
+            if (hero == null) return "Esprits de bois";
+            return hero.Classe switch
+            {
+                ClasseHeros.Tank => $"2 ennemis · Zone au sol : {stoneAreaRadius:0.#} m",
+                ClasseHeros.Degats => $"Brûlure : {Mathf.RoundToInt(GetSoldierStat(level, StatType.MagicDamage, hero))} dégâts mag./s",
+                ClasseHeros.Invocateur => "Esprits supplémentaires",
+                _ => "Esprits de bois"
+            };
+        }
 
         [Header("Models")]
         [Tooltip("Optionnel : un modèle par niveau, comme SOTower.")]
@@ -149,11 +175,21 @@ namespace Core.BarracksSystem
         {
             var stats = GetLevelStats(level);
             if (stats == null) return 0f;
-            for (int i = 0; i < stats.soldierStats.Count; i++)
+            float value = GetBaseSoldierStat(stats, type) * GetHeroStatMultiplier(type, hero);
+            if (hero != null && hero.Classe == ClasseHeros.Degats)
             {
-                var entry = stats.soldierStats[i];
-                if (entry.type == type) return entry.baseValue * GetHeroStatMultiplier(type, hero);
+                if (type == StatType.PhysicDamage) value *= incandescentPhysicalFraction;
+                else if (type == StatType.MagicDamage)
+                    value += GetBaseSoldierStat(stats, StatType.PhysicDamage) *
+                        GetHeroStatMultiplier(StatType.PhysicDamage, hero) * incandescentBurnFraction;
             }
+            return value;
+        }
+
+        private static float GetBaseSoldierStat(BarracksLevelStats stats, StatType type)
+        {
+            foreach (var entry in stats.soldierStats)
+                if (entry.type == type) return entry.baseValue;
             return 0f;
         }
 
@@ -174,7 +210,7 @@ namespace Core.BarracksSystem
             for (int i = 0; i < levelStats.soldierStats.Count; i++)
             {
                 SoldierStatEntry entry = levelStats.soldierStats[i];
-                target.SetOrAddBaseStat(entry.type, entry.baseValue * GetHeroStatMultiplier(entry.type, hero));
+                target.SetOrAddBaseStat(entry.type, GetSoldierStat(level, entry.type, hero));
             }
         }
 

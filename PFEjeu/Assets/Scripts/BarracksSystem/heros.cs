@@ -46,9 +46,9 @@ namespace Core.BarracksSystem
         public string ClasseName => ClassName(classe);
         public static string ClassName(ClasseHeros type) => type switch
         {
-            ClasseHeros.Tank => "Tank",
-            ClasseHeros.Degats => "Dégâts",
-            ClasseHeros.Invocateur => "Invocateur",
+            ClasseHeros.Tank => "Esprit de pierre",
+            ClasseHeros.Degats => "Esprit incandescent",
+            ClasseHeros.Invocateur => "Esprit des spores",
             ClasseHeros.ArcLong => "Arc long",
             ClasseHeros.ArcCourt => "Arc court",
             ClasseHeros.Arbalete => "Arbalète",
