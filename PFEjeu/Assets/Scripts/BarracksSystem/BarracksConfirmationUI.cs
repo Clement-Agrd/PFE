@@ -58,6 +58,7 @@ namespace Core.BarracksSystem
             _move.interactable = view != null || interactor != null;
             IsOpen = true;
             _canvas.SetActive(true);
+            Core.UiNavigationScope.Register(_canvas.transform,Cancel,this,()=>IsOpen);
             owner.StatsChanged += Refresh;
             if (heroRoster != null) heroRoster.Changed += Refresh;
             if (view != null)
@@ -67,7 +68,8 @@ namespace Core.BarracksSystem
             }
             Refresh();
             PositionPanels();
-            GameFreeze.RequestPause(this);
+            if (_view == null || !_view.IsInVillageView) GameFreeze.RequestPause(this);
+            else GameFreeze.ReleasePause(this);
             GameFreeze.RequestCursorUnlock(this);
         }
 
@@ -157,6 +159,7 @@ namespace Core.BarracksSystem
         {
             var choice = NewButton(_heroes, label, () => { _candidate = hero; Refresh(); }, fontSize: 24);
             if (hero != null) HeroClassIcons.Decorate(choice, hero.Classe);
+            if (hero != null) choice.name = "AssignHero_" + hero.GetEntityId();
             choice.SetActive(hero == _candidate);
             choice.GetComponent<Button>().interactable = CanChoose(hero);
             Layout(choice.gameObject, height: 78);
@@ -167,7 +170,7 @@ namespace Core.BarracksSystem
             if (!IsOpen) return;
             if (_owner == null || !_owner.isActiveAndEnabled || (_construction != null && !_construction.CanBuildNow))
                 Cancel();
-            else if (Input.GetKeyDown(KeyCode.Escape))
+            else if (Core.UiCloseKeys.Pressed(-1,this))
             {
                 if (_confirmation != null) CloseConfirmation();
                 else Cancel();
@@ -193,6 +196,7 @@ namespace Core.BarracksSystem
             Stretch(overlay.rectTransform);
             overlay.raycastTarget = true;
             _confirmation = overlay.gameObject;
+            Core.UiNavigationScope.Register(_confirmation.transform,CloseConfirmation,this);
             var card = NewImage("Dialogue", overlay.transform, CardRaised, 16);
             Anchor(card.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, new Vector2(650, 275));
             VStack(card.gameObject, 14, new RectOffset(24, 24, 20, 20));

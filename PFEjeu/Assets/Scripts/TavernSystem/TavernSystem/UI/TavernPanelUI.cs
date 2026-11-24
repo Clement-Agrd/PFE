@@ -75,7 +75,7 @@ namespace Core.TavernSystem.UI
 
         private void Update()
         {
-            if (IsShown && UiCloseKeys.Pressed(_openedFrame)) Hide();
+            if (IsShown && UiCloseKeys.Pressed(_openedFrame,this)) Hide();
         }
 
         public void Show(Tavern tavern)
@@ -95,6 +95,7 @@ namespace Core.TavernSystem.UI
             }
 
             if (panel != null) panel.SetActive(true);
+            Core.UiNavigationScope.Register(panel!=null?panel.transform:null,Hide,this,()=>IsShown);
             Refresh();
 
             if (!wasOpen)

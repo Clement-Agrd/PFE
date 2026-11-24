@@ -30,6 +30,8 @@ namespace Core.DialogueSystem
         [SerializeField] private string confirmText = "Je suis prêt";
         [SerializeField] private string declineText = "Pas encore";
 
+        private RectTransform _navigationRow;
+        private Core.PauseMenu.PauseButton _nextChoice,_noChoice;
         private InputAction _decline;
         private string[] _lines;
         private int _index;
@@ -96,6 +98,7 @@ namespace Core.DialogueSystem
 
             if (speakerText != null) speakerText.text = speaker;
             panel.SetActive(true);
+            Core.UiNavigationScope.Register(panel.transform,CancelNavigation,this,()=>IsShown);
             Refresh();
         }
 
@@ -126,7 +129,7 @@ namespace Core.DialogueSystem
 
         private void HandleDecline(InputAction.CallbackContext _)
         {
-            if (!IsShown || _lines == null || !IsChoice || !IsLastLine) return;
+            if (Core.UiNavigation.HasUiFocus || !IsShown || _lines == null || !IsChoice || !IsLastLine) return;
 
             Action declined = _onDecline;
             Hide();
@@ -140,8 +143,33 @@ namespace Core.DialogueSystem
             return string.IsNullOrEmpty(name) ? "?" : name;
         }
 
+        private void Update()
+        {
+            if(IsShown&&Keyboard.current!=null&&Keyboard.current.eKey.wasPressedThisFrame)HandleInteract();
+        }
+        private void CancelNavigation()
+        {
+            var decline=_onDecline;Hide();decline?.Invoke();
+        }
+        private void EnsureNavigationChoices()
+        {
+            if(_navigationRow==null)
+            {
+                _navigationRow=Core.PauseMenu.PauseUiKit.NewRect("DialogueChoices",panel.transform);
+                Core.PauseMenu.PauseUiKit.Anchor(_navigationRow,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,14),new Vector2(620,56));
+                Core.PauseMenu.PauseUiKit.HStack(_navigationRow.gameObject,16).childForceExpandWidth=true;
+                _nextChoice=Core.PauseMenu.PauseUiKit.NewButton(_navigationRow,"Continuer",HandleInteract,fontSize:23);
+                _nextChoice.name="DialogueConfirm";Core.PauseMenu.PauseUiKit.Layout(_nextChoice.gameObject,flexW:1);
+                _noChoice=Core.PauseMenu.PauseUiKit.NewButton(_navigationRow,"Annuler",CancelNavigation,fontSize:23);
+                _noChoice.name="DialogueDecline";Core.PauseMenu.PauseUiKit.Layout(_noChoice.gameObject,flexW:1);
+            }
+            _nextChoice.Label.text=IsLastLine?(IsChoice?confirmText:"Fermer"):"Continuer";
+            _noChoice.Label.text=declineText;_noChoice.gameObject.SetActive(IsLastLine&&IsChoice);
+            if(hintText!=null)hintText.gameObject.SetActive(false);
+        }
         private void Refresh()
         {
+            EnsureNavigationChoices();
             if (lineText != null) lineText.text = _lines[_index];
             if (hintText == null) return;
 

@@ -34,7 +34,7 @@ namespace Core.Village
             Hide();
         }
         private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
-        private void Update(){if(IsShown&&Input.GetKeyDown(KeyCode.Escape))Hide();}
+        private void Update(){if(IsShown&&Core.UiCloseKeys.Pressed(-1,this))Hide();}
         private void Selected(Building building){if(camp!=null&&building==camp.Building)Show();}
         private void DefenseStarted(int _)=>Hide();
         public void Show()
@@ -46,8 +46,11 @@ namespace Core.Village
                 camp.Roster.Changed+=Refresh;
                 if(camp.Village.HdvInventory!=null)camp.Village.HdvInventory.OnChanged+=Refresh;
             }
-            _canvas.SetActive(true);Refresh();
-            GameFreeze.RequestPause(this);GameFreeze.RequestCursorUnlock(this);
+            _canvas.SetActive(true);
+            Core.UiNavigationScope.Register(_canvas.transform,Hide,this,()=>IsShown);
+            Refresh();
+            if (villageView == null || !villageView.IsInVillageView) GameFreeze.RequestPause(this);
+            else GameFreeze.ReleasePause(this);GameFreeze.RequestCursorUnlock(this);
         }
         public void Hide()
         {

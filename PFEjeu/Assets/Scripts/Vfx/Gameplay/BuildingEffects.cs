@@ -8,6 +8,7 @@ namespace Core.Vfx
     [RequireComponent(typeof(BuildSite), typeof(UpgradeSite))]
     public sealed class BuildingEffects : MonoBehaviour
     {
+        [SerializeField] private bool constructionImpactLight;
         private BuildSite _build;
         private UpgradeSite _upgrade;
         private Coroutine _pending;
@@ -38,6 +39,7 @@ namespace Core.Vfx
             if (building == null) yield break;
             if (level == 0)
             {
+                _build.showImpactLight = constructionImpactLight;
                 _build.PlayFor(building);
                 yield break;
             }

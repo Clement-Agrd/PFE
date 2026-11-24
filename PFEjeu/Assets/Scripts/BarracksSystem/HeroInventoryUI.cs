@@ -80,6 +80,7 @@ namespace Core.BarracksSystem
             {
                 var card = NewImage("HeroRow" + _rows.Count, _rowsParent, CardRaised, 14);
                 Layout(card.gameObject, height: 128);
+                var focus=card.gameObject.AddComponent<UnityEngine.UI.Button>();focus.targetGraphic=card;focus.transition=UnityEngine.UI.Selectable.Transition.None;
                 var identity = NewText("Identity", card.transform, "", 25, TextMain, TextAlignmentOptions.Left, FontStyles.Bold);
                 identity.rectTransform.anchorMin = Vector2.zero;
                 identity.rectTransform.anchorMax = new Vector2(0.55f, 1);

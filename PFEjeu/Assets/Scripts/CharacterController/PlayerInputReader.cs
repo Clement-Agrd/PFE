@@ -53,7 +53,7 @@ namespace ProfessionalTPS
 
 
         public Vector2 Move =>
-            move != null
+            move != null && !Core.UiNavigation.BlocksGameplayInput
                 ? move.action.ReadValue<Vector2>()
                 : Vector2.zero;
 
@@ -286,21 +286,21 @@ namespace ProfessionalTPS
         private void OnJump(
             InputAction.CallbackContext _)
         {
-            JumpPressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) JumpPressed?.Invoke();
         }
 
 
         private void OnRoll(
             InputAction.CallbackContext _)
         {
-            RollPressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) RollPressed?.Invoke();
         }
 
 
         private void OnAttackPressed(
             InputAction.CallbackContext _)
         {
-            AttackPressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) AttackPressed?.Invoke();
         }
 
 
@@ -314,35 +314,35 @@ namespace ProfessionalTPS
         private void OnSelectMelee(
             InputAction.CallbackContext _)
         {
-            SelectMeleePressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) SelectMeleePressed?.Invoke();
         }
 
 
         private void OnSelectBow(
             InputAction.CallbackContext _)
         {
-            SelectBowPressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) SelectBowPressed?.Invoke();
         }
 
 
         private void OnSelectMagic(
             InputAction.CallbackContext _)
         {
-            SelectMagicPressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) SelectMagicPressed?.Invoke();
         }
 
 
         private void OnSelectAxe(
             InputAction.CallbackContext _)
         {
-            SelectAxePressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) SelectAxePressed?.Invoke();
         }
 
 
         private void OnSelectPickaxe(
             InputAction.CallbackContext _)
         {
-            SelectPickaxePressed?.Invoke();
+            if (!Core.UiNavigation.BlocksGameplayInput) SelectPickaxePressed?.Invoke();
         }
     }
 }

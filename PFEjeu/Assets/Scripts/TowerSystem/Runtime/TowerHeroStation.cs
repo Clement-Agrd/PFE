@@ -151,6 +151,7 @@ public sealed class TowerHeroStation : InteractableBase
         _candidate = AssignedHero;
         _feedback.text = "";
         _canvas.SetActive(true);
+        Core.UiNavigationScope.Register(_canvas.transform,Hide,this);
         if (_roster != null) _roster.Changed += Refresh;
         if (_villageView != null)
         {
@@ -159,7 +160,8 @@ public sealed class TowerHeroStation : InteractableBase
         }
         Refresh();
         PositionPanels();
-        GameFreeze.RequestPause(this);
+        if (_villageView == null || !_villageView.IsInVillageView) GameFreeze.RequestPause(this);
+            else GameFreeze.ReleasePause(this);
         GameFreeze.RequestCursorUnlock(this);
     }
 
@@ -183,7 +185,7 @@ public sealed class TowerHeroStation : InteractableBase
     {
         if (_canvas == null || !_canvas.activeSelf) return;
         if (!CanManage) Hide();
-        else if (Input.GetKeyDown(KeyCode.Escape))
+        else if (Core.UiCloseKeys.Pressed(-1,this))
         {
             if (_confirmation != null) CloseConfirmation();
             else Hide();
@@ -246,6 +248,7 @@ public sealed class TowerHeroStation : InteractableBase
         var button = NewButton(_rows, label, () => { _candidate = hero; Refresh(); }, fontSize: 24);
         Layout(button.gameObject, height: 78);
         if (hero != null) HeroClassIcons.Decorate(button, hero.Classe);
+        if (hero != null) button.name = "AssignHero_" + hero.GetEntityId();
         button.SetActive(hero == _candidate);
         button.GetComponent<Button>().interactable = enabled;
     }
@@ -286,6 +289,7 @@ public sealed class TowerHeroStation : InteractableBase
         var overlay = NewImage("Confirmation", _canvas.transform, Dim);
         Stretch(overlay.rectTransform);
         _confirmation = overlay.gameObject;
+        Core.UiNavigationScope.Register(_confirmation.transform,CloseConfirmation,this);
         var card = NewImage("Dialogue", overlay.transform, CardRaised, 16);
         Anchor(card.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, new Vector2(650, 275));
         VStack(card.gameObject, 14, new RectOffset(24, 24, 20, 20));

@@ -48,8 +48,8 @@ namespace Core.Village
             reference.action.Disable();
         }
 
-        private void OnExit(InputAction.CallbackContext _) => ExitPressed?.Invoke();
-        private void OnClick(InputAction.CallbackContext _) => ClickPressed?.Invoke();
-        private void OnInteract(InputAction.CallbackContext _) => InteractPressed?.Invoke();
+        private void OnExit(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasModalFocus)ExitPressed?.Invoke(); }
+        private void OnClick(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasModalFocus)ClickPressed?.Invoke(); }
+        private void OnInteract(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasModalFocus)InteractPressed?.Invoke(); }
     }
 }

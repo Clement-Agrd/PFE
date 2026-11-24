@@ -32,7 +32,9 @@ namespace Core.TowerDefense
         [SerializeField, Range(1f, 180f)] private float playerFieldOfView = 110f;
         private const float DefaultPlayerVisionDot = .5735764f;
         private static int _playerVisionObstacles;
-        private float PlayerVisionDot => Mathf.Cos(playerFieldOfView * .5f * Mathf.Deg2Rad);
+        // Older prefabs can deserialize a missing angle as zero: never use a zero-width cone.
+        private float PlayerVisionDot => Mathf.Cos(
+            (playerFieldOfView > 0f ? Mathf.Clamp(playerFieldOfView, 1f, 180f) : 110f) * .5f * Mathf.Deg2Rad);
 
         [SerializeField]
         private bool requireLineOfSight;
@@ -234,15 +236,32 @@ namespace Core.TowerDefense
                 return false;
 
             if (_playerVisionObstacles == 0) _playerVisionObstacles = LayerMask.GetMask("Default", "Ground");
-            Vector3 eyes = Vector3.up * height;
-            return !Physics.Linecast(owner.position + eyes, player.transform.position + eyes,
-                _playerVisionObstacles, QueryTriggerInteraction.Ignore);
+            return HasPlayerLineOfSight(owner, player, height, _playerVisionObstacles);
         }
+
+        internal static bool HasPlayerLineOfSight(Transform owner, Health player, float height, int obstacleMask)
+        {
+            if (owner == null || player == null) return false;
+            Vector3 origin = owner.position + Vector3.up * height;
+            if (player.TryGetComponent<CharacterController>(out var body) && body.enabled)
+            {
+                Bounds bounds = body.bounds;
+                // Use the current character proportions and allow partial cover.
+                return IsPlayerPointVisible(origin, bounds.center, player.transform, obstacleMask) ||
+                    IsPlayerPointVisible(origin, bounds.center + Vector3.up * (bounds.extents.y * .8f), player.transform, obstacleMask);
+            }
+            return IsPlayerPointVisible(origin, player.transform.position + Vector3.up * height, player.transform, obstacleMask);
+        }
+
+        private static bool IsPlayerPointVisible(Vector3 origin, Vector3 point, Transform player, int obstacleMask)
+            => !Physics.Linecast(origin, point, out var hit, obstacleMask, QueryTriggerInteraction.Ignore) ||
+                hit.transform.IsChildOf(player);
 
         private bool HasLineOfSight(
             Transform owner,
             Health target)
         {
+            if (target.CompareTag("Player")) return HasPlayerLineOfSight(owner, target, eyeHeight, sightBlockingMask);
             Vector3 origin =
                 owner.position +
                 Vector3.up *
@@ -280,6 +299,7 @@ namespace Core.TowerDefense
 
         private void OnValidate()
         {
+            playerFieldOfView = playerFieldOfView > 0f ? Mathf.Clamp(playerFieldOfView, 1f, 180f) : 110f;
             loseTargetRange =
                 Mathf.Max(
                     loseTargetRange,

@@ -93,7 +93,7 @@ namespace Core.PauseMenu
         {
             UpdateFps();
 
-            bool escape = Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+            bool escape = !Core.UiNavigation.CancelConsumedThisFrame && Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
             bool start = Gamepad.current != null && Gamepad.current.startButton.wasPressedThisFrame;
             bool pressed = escape || start;
 
@@ -123,6 +123,7 @@ namespace Core.PauseMenu
 
         public void Open()
         {
+            Core.UiNavigationScope.Register(_root!=null?_root.transform:null,HandleBack,this,()=>IsOpen);
             if (IsOpen) return;
             if (!_owned)
             {
@@ -314,6 +315,7 @@ namespace Core.PauseMenu
             _confirmText.text = message;
             _confirmAction = onConfirm;
             _confirm.SetActive(true);
+            Core.UiNavigationScope.Register(_confirm.transform,()=>_confirm.SetActive(false),this);
             _confirm.transform.SetAsLastSibling();
         }
 

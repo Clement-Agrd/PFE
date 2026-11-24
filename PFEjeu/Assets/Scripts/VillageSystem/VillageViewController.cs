@@ -101,9 +101,7 @@ namespace Core.Village
                 {
                     _isTransitioning = false;
                     IsInVillageView = true;
-                    // Après la transition seulement : Tween tourne sur Time.deltaTime
-                    // (scaled), donc figer le temps plus tôt bloquerait l'animation.
-                    GameFreeze.RequestPause(this);
+                    // Player controls are disabled; the world and summons keep running.
                     GameFreeze.RequestCursorUnlock(this);
                     OnEnteredVillageView?.Invoke();
                 });
@@ -116,8 +114,7 @@ namespace Core.Village
 
             IsInVillageView = false;
             OnMapAreaChanged?.Invoke();
-            // Libère avant de relancer le tween retour : sinon le temps resterait
-            // figé et l'animation ne progresserait jamais.
+            // Release only this view's requests; an explicit pause menu remains authoritative.
             GameFreeze.ReleasePause(this);
             GameFreeze.ReleaseCursorUnlock(this);
 
@@ -176,9 +173,9 @@ namespace Core.Village
             slot.OpenFromVillageView();
         }
 
-        private void SelectBuilding(Building building)
+        public void SelectBuilding(Building building)
         {
-            if (building == null) return;
+            if (!CanSelectMap || building == null) return;
             OnMapSelectionChanging?.Invoke();
             OnBuildingClicked?.Invoke(building);
         }

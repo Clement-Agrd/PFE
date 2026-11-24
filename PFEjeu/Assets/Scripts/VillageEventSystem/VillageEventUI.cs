@@ -56,6 +56,7 @@ namespace Core.VillageEvents
             for (int i = 0; i < choices.Count; i++)
                 BuildChoice(card.transform, i, choices[i]);
 
+            Core.UiNavigationScope.Register(_canvasGo.transform,null,this,()=>IsOpen);
             GameFreeze.RequestPause(this);
             GameFreeze.RequestCursorUnlock(this);
         }

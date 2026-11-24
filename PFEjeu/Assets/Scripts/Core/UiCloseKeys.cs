@@ -12,8 +12,9 @@ namespace Core
     {
         private static InputAction _close;
 
-        public static bool Pressed(int openedFrame)
+        public static bool Pressed(int openedFrame, Component owner = null)
         {
+            if (UiNavigation.CancelConsumedThisFrame || !UiNavigation.IsTopScopeOwner(owner)) return false;
             if (_close == null)
             {
                 _close = new InputAction("CloseUI", InputActionType.Button);
@@ -23,7 +24,9 @@ namespace Core
             }
             if (!_close.enabled) _close.Enable();
 
-            return Time.frameCount != openedFrame && _close.WasPressedThisFrame();
+            bool pressed = Time.frameCount != openedFrame && _close.WasPressedThisFrame();
+            if (pressed) UiNavigation.ConsumeCancel();
+            return pressed;
         }
     }
 }

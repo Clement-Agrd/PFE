@@ -132,7 +132,7 @@ namespace Core.Village.UI
 
         private void Update()
         {
-            if (!_open || !UiCloseKeys.Pressed(_openedFrame)) return;
+            if (!_open || !UiCloseKeys.Pressed(_openedFrame,this)) return;
             if (_elementChoice != null) CloseElementChoice();
             else Close();
         }
@@ -147,6 +147,7 @@ namespace Core.Village.UI
         public void Open()
         {
             if (forge == null) return;
+            Core.UiNavigationScope.Register(panel!=null?panel.transform:null,Close,this,()=>IsOpen);
             _open = true;
             _openedFrame = Time.frameCount;
             _tab = Tab.Upgrade;
@@ -232,6 +233,7 @@ namespace Core.Village.UI
             Core.PauseMenu.PauseUiKit.Stretch(overlay.rectTransform);
             overlay.raycastTarget = true;
             _elementChoice = overlay.gameObject;
+            Core.UiNavigationScope.Register(_elementChoice.transform,CloseElementChoice,this);
             var card = Core.PauseMenu.PauseUiKit.NewImage("Element", overlay.transform, Core.PauseMenu.PauseUiKit.Card, 16);
             var center = Vector2.one * .5f;
             Core.PauseMenu.PauseUiKit.Anchor(card.rectTransform, center, center, Vector2.zero, new Vector2(580, 280));

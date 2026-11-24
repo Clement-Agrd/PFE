@@ -80,11 +80,12 @@ namespace Core.Village.Exploration.UI
         private void HandleBuildingClicked(Building building)
         { if (explorationBuilding != null && building == explorationBuilding) Show(); }
         private void HandleStateChanged() { if (IsShown && !_sending) Refresh(); }
-        private void Update() { if (IsShown && UiCloseKeys.Pressed(_openedFrame)) Hide(); }
+        private void Update() { if (IsShown && UiCloseKeys.Pressed(_openedFrame,this)) Hide(); }
         public void Show()
         {
             if (!IsShown) _openedFrame = Time.frameCount;
             if (panel != null) panel.SetActive(true);
+            Core.UiNavigationScope.Register(panel!=null?panel.transform:null,HideImmediate,this,()=>IsShown);
             if (villageView == null || !villageView.IsInVillageView)
             { GameFreeze.RequestPause(this); GameFreeze.RequestCursorUnlock(this); }
             Refresh();

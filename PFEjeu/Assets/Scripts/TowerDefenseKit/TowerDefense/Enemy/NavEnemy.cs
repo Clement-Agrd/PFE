@@ -1129,6 +1129,8 @@ namespace Core.TowerDefense
         private bool HasLineOfSight(
             Health targetHealth)
         {
+            if (targetHealth.CompareTag("Player"))
+                return EnemyTargetSensor.HasPlayerLineOfSight(transform, targetHealth, detectionEyeHeight, sightBlockingMask);
             Vector3 origin =
                 transform.position +
                 Vector3.up *

@@ -144,15 +144,17 @@ namespace Core.Village.UI
         public void ShowStandalone(Building building)
         {
             if (building == null || building.Definition == null) return;
+            Core.UiNavigationScope.Register(panel.transform,HideImmediate,this,()=>IsOpen);
             _ownsFreeze = true;
-            GameFreeze.RequestPause(this);
+            if (villageView == null || !villageView.IsInVillageView) GameFreeze.RequestPause(this);
+            else GameFreeze.ReleasePause(this);
             GameFreeze.RequestCursorUnlock(this);
             Show(building);
         }
 
         private void Update()
         {
-            if (_ownsFreeze && IsOpen && Input.GetKeyDown(KeyCode.Escape)) Hide();
+            if (_ownsFreeze && IsOpen && Core.UiCloseKeys.Pressed(-1,this)) Hide();
         }
 
         private void LateUpdate()
@@ -204,6 +206,7 @@ namespace Core.Village.UI
                 rect.localScale = Vector3.one;
             }
             _current = building;
+            Core.UiNavigationScope.Register(panel.transform,HideImmediate,this,()=>IsOpen);
             SetPreviewBuilding(building.GetComponent<Core.BarracksSystem.Barracks>());
             SetTowerPreview(building.GetComponent<TowerHeroStation>());
             _successUntil = 0f;

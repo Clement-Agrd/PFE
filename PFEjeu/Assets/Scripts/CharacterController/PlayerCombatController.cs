@@ -273,6 +273,7 @@ namespace ProfessionalTPS
 
         private void OnAttackReleased()
         {
+            if (Core.UiNavigation.BlocksGameplayInput) { _active?.Cancel(); return; }
             _active?.AttackReleased();
         }
 

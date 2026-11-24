@@ -69,13 +69,14 @@ namespace Core.MainMenu
         private void Update()
         {
             if (!IsShown) return;
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame)
+            if (Core.UiCloseKeys.Pressed(-1,this))
                 Hide();
         }
 
         public void Show()
         {
             if (panel != null) panel.SetActive(true);
+            Core.UiNavigationScope.Register(panel!=null?panel.transform:null,Hide,this,()=>IsShown);
             if (mainButtonsGroup != null) mainButtonsGroup.SetActive(false);
             RefreshLabels();
         }

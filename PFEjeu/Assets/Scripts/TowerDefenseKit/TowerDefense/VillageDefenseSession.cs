@@ -166,6 +166,7 @@ namespace Core.TowerDefense
             _continue.gameObject.SetActive(!lost);
             _restart.gameObject.SetActive(lost);
             _report.SetActive(true);
+            Core.UiNavigationScope.Register(_report.transform,()=>{if(!_lost)CloseReport();},this,()=>IsReportOpen);
             _body.GetComponentInParent<UnityEngine.UI.ScrollRect>().verticalNormalizedPosition = 1;
             GameFreeze.RequestPause(this);
             GameFreeze.RequestCursorUnlock(this);

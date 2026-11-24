@@ -40,7 +40,7 @@ namespace Core.TowerDefense
             if (_canvas != null) Destroy(_canvas);
             _preview?.Dispose();
         }
-        private void Update(){if(IsOpen&&Input.GetKeyDown(KeyCode.Escape))Close();}
+        private void Update(){if(IsOpen&&Core.UiCloseKeys.Pressed(-1,this))Close();}
         private void LateUpdate()
         {
             if (IsOpen && _slot != null) PositionCard();
@@ -62,6 +62,7 @@ namespace Core.TowerDefense
             if (_slot != slot) _selection = null;
             _slot = slot;
             _canvas.SetActive(true);
+            Core.UiNavigationScope.Register(_canvas.transform,Close,this,()=>IsOpen);
             Select(_selection);
             PositionCard();
             if (village != null && village.HdvInventory != null)
@@ -69,7 +70,8 @@ namespace Core.TowerDefense
                 village.HdvInventory.OnChanged -= RefreshSelection;
                 village.HdvInventory.OnChanged += RefreshSelection;
             }
-            GameFreeze.RequestPause(this);GameFreeze.RequestCursorUnlock(this);
+            if (villageView == null || !villageView.IsInVillageView) GameFreeze.RequestPause(this);
+            else GameFreeze.ReleasePause(this);GameFreeze.RequestCursorUnlock(this);
         }
         public void Close()
         {

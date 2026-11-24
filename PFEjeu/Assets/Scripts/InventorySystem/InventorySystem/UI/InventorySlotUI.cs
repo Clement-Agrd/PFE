@@ -6,7 +6,7 @@ using TMPro;
 namespace Core.InventorySystem.UI
 {
     public sealed class InventorySlotUI : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IDropHandler,
-        IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler
+        IPointerEnterHandler, IPointerExitHandler, IPointerClickHandler, ISelectHandler, IDeselectHandler, ISubmitHandler, ICancelHandler
     {
         [Header("Composants Enfants")]
         [SerializeField] private Image iconImage;
@@ -17,6 +17,50 @@ namespace Core.InventorySystem.UI
         private InventoryUI _ownerUI;
         private int _slotIndex;
         private Canvas _canvas;
+        private static InventorySlotUI _keyboardSource;
+        private UnityEngine.UI.Outline _focus;
+        private bool _selected;
+
+        private void Awake()
+        {
+            if (!TryGetComponent<UnityEngine.UI.Button>(out var button)) button = gameObject.AddComponent<UnityEngine.UI.Button>();
+            button.targetGraphic = GetComponent<UnityEngine.UI.Image>();
+            button.transition = UnityEngine.UI.Selectable.Transition.None;
+            var image = GetComponent<UnityEngine.UI.Graphic>();
+            if (image != null)
+            {
+                _focus = gameObject.AddComponent<UnityEngine.UI.Outline>();
+                _focus.effectColor = new Color(1f,.8f,.3f);_focus.effectDistance = new Vector2(3,-3);_focus.enabled=false;
+            }
+        }
+        private void OnDisable()
+        {
+            if (_keyboardSource == this) _keyboardSource = null;
+            _selected = false;if (_focus != null) _focus.enabled=false;
+        }
+        public void OnSelect(BaseEventData _) { _selected=true;UpdateFocus();OnPointerEnter(null); }
+        public void OnDeselect(BaseEventData _) { _selected=false;UpdateFocus();OnPointerExit(null); }
+        private void UpdateFocus() { if(_focus!=null)_focus.enabled=_selected||_keyboardSource==this; }
+        public void OnSubmit(BaseEventData _)
+        {
+            if (_ownerUI == null || _ownerUI.Inventory == null) return;
+            if (_keyboardSource != null)
+            {
+                var source=_keyboardSource;_keyboardSource=null;source.UpdateFocus();
+                if (source!=this && source._ownerUI==_ownerUI) _ownerUI.Inventory.SwapSlots(source._slotIndex,_slotIndex);
+                OnPointerEnter(null);return;
+            }
+            if (_ownerUI.TryConsume(_slotIndex)) { OnPointerEnter(null);return; }
+            var item=_ownerUI.Inventory.GetSlot(_slotIndex);
+            if (item==null||item.IsEmpty||_ownerUI.Inventory.IsReserved(_slotIndex)) return;
+            _keyboardSource=this;UpdateFocus();
+        }
+        public void OnCancel(BaseEventData data)
+        {
+            if (_keyboardSource==null) return;
+            var source=_keyboardSource;_keyboardSource=null;source.UpdateFocus();data.Use();
+        }
+
         private GameObject _dragIconObj;
 
         public void Init(InventoryUI ownerUI, int slotIndex, Canvas canvas)

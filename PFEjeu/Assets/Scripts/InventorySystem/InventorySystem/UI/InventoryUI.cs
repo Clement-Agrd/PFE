@@ -46,7 +46,12 @@ namespace Core.InventorySystem.UI
             SetOpen(false);
         }
 
-        private void OnEnable() => toggleAction.Enable();
+        private bool _controllerBindingAdded;
+        private void OnEnable()
+        {
+            if(!_controllerBindingAdded){toggleAction.AddBinding("<Gamepad>/select");_controllerBindingAdded=true;}
+            toggleAction.Enable();
+        }
 
         private void OnDisable() => toggleAction.Disable();
 
@@ -63,7 +68,7 @@ namespace Core.InventorySystem.UI
 
             if (toggleAction.WasPressedThisFrame())
                 SetOpen(!_isOpen);
-            else if (_isOpen && UiCloseKeys.Pressed(_openedFrame))
+            else if (_isOpen && UiCloseKeys.Pressed(_openedFrame,this))
                 SetOpen(false);
         }
 
@@ -85,7 +90,11 @@ namespace Core.InventorySystem.UI
                 GameFreeze.ReleaseCursorUnlock(this);
             }
 
-            if (open) RefreshAll();
+            if (open)
+            {
+                Core.UiNavigationScope.Register(panel!=null?panel.transform:null,()=>SetOpen(false),this,()=>IsOpen);
+                RefreshAll();
+            }
         }
 
         private void BuildSlots()

@@ -6,9 +6,11 @@ using TMPro;
 namespace Core.InventorySystem.UI
 {
     /// <summary>Une case de la barre de nourriture : icône, quantité, clic pour consommer.</summary>
-    public sealed class FoodSlotUI : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler
+    public sealed class FoodSlotUI : MonoBehaviour, UnityEngine.EventSystems.IPointerEnterHandler, UnityEngine.EventSystems.IPointerExitHandler, UnityEngine.EventSystems.ISelectHandler, UnityEngine.EventSystems.IDeselectHandler
     {
         private ItemStack _shown;
+        public void OnSelect(UnityEngine.EventSystems.BaseEventData _) => ItemDescriptionPanelUI.Instance?.Show(_shown);
+        public void OnDeselect(UnityEngine.EventSystems.BaseEventData _) => ItemDescriptionPanelUI.Instance?.Hide();
 
         public void OnPointerEnter(UnityEngine.EventSystems.PointerEventData eventData)
             => ItemDescriptionPanelUI.Instance?.Show(_shown);

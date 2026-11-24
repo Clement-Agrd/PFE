@@ -38,6 +38,8 @@ namespace BuildVFX
         [Tooltip("Force le LOD 0 pendant l'effet pour éviter tout changement de LOD visible.")]
         public bool forceLod0 = true;
         public float impactShake = 1f;
+        [Tooltip("Éclairage bref à la fin du chantier. Les particules restent indépendantes.")]
+        public bool showImpactLight = true;
         [Header("Assets (remplis par Tools/Build VFX/Build All)")]
         public Shader revealShader;
         public GameObject constructFx, impactFx;
@@ -277,7 +279,7 @@ namespace BuildVFX
             }
 
             // impact
-            if (impactFx) { var g = SpawnEffect(impactFx); var bi = g.GetComponent<BuildImpact>(); if (bi) { bi.UseUnscaledTime = useUnscaledTime; bi.Play(center2, radius, teamColor, dustColor, useUnscaledTime ? 0f : impactShake); } }
+            if (impactFx) { var g = SpawnEffect(impactFx); var bi = g.GetComponent<BuildImpact>(); if (bi) { bi.UseUnscaledTime = useUnscaledTime; bi.Play(center2, radius, teamColor, dustColor, useUnscaledTime ? 0f : impactShake, showImpactLight); } }
             if (slab && !keepFoundation) { spawned.Remove(slab); Destroy(slab, 0.05f); }
             foreach (var pc in pieces)
             {
