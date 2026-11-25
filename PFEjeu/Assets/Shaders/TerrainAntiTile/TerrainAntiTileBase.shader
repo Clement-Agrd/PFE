@@ -3,6 +3,11 @@ Shader "Hidden/PFE/TerrainAntiTile Base"
 {
     Properties
     {
+        [Header(Cliff Triplanar)]
+        _AT_TriAmount("Triplanar amount (steep slopes)", Range(0, 1)) = 1
+        _AT_TriStart("Triplanar start (normal.y)", Range(0, 1)) = 0.92
+        _AT_TriEnd("Triplanar full (normal.y)", Range(0, 1)) = 0.65
+        _AT_TerrainSize("Terrain size X (m)", Float) = 1000
         [Header(Anti Tiling)]
         _AT_FadeStart("Stochastic fade start (m)", Float) = 35
         _AT_FadeEnd("Stochastic fade end (m)", Float) = 120

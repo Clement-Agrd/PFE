@@ -183,6 +183,33 @@ half4 AT_SampleAlbedo(TEXTURE2D_PARAM(tex, samp), float2 uv, half strength, floa
     return c;
 }
 
+// ---------------------------------------------------------------------------------------------
+// Triplanar sur les parois raides : le terrain projette les textures a plat (vue du dessus), ce qui les etire
+// sur les falaises. Sur les pentes raides, on remplace l'albedo par un melange des projections laterales (X, Z).
+// ---------------------------------------------------------------------------------------------
+// Part de triplanar (0 = projection du terrain, 1 = triplanar) selon la normale du terrain.
+half AT_TriFactor(half3 normalWS, half layerStrength)
+{
+    float ny = abs(normalWS.y);
+    float s = 1.0 - smoothstep(_AT_TriEnd, max(_AT_TriStart, _AT_TriEnd + 0.01), ny);
+    return (half)(s * _AT_TriAmount) * layerStrength;
+}
+
+// baseColor : albedo deja calcule (projection terrain). tilesPerMeter : repetitions de la texture par metre.
+half4 AT_TriAlbedo(TEXTURE2D_PARAM(tex, samp), half4 baseColor, float3 posWS, float3 dposDx, float3 dposDy,
+                   half3 normalWS, float tilesPerMeter, half s)
+{
+    float3 w = pow(max(abs(normalWS), 1e-3), 3.0);
+    w /= (w.x + w.y + w.z);
+
+    float2 uvX = posWS.zy * tilesPerMeter;
+    float2 uvZ = posWS.xy * tilesPerMeter;
+    half4 cx = SAMPLE_TEXTURE2D_GRAD(tex, samp, uvX, dposDx.zy * tilesPerMeter, dposDy.zy * tilesPerMeter);
+    half4 cz = SAMPLE_TEXTURE2D_GRAD(tex, samp, uvZ, dposDx.xy * tilesPerMeter, dposDy.xy * tilesPerMeter);
+    half4 tri = baseColor * (half)w.y + cx * (half)w.x + cz * (half)w.z;
+    return lerp(baseColor, tri, s);
+}
+
 half3 AT_SampleNormal(TEXTURE2D_PARAM(tex, samp), float2 uv, half normalScale, half strength, float dist)
 {
     float2 dx = ddx(uv);

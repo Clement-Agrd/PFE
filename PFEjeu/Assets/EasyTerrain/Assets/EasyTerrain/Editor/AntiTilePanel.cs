@@ -34,6 +34,12 @@ namespace EasyTerrain.EditorTools
             new Param("Début du mélange (m)", "_AT_FarStart", 0f, 800f),
             new Param("Fin du mélange (m)", "_AT_FarEnd", 1f, 1500f),
         };
+        private static readonly Param[] TriParams =
+        {
+            new Param("Triplanar : intensité", "_AT_TriAmount", 0f, 1f),
+            new Param("Début (normale.y, haut = pente douce)", "_AT_TriStart", 0f, 1f),
+            new Param("Plein (normale.y, bas = pente raide)", "_AT_TriEnd", 0f, 1f),
+        };
         private static readonly Param[] MacroParams =
         {
             new Param("Macro : intensité", "_AT_MacroAmount", 0f, 1f),
@@ -50,6 +56,7 @@ namespace EasyTerrain.EditorTools
             bool active = mat != null && mat.shader != null && mat.shader.name == ShaderName;
 
             DrawActivation(terrain, active);
+            if (active) SyncTerrainSize(mat, terrain);
             if (!active) return;
 
             EditorGUILayout.Space();
@@ -86,6 +93,7 @@ namespace EasyTerrain.EditorTools
                 mat.EnableKeyword(KeywordPerPixelNormal);
                 AssetDatabase.CreateAsset(mat, MaterialPath);
             }
+            if (mat.HasProperty("_AT_TerrainSize")) mat.SetFloat("_AT_TerrainSize", terrain.terrainData.size.x);
             Undo.RecordObject(terrain, "Activer anti-répétition");
             terrain.materialTemplate = mat;
             EditorUtility.SetDirty(terrain);
@@ -101,6 +109,17 @@ namespace EasyTerrain.EditorTools
         }
         #endregion
 
+        // Le shader a besoin de la taille X du terrain pour convertir les tuiles en mètres (triplanar).
+        private static void SyncTerrainSize(Material mat, Terrain terrain)
+        {
+            if (!mat.HasProperty("_AT_TerrainSize")) return;
+            float size = terrain.terrainData.size.x;
+            if (Mathf.Approximately(mat.GetFloat("_AT_TerrainSize"), size)) return;
+            Undo.RecordObject(mat, "Taille du terrain");
+            mat.SetFloat("_AT_TerrainSize", size);
+            EditorUtility.SetDirty(mat);
+        }
+
         #region Paramètres globaux
         private static void DrawGlobalParams(Material mat)
         {
@@ -108,6 +127,8 @@ namespace EasyTerrain.EditorTools
             DrawParams(mat, StochasticParams);
             EditorGUILayout.LabelField("Grande tuile (loin)", EditorStyles.boldLabel);
             DrawParams(mat, FarParams);
+            EditorGUILayout.LabelField("Parois raides (triplanar : supprime l'étirement)", EditorStyles.boldLabel);
+            DrawParams(mat, TriParams);
             EditorGUILayout.LabelField("Variation macro (teinte / luminosité)", EditorStyles.boldLabel);
             DrawParams(mat, MacroParams);
             DrawColor(mat, "Teinte chaude", "_AT_MacroWarm");

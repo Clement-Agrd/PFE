@@ -10,6 +10,7 @@ CBUFFER_START(UnityPerMaterial)
     float _AT_FadeStart, _AT_FadeEnd, _AT_HexContrast, _AT_FarBlend, _AT_FarScale, _AT_FarStart, _AT_FarEnd;
     float _AT_MacroAmount, _AT_MacroValue, _AT_MacroScaleA, _AT_MacroScaleB;
     half4 _AT_MacroWarm, _AT_MacroCool;
+    float _AT_TriAmount, _AT_TriStart, _AT_TriEnd, _AT_TerrainSize;
     float4 _MainTex_ST;
     half4 _BaseColor;
     half _Cutoff;

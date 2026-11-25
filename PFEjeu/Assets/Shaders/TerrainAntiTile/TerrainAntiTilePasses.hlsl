@@ -147,14 +147,25 @@ void InitializeBakedGIData(Varyings IN, inout InputData inputData)
 // Force anti-repetition par couche : TerrainLayer.maskMapRemapMax.z = 1 - force (defaut 1 -> 0).
 #define AT_LAYER_STRENGTH(i) saturate(1.0h - _MaskMapRemapScale##i.z)
 
-void NormalMapMix(float4 uvSplat01, float4 uvSplat23, float dist, inout half4 splatControl, inout half3 mixedNormal)
+half3 AT_TerrainNormalWS(float2 terrainUV, half3 vertexNormalWS)
+{
+#if defined(ENABLE_TERRAIN_PERPIXEL_NORMAL)
+    float2 sampleCoords = (terrainUV / _TerrainHeightmapRecipSize.zw + 0.5f) * _TerrainHeightmapRecipSize.xy;
+    half3 nOS = normalize(SAMPLE_TEXTURE2D(_TerrainNormalmapTexture, sampler_TerrainNormalmapTexture, sampleCoords).rgb * 2 - 1);
+    return TransformObjectToWorldNormal(nOS);
+#else
+    return normalize(vertexNormalWS);
+#endif
+}
+
+void NormalMapMix(float4 uvSplat01, float4 uvSplat23, float dist, half4 triS, inout half4 splatControl, inout half3 mixedNormal)
 {
     #if defined(_NORMALMAP)
         half3 nrm = half(0.0);
-        nrm += splatControl.r * AT_SampleNormal(TEXTURE2D_ARGS(_Normal0, sampler_Normal0), uvSplat01.xy, _NormalScale0, AT_LAYER_STRENGTH(0), dist);
-        nrm += splatControl.g * AT_SampleNormal(TEXTURE2D_ARGS(_Normal1, sampler_Normal0), uvSplat01.zw, _NormalScale1, AT_LAYER_STRENGTH(1), dist);
-        nrm += splatControl.b * AT_SampleNormal(TEXTURE2D_ARGS(_Normal2, sampler_Normal0), uvSplat23.xy, _NormalScale2, AT_LAYER_STRENGTH(2), dist);
-        nrm += splatControl.a * AT_SampleNormal(TEXTURE2D_ARGS(_Normal3, sampler_Normal0), uvSplat23.zw, _NormalScale3, AT_LAYER_STRENGTH(3), dist);
+        nrm += splatControl.r * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal0, sampler_Normal0), uvSplat01.xy, _NormalScale0, AT_LAYER_STRENGTH(0), dist), half3(0.0h, 0.0h, 1.0h), triS.x);
+        nrm += splatControl.g * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal1, sampler_Normal0), uvSplat01.zw, _NormalScale1, AT_LAYER_STRENGTH(1), dist), half3(0.0h, 0.0h, 1.0h), triS.y);
+        nrm += splatControl.b * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal2, sampler_Normal0), uvSplat23.xy, _NormalScale2, AT_LAYER_STRENGTH(2), dist), half3(0.0h, 0.0h, 1.0h), triS.z);
+        nrm += splatControl.a * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal3, sampler_Normal0), uvSplat23.zw, _NormalScale3, AT_LAYER_STRENGTH(3), dist), half3(0.0h, 0.0h, 1.0h), triS.w);
 
         // avoid risk of NaN when normalizing.
         #if !HALF_IS_FLOAT
@@ -167,7 +178,7 @@ void NormalMapMix(float4 uvSplat01, float4 uvSplat23, float dist, inout half4 sp
     #endif
 }
 
-void SplatmapMix(float4 uvMainAndLM, float4 uvSplat01, float4 uvSplat23, float3 positionWS, inout half4 splatControl, out half weight, out half4 mixedDiffuse, out half4 defaultSmoothness, inout half3 mixedNormal)
+void SplatmapMix(float4 uvMainAndLM, float4 uvSplat01, float4 uvSplat23, float3 positionWS, half3 vertexNormalWS, inout half4 splatControl, out half weight, out half4 mixedDiffuse, out half4 defaultSmoothness, inout half3 mixedNormal)
 {
     half4 diffAlbedo[4];
     float dist = distance(_WorldSpaceCameraPos, positionWS);
@@ -177,6 +188,21 @@ void SplatmapMix(float4 uvMainAndLM, float4 uvSplat01, float4 uvSplat23, float3 
     diffAlbedo[1] = AT_SampleAlbedo(TEXTURE2D_ARGS(_Splat1, sampler_Splat0), uvSplat01.zw, atStrength.y, dist);
     diffAlbedo[2] = AT_SampleAlbedo(TEXTURE2D_ARGS(_Splat2, sampler_Splat0), uvSplat23.xy, atStrength.z, dist);
     diffAlbedo[3] = AT_SampleAlbedo(TEXTURE2D_ARGS(_Splat3, sampler_Splat0), uvSplat23.zw, atStrength.w, dist);
+
+    // Parois raides : triplanar (la projection du terrain etire les textures sur les falaises).
+    half3 normalWS = AT_TerrainNormalWS(uvMainAndLM.xy, vertexNormalWS);
+    float3 dposDx = ddx(positionWS);
+    float3 dposDy = ddy(positionWS);
+    half4 triS = half4(AT_TriFactor(normalWS, atStrength.x), AT_TriFactor(normalWS, atStrength.y),
+                       AT_TriFactor(normalWS, atStrength.z), AT_TriFactor(normalWS, atStrength.w));
+    if (max(max(triS.x, triS.y), max(triS.z, triS.w)) > 0.002h)
+    {
+        float invSize = 1.0 / max(_AT_TerrainSize, 1.0);
+        diffAlbedo[0] = AT_TriAlbedo(TEXTURE2D_ARGS(_Splat0, sampler_Splat0), diffAlbedo[0], positionWS, dposDx, dposDy, normalWS, (float)_Splat0_ST.x * invSize, triS.x);
+        diffAlbedo[1] = AT_TriAlbedo(TEXTURE2D_ARGS(_Splat1, sampler_Splat0), diffAlbedo[1], positionWS, dposDx, dposDy, normalWS, (float)_Splat1_ST.x * invSize, triS.y);
+        diffAlbedo[2] = AT_TriAlbedo(TEXTURE2D_ARGS(_Splat2, sampler_Splat0), diffAlbedo[2], positionWS, dposDx, dposDy, normalWS, (float)_Splat2_ST.x * invSize, triS.z);
+        diffAlbedo[3] = AT_TriAlbedo(TEXTURE2D_ARGS(_Splat3, sampler_Splat0), diffAlbedo[3], positionWS, dposDx, dposDy, normalWS, (float)_Splat3_ST.x * invSize, triS.w);
+    }
 
     half4 diffuseAlpha = half4(diffAlbedo[0].a, diffAlbedo[1].a, diffAlbedo[2].a, diffAlbedo[3].a);
     half4 smoothnessConstants = half4(_Smoothness0, _Smoothness1, _Smoothness2, _Smoothness3);
@@ -238,7 +264,7 @@ void SplatmapMix(float4 uvMainAndLM, float4 uvSplat01, float4 uvSplat23, float3 
         mixedDiffuse.rgb *= lerp(half3(1.0h, 1.0h, 1.0h), tint, macroWeight);
     }
 
-    NormalMapMix(uvSplat01, uvSplat23, dist, splatControl, mixedNormal);
+    NormalMapMix(uvSplat01, uvSplat23, dist, triS, splatControl, mixedNormal);
 }
 
 #endif
@@ -452,7 +478,7 @@ void SplatmapFragment(
     half weight;
     half4 mixedDiffuse;
     half4 defaultSmoothness;
-    SplatmapMix(IN.uvMainAndLM, IN.uvSplat01, IN.uvSplat23, IN.positionWS, splatControl, weight, mixedDiffuse, defaultSmoothness, normalTS);
+    SplatmapMix(IN.uvMainAndLM, IN.uvSplat01, IN.uvSplat23, IN.positionWS, IN.normal.xyz, splatControl, weight, mixedDiffuse, defaultSmoothness, normalTS);
     half3 albedo = mixedDiffuse.rgb;
 
     half4 defaultMetallic = half4(_Metallic0, _Metallic1, _Metallic2, _Metallic3);
