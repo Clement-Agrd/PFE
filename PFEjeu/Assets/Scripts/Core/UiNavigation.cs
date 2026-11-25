@@ -37,6 +37,11 @@ namespace Core
         public static Transform CurrentScopeRoot => TopScope()?.transform;
         public static void ConsumeCancel() { _cancelFrame = _usedFrame = Time.frameCount; }
         public static bool IsTopScopeOwner(Component owner) => owner == null || TopScope()?.Owner == owner;
+        public static bool WasScopeOpenedThisFrame(Component owner)
+        {
+            var scope = TopScope();
+            return scope != null && (owner == null || scope.Owner == owner) && scope.OpenedFrame == Time.frameCount;
+        }
         public static void Refresh() { if (_instance != null) _instance._refreshAt = 0; }
 
         public static void RememberSelection(GameObject target)

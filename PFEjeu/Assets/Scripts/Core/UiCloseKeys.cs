@@ -14,7 +14,7 @@ namespace Core
 
         public static bool Pressed(int openedFrame, Component owner = null)
         {
-            if (UiNavigation.CancelConsumedThisFrame || !UiNavigation.IsTopScopeOwner(owner)) return false;
+            if (UiNavigation.CancelConsumedThisFrame || !UiNavigation.IsTopScopeOwner(owner) || UiNavigation.WasScopeOpenedThisFrame(owner)) return false;
             if (_close == null)
             {
                 _close = new InputAction("CloseUI", InputActionType.Button);

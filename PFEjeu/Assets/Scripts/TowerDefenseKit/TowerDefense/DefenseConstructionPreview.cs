@@ -165,7 +165,7 @@ namespace Core.TowerDefense
 
         private static Material MakeRangeMaterial()
         {
-            var material = MakeMaterial(new Color(.24f, .66f, 1f, .24f), 3000);
+            var material = MakeMaterial(new Color(.24f, .66f, 1f, .24f), 3000, "MultiplyRange");
             material.SetFloat("_Blend", 3f); // URP Multiply
             material.SetFloat("_Cull", (float)CullMode.Off);
             material.SetFloat("_SrcBlend", (float)BlendMode.DstColor);
@@ -176,9 +176,13 @@ namespace Core.TowerDefense
             return material;
         }
 
-        private static Material MakeMaterial(Color color, int queue)
+        private static Material MakeMaterial(Color color, int queue, string templateName = "Transparent")
         {
-            var material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+            // Resource materials retain the shader and its transparent/multiply variants in players.
+            var template = Resources.Load<Material>("DefensePreview/" + templateName);
+            if (template == null)
+                throw new System.InvalidOperationException("Missing defense preview material: " + templateName);
+            var material = new Material(template);
             material.SetColor("_BaseColor", color);
             material.SetFloat("_Surface", 1f);
             material.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
