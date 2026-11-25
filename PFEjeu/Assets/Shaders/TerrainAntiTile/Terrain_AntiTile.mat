@@ -87,7 +87,7 @@ Material:
     m_Ints: []
     m_Floats:
     - _AT_FadeEnd: 120
-    - _AT_FadeStart: 276
+    - _AT_FadeStart: 300
     - _AT_FarBlend: 0.7
     - _AT_FarEnd: 220
     - _AT_FarScale: 0.173
