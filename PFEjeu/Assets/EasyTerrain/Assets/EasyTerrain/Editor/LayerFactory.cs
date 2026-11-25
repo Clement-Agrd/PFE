@@ -52,6 +52,39 @@ namespace EasyTerrain.EditorTools
             return variant;
         }
 
+        /// <summary>
+        /// Variante anti-répétition réutilisable : un asset par couche source et par échelle
+        /// ("&lt;source&gt;_brk_0.37.terrainlayer"), créé au premier usage puis retrouvé (aucun doublon à chaque coup de pinceau).
+        /// </summary>
+        public static TerrainLayer GetOrCreateBreakVariant(TerrainLayer source, float tileScale)
+        {
+            if (source == null) return null;
+            EnsureFolder(LayersFolder);
+
+            float scale = Mathf.Max(tileScale, 0.05f);
+            string name = source.name + "_brk_" + scale.ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+            string path = LayersFolder + "/" + name + ".terrainlayer";
+
+            var existing = AssetDatabase.LoadAssetAtPath<TerrainLayer>(path);
+            if (existing != null) return existing;
+
+            var rng = new System.Random(name.GetHashCode() & 0x7fffffff);
+            var variant = new TerrainLayer
+            {
+                diffuseTexture = source.diffuseTexture,
+                normalMapTexture = source.normalMapTexture,
+                maskMapTexture = source.maskMapTexture,
+                normalScale = source.normalScale,
+                smoothness = source.smoothness,
+                metallic = source.metallic,
+                tileSize = source.tileSize * scale,
+                tileOffset = new Vector2((float)rng.NextDouble() * source.tileSize.x, (float)rng.NextDouble() * source.tileSize.y)
+            };
+            AssetDatabase.CreateAsset(variant, path);
+            AssetDatabase.SaveAssets();
+            return variant;
+        }
+
         public static int IndexOf(TerrainData data, TerrainLayer layer)
         {
             if (layer == null) return -1;

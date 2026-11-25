@@ -16,7 +16,7 @@ namespace EasyTerrain.EditorTools
     /// </summary>
     public sealed class EasyTerrainWindow : EditorWindow
     {
-        private static readonly string[] TabNames = { "Terrain", "Relief", "Textures", "Végétation", "Pinceau" };
+        private static readonly string[] TabNames = { "Terrain", "Relief", "Textures", "Végétation", "Pinceau", "Anti-répétition" };
         private static readonly string[] BrushLabels =
         {
             "Relief : monter", "Relief : creuser", "Relief : lisser", "Relief : aplatir",
@@ -98,6 +98,7 @@ namespace EasyTerrain.EditorTools
                 case 2: DrawTexturesTab(); break;
                 case 3: DrawVegetationTab(); break;
                 case 4: DrawBrushTab(); break;
+                case 5: AntiTilePanel.Draw(targetTerrain); break;
             }
             EditorGUILayout.EndScrollView();
 
@@ -311,6 +312,15 @@ namespace EasyTerrain.EditorTools
 
                 case BrushMode.PaintTexture:
                     brush.layerIndex = LayerPopup("Couche", brush.layerIndex);
+                    brush.breakRepetition = EditorGUILayout.ToggleLeft("Casser la répétition (variante en taches)", brush.breakRepetition);
+                    if (brush.breakRepetition)
+                    {
+                        brush.breakScale = EditorGUILayout.Slider("Taille des cassures (m)", brush.breakScale, 0.5f, 60f);
+                        brush.breakAmount = EditorGUILayout.Slider("Couverture", brush.breakAmount, 0f, 1f);
+                        brush.breakSharpness = EditorGUILayout.Slider("Netteté des bords", brush.breakSharpness, 0f, 1f);
+                        brush.breakTileScale = EditorGUILayout.Slider("Échelle de la variante", brush.breakTileScale, 0.1f, 3f);
+                        brush.breakSeed = EditorGUILayout.IntField("Graine", brush.breakSeed);
+                    }
                     break;
 
                 case BrushMode.Overlay:

@@ -30,6 +30,17 @@ namespace EasyTerrain.EditorTools
         [Range(0f, 1f)] public float overlaySharpness = 0.5f;
         public int overlaySeed = 1;
 
+        [Header("Texture : casser la répétition (mode Peindre)")]
+        [Tooltip("Pendant la peinture, mélange par taches une variante de la couche (même texture, tuile de taille différente) pour masquer le motif répétitif.")]
+        public bool breakRepetition;
+        [Tooltip("Taille de tuile de la variante par rapport à la couche (ratio non entier : 0,37 recommandé).")]
+        [Range(0.1f, 3f)] public float breakTileScale = 0.37f;
+        [Tooltip("Taille d'une cassure (tache) en mètres.")]
+        public float breakScale = 14f;
+        [Range(0f, 1f)] public float breakAmount = 0.5f;
+        [Range(0f, 1f)] public float breakSharpness = 0.5f;
+        public int breakSeed = 1;
+
         [Tooltip("Index dans la liste 'trees' / 'details' du profil.")]
         public int treeRuleIndex;
         public int detailRuleIndex;

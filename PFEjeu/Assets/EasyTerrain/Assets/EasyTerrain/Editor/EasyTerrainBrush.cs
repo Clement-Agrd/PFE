@@ -22,6 +22,8 @@ namespace EasyTerrain.EditorTools
         private bool stroking;
         private float strokeFlattenHeight;
         private double lastTreeTime;
+        private TerrainLayer cachedSource, cachedVariant;
+        private float cachedScale;
 
         public EasyTerrainBrush(Func<Terrain> getTerrain, Func<EasyTerrainProfile> getProfile, Func<BrushSettings> getSettings)
         {
@@ -130,7 +132,7 @@ namespace EasyTerrain.EditorTools
                     HeightBrushOps.Apply(terrain, hit, s.radius, s.strength, HeightBrushKind.Flatten, strokeFlattenHeight); break;
 
                 case BrushMode.PaintTexture:
-                    SplatOps.Paint(terrain, hit, s.radius, s.strength, s.layerIndex, null); break;
+                    PaintTexture(terrain, s, hit); break;
                 case BrushMode.Overlay:
                     SplatOps.Paint(terrain, hit, s.radius, s.strength, s.layerIndex,
                         new MaskParams { Scale = s.overlayScale, Amount = s.overlayAmount, Sharpness = s.overlaySharpness, Seed = s.overlaySeed });
@@ -153,6 +155,31 @@ namespace EasyTerrain.EditorTools
                 case BrushMode.EraseTrees:
                     VegetationOps.EraseTrees(terrain, hit, s.radius); break;
             }
+        }
+
+        // Peinture simple ; avec "casser la répétition" : la couche, puis sa variante posée en taches par-dessus.
+        private void PaintTexture(Terrain terrain, BrushSettings s, Vector3 hit)
+        {
+            SplatOps.Paint(terrain, hit, s.radius, s.strength, s.layerIndex, null);
+            if (!s.breakRepetition) return;
+
+            TerrainLayer[] layers = terrain.terrainData.terrainLayers;
+            if (s.layerIndex < 0 || s.layerIndex >= layers.Length) return;
+            TerrainLayer source = layers[s.layerIndex];
+            if (source == null) return;
+
+            if (source != cachedSource || !Mathf.Approximately(s.breakTileScale, cachedScale))
+            {
+                cachedVariant = LayerFactory.GetOrCreateBreakVariant(source, s.breakTileScale);
+                cachedSource = source;
+                cachedScale = s.breakTileScale;
+            }
+            if (cachedVariant == null || cachedVariant == source) return;
+
+            int variantIndex = SplatOps.AddLayerToTerrain(terrain, cachedVariant);
+            if (variantIndex < 0) return;
+            SplatOps.Paint(terrain, hit, s.radius, s.strength, variantIndex,
+                new MaskParams { Scale = s.breakScale, Amount = s.breakAmount, Sharpness = s.breakSharpness, Seed = s.breakSeed });
         }
 
         private static bool TryGetRule<T>(System.Collections.Generic.List<T> list, int index, out T rule) where T : class
