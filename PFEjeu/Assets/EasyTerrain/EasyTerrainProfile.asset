@@ -44,5 +44,146 @@ MonoBehaviour:
     breakupNoiseScale: 14
     breakupAmount: 0.5
     breakupSharpness: 0.5
-  trees: []
+  - label: Dirt_01_Albedo
+    layer: {fileID: 8574412962073106934, guid: b20782d3db663844e800c1d313138369, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Dirt_02_Albedo
+    layer: {fileID: 8574412962073106934, guid: 28118f3fd30bb084b95fd1618618322b, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: wood_planks_dirt_diff_1k
+    layer: {fileID: 8574412962073106934, guid: 3f57b065d438b224091354da2c41b1f1, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: T_YFGM_Ground01_d
+    layer: {fileID: 8574412962073106934, guid: 081f9f0b50d58c24aa9ee6ad2f0c981d, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Dirt_Stone_Albedo
+    layer: {fileID: 8574412962073106934, guid: b7a6846b3c47db94abf94ea93df278ce, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: aerial_grass_rock_diff_1k
+    layer: {fileID: 8574412962073106934, guid: 38f134bc1253d4d408bcd58dceb8e099, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: forrest_ground_01_diff_1k
+    layer: {fileID: 8574412962073106934, guid: fbdf5461ad469fd46b5a8e6b975609ac, type: 2}
+    weight: 0
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 90}
+    slopeFalloff: 6
+    noiseScale: 35
+    noiseAmount: 0.35
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  trees:
+  - label: 
+    prefab: {fileID: 919132149155446097, guid: a45ebf9e58bcd034dabb25055822eff3, type: 3}
+    treesPerHectare: 1
+    minSpacing: 0
+    heightRange: {x: 0, y: 0}
+    maxSlope: 0
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0
+    scaleRange: {x: 0, y: 0}
+    colorVariation: 0
+    clumping: 0
+    clumpScale: 0
+  - label: 
+    prefab: {fileID: 919132149155446097, guid: 60c269700c8548542968e5c6c6c5d4ac, type: 3}
+    treesPerHectare: 1
+    minSpacing: 0
+    heightRange: {x: 0, y: 0}
+    maxSlope: 0
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0
+    scaleRange: {x: 0, y: 0}
+    colorVariation: 0
+    clumping: 0
+    clumpScale: 0
+  - label: 
+    prefab: {fileID: 919132149155446097, guid: 3a6ff301f5d97c54cbc54f269db53c60, type: 3}
+    treesPerHectare: 1
+    minSpacing: 0
+    heightRange: {x: 0, y: 0}
+    maxSlope: 0
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0
+    scaleRange: {x: 0, y: 0}
+    colorVariation: 0
+    clumping: 0
+    clumpScale: 0
   details: []

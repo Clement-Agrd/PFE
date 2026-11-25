@@ -4825,7 +4825,7 @@ MonoBehaviour:
   shake: 0.45
   shakeRadius: 45
   life: 10
-  flashPeak: 5
+  flashPeak: 0
 --- !u!1 &2848923250089871937
 GameObject:
   m_ObjectHideFlags: 0
