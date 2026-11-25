@@ -130,8 +130,8 @@ namespace Core.BarracksSystem
             return hero;
         }
 
-        public bool AssignToBarracks(heros hero, Barracks barracks)
-            => barracks != null && (hero == null || _heroes.Contains(hero)) && barracks.AssignHero(hero);
+        public bool AssignToBarracks(heros hero, Barracks barracks, bool allowTransfer = false)
+            => barracks != null && (hero == null || _heroes.Contains(hero)) && barracks.AssignHero(hero, allowTransfer);
 
         public bool RemoveHero(heros hero)
         {

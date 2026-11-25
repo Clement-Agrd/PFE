@@ -61,6 +61,20 @@ namespace Core.BarracksSystem
         public event Action Changed;
         public event Action<heros> Destroyed;
 
+        public static string ClassDescription(ClasseHeros type) => type switch
+        {
+            ClasseHeros.Tank => "Autel d’invocation : esprits résistants qui retiennent deux ennemis et infligent de légers dégâts au sol en zone. Moins de dégâts directs.",
+            ClasseHeros.Degats => "Autel d’invocation : esprits offensifs combinant dégâts physiques et brûlure magique. Plus puissants, mais moins résistants.",
+            ClasseHeros.Invocateur => "Autel d’invocation : invoque davantage d’esprits, avec des statistiques individuelles légèrement réduites.",
+            ClasseHeros.ArcLong => "Tour d’archer : longue portée et volées de flèches en zone. Cadence lente, cible le premier ennemi.",
+            ClasseHeros.ArcCourt => "Tour d’archer : tirs rapides à courte portée. Cible les ennemis ayant le moins de vie restante.",
+            ClasseHeros.Arbalete => "Tour d’archer : tirs lourds et lents à longue portée, perçant une partie de l’armure. Cible les ennemis ayant le plus de PV maximum.",
+            ClasseHeros.ChamanFeu => "Tour de chaman : boules de feu explosives et brûlure magique qui continue à infliger des dégâts dans le temps.",
+            ClasseHeros.ChamanGlace => "Tour de chaman : projectiles de glace explosifs qui ralentissent et réduisent la défense physique des ennemis.",
+            ClasseHeros.ChamanVie => "Tour de chaman : soigne les alliés proches et augmente leurs dégâts. Aucun dégât direct aux ennemis.",
+            _ => ""
+        };
+
         public void Initialize(string displayName, ClasseHeros heroClass, int heroLevel)
         {
             if (DefenseAssignment != null || IsOnExpedition) throw new InvalidOperationException("Un héros affecté ne peut pas être réinitialisé.");
@@ -98,10 +112,11 @@ namespace Core.BarracksSystem
             return gained;
         }
 
-        internal bool TryClaim(Barracks barracks)
+        internal bool TryClaim(Barracks barracks, bool allowTransfer = false)
         {
-            if (barracks == null || Family != HeroFamily.Barracks || AssignedTower != null || !isActiveAndEnabled || (AssignedBarracks != null && AssignedBarracks != barracks)) return false;
+            if (barracks == null || Family != HeroFamily.Barracks || AssignedTower != null || !isActiveAndEnabled || (AssignedBarracks != null && AssignedBarracks != barracks && !allowTransfer)) return false;
             if (IsOnExpedition && !AssignedExpedition.TryCancelMission(this)) return false;
+            if (AssignedBarracks != null && AssignedBarracks != barracks) AssignedBarracks.AssignHero(null);
             if (AssignedBarracks != barracks)
             {
                 AssignedBarracks = barracks;

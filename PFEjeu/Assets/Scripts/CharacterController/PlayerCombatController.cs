@@ -181,8 +181,7 @@ namespace ProfessionalTPS
             melee?.Initialize(this);
             bow?.Initialize(this);
             magic?.Initialize(this);
-            axe?.Initialize(this);
-            pickaxe?.Initialize(this);
+
 
             _active =
                 melee != null ? melee :
@@ -202,6 +201,7 @@ namespace ProfessionalTPS
             if (input == null)
                 return;
 
+            input.WeaponCyclePressed += CycleWeapon;
             input.AttackPressed +=
                 OnAttackPressed;
 
@@ -229,6 +229,7 @@ namespace ProfessionalTPS
             if (input == null)
                 return;
 
+            input.WeaponCyclePressed -= CycleWeapon;
             input.AttackPressed -=
                 OnAttackPressed;
 
@@ -294,12 +295,25 @@ namespace ProfessionalTPS
         
         public void SelectAxe()
         {
-            TrySwitch(axe);
+            TrySwitch(ModuleFor(CombatMode.Axe));
         }
 
         public void SelectPickaxe()
         {
-            TrySwitch(pickaxe);
+            TrySwitch(ModuleFor(CombatMode.Pickaxe));
+        }
+
+        private void CycleWeapon(int direction)
+        {
+            if (Core.UiNavigation.BlocksGameplayInput) return;
+            int index = CurrentMode == CombatMode.Bow ? 1 : CurrentMode == CombatMode.Magic ? 2 : 0;
+            for (int step = 1; step <= 3; step++)
+            {
+                var mode = (index + direction * step + 6) % 3;
+                CombatModule candidate = mode == 0 ? melee : mode == 1 ? bow : magic;
+                if (candidate == null) continue;
+                TrySwitch(candidate); break;
+            }
         }
 
         private CombatModule ModuleFor(
@@ -310,8 +324,7 @@ namespace ProfessionalTPS
                 CombatMode.Melee => melee,
                 CombatMode.Bow => bow,
                 CombatMode.Magic => magic,
-                CombatMode.Axe => axe,
-                CombatMode.Pickaxe => pickaxe,
+
                 _ => null
             };
         }

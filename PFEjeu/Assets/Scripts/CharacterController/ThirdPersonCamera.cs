@@ -163,7 +163,7 @@ namespace ProfessionalTPS
                 return;
             }
 
-            if (Core.GameFreeze.IsCursorUnlocked)
+            if (Core.GameFreeze.IsCursorUnlocked || Core.UiNavigation.HasUiFocus)
                 return;
 
             if (_recoveryCameraActive)

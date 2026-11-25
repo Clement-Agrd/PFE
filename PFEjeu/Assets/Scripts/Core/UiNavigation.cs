@@ -14,7 +14,7 @@ namespace Core
     {
         private static UiNavigation _instance;
         private static int _cancelFrame = -1, _usedFrame = -1;
-        private InputAction _move, _submit, _cancel;
+        private InputAction _move, _submit, _cancel, _previousTab, _nextTab;
         private EventSystem _events;
         private UiNavigationScope _scope;
         private readonly List<Selectable> _controls = new();
@@ -78,6 +78,9 @@ namespace Core
             foreach (var binding in new[] { "<Keyboard>/space", "<Keyboard>/enter", "<Keyboard>/numpadEnter", "<Gamepad>/buttonSouth" }) _submit.AddBinding(binding);
             _cancel = new InputAction("Back UI", InputActionType.Button);
             _cancel.AddBinding("<Keyboard>/escape"); _cancel.AddBinding("<Gamepad>/buttonEast");
+            _previousTab = new InputAction("Previous UI tab", InputActionType.Button, "<Gamepad>/leftShoulder");
+            _nextTab = new InputAction("Next UI tab", InputActionType.Button, "<Gamepad>/rightShoulder");
+            _previousTab.Enable(); _nextTab.Enable();
             _move.Enable(); _submit.Enable(); _cancel.Enable();
             SceneManager.sceneLoaded += SceneLoaded;
             _mainMenu = FindAnyObjectByType<Core.MainMenu.MainMenuController>() != null;
@@ -92,7 +95,7 @@ namespace Core
         private void OnDestroy()
         {
             SceneManager.sceneLoaded -= SceneLoaded;
-            _move?.Dispose(); _submit?.Dispose(); _cancel?.Dispose();
+            _move?.Dispose(); _submit?.Dispose(); _cancel?.Dispose(); _previousTab?.Dispose(); _nextTab?.Dispose();
             if (_instance == this) _instance = null;
         }
 
@@ -127,6 +130,16 @@ namespace Core
                 if (selected != null) ExecuteEvents.ExecuteHierarchy(selected, data, ExecuteEvents.cancelHandler);
                 if (!data.used) _scope.Cancel?.Invoke();
                 Refresh(); return;
+            }
+            if (_previousTab.WasPressedThisFrame() || _nextTab.WasPressedThisFrame())
+            {
+                var tabs = _scope.GetComponentInChildren<UiTabNavigation>();
+                if (tabs != null && tabs.isActiveAndEnabled)
+                {
+                    _usedFrame = Time.frameCount;
+                    tabs.Change(_nextTab.WasPressedThisFrame() ? 1 : -1);
+                    Refresh(); return;
+                }
             }
             if (_controls.Count == 0) return;
             if (selected != null && selected.TryGetComponent<TMPro.TMP_InputField>(out var field) && field.isFocused) return;

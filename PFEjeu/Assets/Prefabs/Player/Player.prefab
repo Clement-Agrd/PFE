@@ -1375,32 +1375,6 @@ MonoBehaviour:
       m_Flags: 0
     m_Flags: 0
     m_Priority: 0
-  useAction:
-    m_Name: HotbarUse
-    m_Type: 1
-    m_ExpectedControlType: 
-    m_Id: 20194878-e808-4954-9859-d35ea15eb6ae
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 45392642-6de3-4244-ad59-abc533c2a725
-      m_Path: <Keyboard>/f
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: HotbarUse
-      m_Flags: 0
-    - m_Name: 
-      m_Id: 46c548b4-1d69-4a1f-b2c7-dbd9cc2df2e1
-      m_Path: <Gamepad>/buttonWest
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: HotbarUse
-      m_Flags: 0
-    m_Flags: 0
-    m_Priority: 0
   visibleSlots: 10
   slotSize: 84
   spacing: 8

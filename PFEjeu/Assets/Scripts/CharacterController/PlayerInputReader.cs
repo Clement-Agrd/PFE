@@ -99,6 +99,17 @@ namespace ProfessionalTPS
         public event Action SelectPickaxePressed;
 
 
+        public event Action<int> WeaponCyclePressed;
+        private Core.TrapSystem.TrapPlacer _trapPlacer;
+        private bool GameplayActionsBlocked => Core.UiNavigation.BlocksGameplayInput ||
+            (_trapPlacer != null && (_trapPlacer.IsPlacing || _trapPlacer.IsWheelOpen));
+        private void Awake() => _trapPlacer = GetComponent<Core.TrapSystem.TrapPlacer>();
+        private void Update()
+        {
+            if (GameplayActionsBlocked || Gamepad.current == null) return;
+            if (Gamepad.current.leftShoulder.wasPressedThisFrame) WeaponCyclePressed?.Invoke(-1);
+            else if (Gamepad.current.rightShoulder.wasPressedThisFrame) WeaponCyclePressed?.Invoke(1);
+        }
         private void OnEnable()
         {
             Enable(move);
@@ -136,15 +147,7 @@ namespace ProfessionalTPS
                 OnSelectMagic
             );
 
-            BindPressed(
-                selectAxe,
-                OnSelectAxe
-            );
 
-            BindPressed(
-                selectPickaxe,
-                OnSelectPickaxe
-            );
         }
 
 
@@ -286,21 +289,21 @@ namespace ProfessionalTPS
         private void OnJump(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) JumpPressed?.Invoke();
+            if (!GameplayActionsBlocked) JumpPressed?.Invoke();
         }
 
 
         private void OnRoll(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) RollPressed?.Invoke();
+            if (!GameplayActionsBlocked) RollPressed?.Invoke();
         }
 
 
         private void OnAttackPressed(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) AttackPressed?.Invoke();
+            if (!GameplayActionsBlocked) AttackPressed?.Invoke();
         }
 
 
@@ -314,35 +317,35 @@ namespace ProfessionalTPS
         private void OnSelectMelee(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) SelectMeleePressed?.Invoke();
+            if (!GameplayActionsBlocked) SelectMeleePressed?.Invoke();
         }
 
 
         private void OnSelectBow(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) SelectBowPressed?.Invoke();
+            if (!GameplayActionsBlocked) SelectBowPressed?.Invoke();
         }
 
 
         private void OnSelectMagic(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) SelectMagicPressed?.Invoke();
+            if (!GameplayActionsBlocked) SelectMagicPressed?.Invoke();
         }
 
 
         private void OnSelectAxe(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) SelectAxePressed?.Invoke();
+            if (!GameplayActionsBlocked) SelectAxePressed?.Invoke();
         }
 
 
         private void OnSelectPickaxe(
             InputAction.CallbackContext _)
         {
-            if (!Core.UiNavigation.BlocksGameplayInput) SelectPickaxePressed?.Invoke();
+            if (!GameplayActionsBlocked) SelectPickaxePressed?.Invoke();
         }
     }
 }

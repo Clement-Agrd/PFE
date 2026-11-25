@@ -221,10 +221,10 @@ namespace Core.BarracksSystem
             StatsChanged?.Invoke();
         }
 
-        public bool AssignHero(heros hero)
+        public bool AssignHero(heros hero, bool allowTransfer = false)
         {
             if (assignedHero == hero) return true;
-            if (hero != null && !hero.TryClaim(this)) return false;
+            if (hero != null && !hero.TryClaim(this, allowTransfer)) return false;
             UnsubscribeHero();
             if (assignedHero != null) assignedHero.Release(this);
             assignedHero = hero;

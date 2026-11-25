@@ -112,12 +112,42 @@ namespace Core.BarracksSystem
 
         private bool CanChoose(heros hero)
             => hero == null || (hero.isActiveAndEnabled && (!hero.IsOnExpedition || hero.IsExpeditionPending) &&
-                (hero.AssignedBarracks == null || hero.AssignedBarracks == _owner));
+                hero.Family == HeroFamily.Barracks);
 
         private void Assign()
         {
-            bool success = heroRoster != null ? heroRoster.AssignToBarracks(_candidate, _owner)
-                : _candidate == null && _owner.AssignHero(null);
+            var hero = _candidate;
+            var previous = hero != null ? hero.AssignedBarracks : null;
+            var expedition = hero != null ? hero.AssignedExpedition : null;
+            if (hero != null && ((previous != null && previous != _owner) || expedition != null))
+            {
+                string source = previous != null ? previous.name : hero.ExpeditionName;
+                var overlay = NewImage("Confirmation", _canvas.transform, Dim);
+                Stretch(overlay.rectTransform); overlay.raycastTarget = true;
+                _confirmation = overlay.gameObject;
+                Core.UiNavigationScope.Register(_confirmation.transform, CloseConfirmation, this);
+                var card = NewImage("Dialogue", overlay.transform, CardRaised, 16);
+                Anchor(card.rectTransform, Vector2.one * .5f, Vector2.one * .5f, Vector2.zero, new Vector2(650, 295));
+                VStack(card.gameObject, 14, new RectOffset(24, 24, 20, 20));
+                Layout(NewText("Message", card.transform, $"{hero.HeroName} est déjà affecté à {source}. Veux-tu changer son affectation ?", 26, TextMain).gameObject, flexH: 1);
+                var actions = NewRect("Actions", card.transform); Layout(actions.gameObject, height: 55); HStack(actions.gameObject, 12);
+                Layout(NewButton(actions, "Annuler", CloseConfirmation, fontSize: 23).gameObject, flexW: 1);
+                Layout(NewButton(actions, "Transférer", () =>
+                {
+                    CloseConfirmation();
+                    if (hero == null || hero.AssignedBarracks != previous || hero.AssignedExpedition != expedition || !CanChoose(hero))
+                    { _feedback.text = "L’affectation a changé. Sélectionne à nouveau le héros."; Refresh(); return; }
+                    ApplyAssignment(hero, true);
+                }, ButtonStyle.Primary, 23).gameObject, flexW: 1);
+                return;
+            }
+            ApplyAssignment(hero, false);
+        }
+
+        private void ApplyAssignment(heros hero, bool allowTransfer)
+        {
+            bool success = heroRoster != null ? heroRoster.AssignToBarracks(hero, _owner, allowTransfer)
+                : hero == null && _owner.AssignHero(null);
             _feedback.text = success ? "" : "Affectation indisponible.";
             Refresh();
         }
@@ -147,7 +177,7 @@ namespace Core.BarracksSystem
                     string status = hero == assigned ? "Affecté à cet autel" :
                         hero.IsExpeditionPending ? "Expédition annulable" :
                         hero.IsOnExpedition ? "En expédition" :
-                        hero.AssignedBarracks != null ? "Affecté à un autel" : "Disponible";
+                        hero.AssignedBarracks != null ? "Transfert depuis " + hero.AssignedBarracks.name : "Disponible";
                     AddChoice($"{hero.HeroName} · {hero.ClasseName} niv. {hero.Level}\n{status}", hero);
                 }
             }

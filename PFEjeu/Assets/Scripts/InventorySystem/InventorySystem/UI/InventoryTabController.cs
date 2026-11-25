@@ -43,13 +43,32 @@ namespace Core.InventorySystem.UI
             if (heroesTabButton != null) heroesTabButton.onClick.AddListener(ShowHeroesTab);
         }
 
-        private void OnEnable() => ShowInventoryTab();
+        private int _page;
+        private void OnEnable()
+        {
+            ShowInventoryTab();
+            Core.UiTabNavigation.Register(transform, ChangeTab);
+        }
+        private void ChangeTab(int direction)
+        {
+            var contents = new[] { inventoryContent, villageContent, mapContent, heroesContent };
+            var buttons = new[] { inventoryTabButton, villageTabButton, mapTabButton, heroesTabButton };
+            for (int step = 1; step <= contents.Length; step++)
+            {
+                int page = (_page + direction * step + contents.Length * 2) % contents.Length;
+                if (contents[page] == null) continue;
+                switch (page) { case 0: ShowInventoryTab(); break; case 1: ShowVillageTab(); break; case 2: ShowMapTab(); break; default: ShowHeroesTab(); break; }
+                if (buttons[page] != null) Core.UiNavigation.RememberSelection(buttons[page].gameObject);
+                break;
+            }
+        }
 
         /// <summary>Vrai quand l'onglet Carte est celui affiché.</summary>
         public bool IsMapShown => mapContent != null && mapContent.activeSelf;
 
         public void ShowInventoryTab()
         {
+            _page = 0;
             if (inventoryContent != null) inventoryContent.SetActive(true);
             if (villageContent != null) villageContent.SetActive(false);
             if (mapContent != null) mapContent.SetActive(false);
@@ -62,6 +81,7 @@ namespace Core.InventorySystem.UI
 
         public void ShowVillageTab()
         {
+            _page = 1;
             if (inventoryContent != null) inventoryContent.SetActive(false);
             if (villageContent != null) villageContent.SetActive(true);
             if (mapContent != null) mapContent.SetActive(false);
@@ -75,6 +95,7 @@ namespace Core.InventorySystem.UI
 
         public void ShowMapTab()
         {
+            _page = 2;
             if (inventoryContent != null) inventoryContent.SetActive(false);
             if (villageContent != null) villageContent.SetActive(false);
             if (mapContent != null) mapContent.SetActive(true);
@@ -87,6 +108,7 @@ namespace Core.InventorySystem.UI
 
         public void ShowHeroesTab()
         {
+            _page = 3;
             if (inventoryContent != null) inventoryContent.SetActive(false);
             if (villageContent != null) villageContent.SetActive(false);
             if (mapContent != null) mapContent.SetActive(false);

@@ -55,6 +55,12 @@ namespace Core.TrapSystem
         private bool _open;
         private int _hovered = -1;
 
+        private void Awake()
+        {
+            if (playerInventory == null) playerInventory = GetComponent<InventoryHolder>();
+            if (forgeDefinition == null) forgeDefinition = FindAnyObjectByType<ForgeService>()?.Definition;
+        }
+
         public bool IsWheelOpen => _open;
 
         /// <summary>Vrai pendant l'aperçu de placement d'un piège.</summary>
@@ -68,10 +74,45 @@ namespace Core.TrapSystem
             return _previewSlot >= 0;
         }
 
+        // Stable order: up = wolf, right = spikes, down = fire, left = explosive satchel.
+        public static int QuickTrapIndex(ItemDefinition item)
+        {
+            if (item == null || item.Category != ItemCategory.Trap || item.WorldPrefab == null) return -1;
+            var prefab = item.WorldPrefab;
+            if (prefab.GetComponent<WolfTrap>() != null) return 0;
+            if (prefab.GetComponent<SpikeTrap>() != null) return 1;
+            if (prefab.GetComponent<FlammableTrap>() != null) return 2;
+            return prefab.GetComponent<ExplosiveSatchelTrap>() != null ? 3 : -1;
+        }
+
+        public bool TryBeginQuickTrap(int direction)
+        {
+            if (direction < 0 || direction > 3 || _open || Core.UiNavigation.BlocksGameplayInput || Core.GameFreeze.IsCursorUnlocked) return false;
+            var inv = playerInventory != null ? playerInventory.Inventory : null;
+            if (inv == null) return false;
+            int best = -1;
+            for (int i = 0; i < inv.Capacity; i++)
+            {
+                var stack = inv.GetSlot(i);
+                if (!IsTrap(stack) || QuickTrapIndex(stack.Definition) != direction) continue;
+                if (best < 0 || stack.UpgradeLevel > inv.GetSlot(best).UpgradeLevel) best = i;
+            }
+            if (best < 0) return false;
+            EndPreview(); BeginPreview(best);
+            return IsPlacing;
+        }
+
         private void Update()
         {
             Mouse mouse = Mouse.current;
-            if (mouse == null) return;
+            var pad = Gamepad.current;
+            if (!_open && !Core.UiNavigation.BlocksGameplayInput && !Core.GameFreeze.IsCursorUnlocked && pad != null)
+            {
+                if (pad.dpad.up.wasPressedThisFrame) TryBeginQuickTrap(0);
+                else if (pad.dpad.right.wasPressedThisFrame) TryBeginQuickTrap(1);
+                else if (pad.dpad.down.wasPressedThisFrame) TryBeginQuickTrap(2);
+                else if (pad.dpad.left.wasPressedThisFrame) TryBeginQuickTrap(3);
+            }
 
             if (_previewSlot >= 0)
             {
@@ -81,10 +122,11 @@ namespace Core.TrapSystem
 
             if (!_open)
             {
-                if (mouse.middleButton.wasPressedThisFrame) OpenWheel();
+                if (mouse != null && mouse.middleButton.wasPressedThisFrame && !Core.UiNavigation.BlocksGameplayInput) OpenWheel();
                 return;
             }
 
+            if (mouse == null) return;
             UpdateHover(mouse.position.ReadValue());
 
             bool cancel = mouse.rightButton.wasPressedThisFrame
@@ -244,7 +286,7 @@ namespace Core.TrapSystem
         #region Placement
 
         private static bool IsTrap(ItemStack s)
-            => s != null && !s.IsEmpty && s.Definition.Category == ItemCategory.Trap;
+            => s != null && !s.IsEmpty && s.Definition.Category == ItemCategory.Trap && s.Definition.WorldPrefab != null;
 
         /// <summary>Lance l'aperçu du piège de la case : clic molette = poser, Échap / clic droit = annuler.</summary>
         private void BeginPreview(int slotIndex)
@@ -270,7 +312,7 @@ namespace Core.TrapSystem
         private void EndPreview()
         {
             _previewSlot = -1;
-            if (_ghost != null) Destroy(_ghost);
+            if (_ghost != null) { _ghost.SetActive(false); Destroy(_ghost); }
             _ghost = null;
         }
 
@@ -283,7 +325,8 @@ namespace Core.TrapSystem
                 return;
             }
 
-            bool cancel = mouse.rightButton.wasPressedThisFrame
+            bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame)
+                          || (Gamepad.current?.buttonEast.wasPressedThisFrame ?? false)
                           || (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame);
             if (cancel) { EndPreview(); return; }
 
@@ -296,7 +339,7 @@ namespace Core.TrapSystem
             if (_ghostMaterial.HasProperty("_BaseColor"))
                 _ghostMaterial.SetColor("_BaseColor", _ghostMaterial.color);
 
-            if (_ghostValid && mouse.middleButton.wasPressedThisFrame)
+            if (_ghostValid && ((mouse != null && mouse.middleButton.wasPressedThisFrame) || (Gamepad.current?.buttonSouth.wasPressedThisFrame ?? false)))
             {
                 int slot = _previewSlot;
                 EndPreview();

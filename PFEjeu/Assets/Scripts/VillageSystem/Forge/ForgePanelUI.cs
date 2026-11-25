@@ -148,6 +148,12 @@ namespace Core.Village.UI
         {
             if (forge == null) return;
             Core.UiNavigationScope.Register(panel!=null?panel.transform:null,Close,this,()=>IsOpen);
+            Core.UiTabNavigation.Register(panel != null ? panel.transform : null, direction =>
+            {
+                SwitchTab(_tab == Tab.Upgrade ? Tab.Shop : Tab.Upgrade);
+                var button = _tab == Tab.Upgrade ? upgradeTabButton : shopTabButton;
+                if (button != null) Core.UiNavigation.RememberSelection(button.gameObject);
+            });
             _open = true;
             _openedFrame = Time.frameCount;
             _tab = Tab.Upgrade;

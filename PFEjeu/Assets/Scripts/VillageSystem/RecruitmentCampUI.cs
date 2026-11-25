@@ -11,7 +11,7 @@ namespace Core.Village
         [SerializeField] private VillageViewController villageView;
         [SerializeField] private Core.Village.UI.BuildingPanelUI upgradePanel;
         private GameObject _canvas;
-        private TMP_Text _summary,_feedback,_heroStatus,_empty;
+        private TMP_Text _summary,_feedback,_heroStatus,_empty,_classInfo;
         private RectTransform _heroRows;
         private Core.PauseMenu.PauseButton _confirm,_dismiss;
         private ClasseHeros? _selectedClass;
@@ -46,6 +46,7 @@ namespace Core.Village
                 camp.Roster.Changed+=Refresh;
                 if(camp.Village.HdvInventory!=null)camp.Village.HdvInventory.OnChanged+=Refresh;
             }
+            Core.UiTabNavigation.Register(_canvas.transform, direction => SelectFamily((HeroFamily)(((int)_selectedFamily + direction + 3) % 3)));
             _canvas.SetActive(true);
             Core.UiNavigationScope.Register(_canvas.transform,Hide,this,()=>IsShown);
             Refresh();
@@ -79,6 +80,9 @@ namespace Core.Village
                 canRecruit=camp.CanRecruit(_selectedClass.Value,out var reason);
                 _feedback.text=canRecruit?"Classe choisie : "+ClassName(_selectedClass.Value):reason;
             }
+            _classInfo.text = _selectedClass.HasValue
+                ? $"<b>{ClassName(_selectedClass.Value)} · Niveau 1</b>\n{heros.ClassDescription(_selectedClass.Value)}"
+                : "Choisis une classe pour découvrir son rôle et ses effets.\nLes héros progressent ensuite jusqu’au niveau 5.";
             SetEnabled(_confirm,canRecruit);
             foreach(var entry in _heroButtons.Where(e=>e.Key==null||!camp.Roster.Heroes.Contains(e.Key)).ToArray())
             {
@@ -113,6 +117,7 @@ namespace Core.Village
             _selectedClass=null;
             Refresh();
             if(_classScroll!=null)_classScroll.verticalNormalizedPosition=1f;
+            Core.UiNavigation.RememberSelection(_familyButtons[(int)family].gameObject);
         }
         private static string ClassName(ClasseHeros type)=>heros.ClassName(type);
         private static string Assignment(heros hero)
@@ -166,7 +171,7 @@ namespace Core.Village
                 tab.name="Family_"+family;Layout(tab.gameObject,flexW:1);_familyButtons.Add(tab);
             }
             var choices=NewScroll(left,"Classes",10,new RectOffset(8,8,8,8),out _classScroll);
-            Anchor((RectTransform)_classScroll.transform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-207),new Vector2(710,270));
+            Anchor((RectTransform)_classScroll.transform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-207),new Vector2(710,250));
             foreach(ClasseHeros type in System.Enum.GetValues(typeof(ClasseHeros)))
             {
                 string description=heros.FamilyOf(type) switch
@@ -176,11 +181,14 @@ namespace Core.Village
                     _ => "Autel d’invocation"
                 };
                 var choice=NewButton(choices,ClassName(type)+"\n"+description,()=>{_selectedClass=type;Refresh();},fontSize:25);
-                choice.name="Recruit_"+type;Layout(choice.gameObject,height:76);_buttons.Add(choice);
+                choice.name="Recruit_"+type;Layout(choice.gameObject,height:70);_buttons.Add(choice);
                 HeroClassIcons.Decorate(choice,type);
             }
-            _feedback=NewText("Feedback",left,"",24,TextMuted,TextAlignmentOptions.Center);Anchor(_feedback.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-490),new Vector2(710,85));
-            _confirm=NewButton(left,"Valider le recrutement",Recruit,ButtonStyle.Primary,27);_confirm.name="ConfirmRecruit";_confirm.gameObject.AddComponent<CanvasGroup>();Anchor((RectTransform)_confirm.transform,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,20),new Vector2(710,72));
+            _classInfo=NewText("HeroClassInfo",left,"",23,TextMain,TextAlignmentOptions.TopLeft);
+            Anchor(_classInfo.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-470),new Vector2(710,105));
+            _classInfo.textWrappingMode=TextWrappingModes.Normal;
+            _feedback=NewText("Feedback",left,"",24,TextMuted,TextAlignmentOptions.Center);Anchor(_feedback.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-580),new Vector2(710,45));
+            _confirm=NewButton(left,"Valider le recrutement",Recruit,ButtonStyle.Primary,27);_confirm.name="ConfirmRecruit";_confirm.gameObject.AddComponent<CanvasGroup>();Anchor((RectTransform)_confirm.transform,new Vector2(.5f,0),new Vector2(.5f,0),new Vector2(0,20),new Vector2(710,65));
             var heading=NewText("HeroesTitle",right,"Héros du village",29,Accent,TextAlignmentOptions.Left,FontStyles.Bold);Anchor(heading.rectTransform,new Vector2(.5f,1),new Vector2(.5f,1),Vector2.zero,new Vector2(730,55));
             _heroRows=NewScroll(right,"HeroesScroll",12,new RectOffset(12,12,8,8),out var scroll);Anchor((RectTransform)scroll.transform,new Vector2(.5f,1),new Vector2(.5f,1),new Vector2(0,-65),new Vector2(745,425));
             _empty=NewText("EmptyHeroes",_heroRows,"Aucun héros recruté.",25,TextMuted);Layout(_empty.gameObject,height:90);

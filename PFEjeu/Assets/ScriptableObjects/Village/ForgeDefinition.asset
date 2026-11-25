@@ -116,12 +116,6 @@ MonoBehaviour:
       amount: 3
   dismantleRefundPercent: 0.5
   shop:
-  - item: {fileID: 11400000, guid: c3a96bb4e879a304f80c16370a9728de, type: 2}
-    cost:
-    - item: {fileID: 11400000, guid: 3941013f78dd57548a0efba8f3aec181, type: 2}
-      amount: 6
-    - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}
-      amount: 3
   - item: {fileID: 11400000, guid: f554a2121eb79794ea7f468a13ee70db, type: 2}
     cost:
     - item: {fileID: 11400000, guid: 4a5df7215ab49ff4586cbf40312b0c8f, type: 2}

@@ -31,7 +31,7 @@ namespace Core.InventorySystem.UI
 
         [Header("Entrées")]
         [SerializeField] private InputAction scrollAction = new("HotbarScroll", InputActionType.Value, "<Mouse>/scroll/y");
-        [SerializeField] private InputAction useAction = CreateUseAction();
+        private InputAction useAction = CreateUseAction();
 
         [Header("Affichage")]
         [SerializeField, Range(4, 14)] private int visibleSlots = 10;
@@ -60,7 +60,7 @@ namespace Core.InventorySystem.UI
         }
 
         private static readonly CombatMode[] Modes =
-            { CombatMode.Melee, CombatMode.Bow, CombatMode.Magic, CombatMode.Axe, CombatMode.Pickaxe };
+            { CombatMode.Melee, CombatMode.Bow, CombatMode.Magic };
 
         private readonly List<Entry> _entries = new();
         private readonly List<SlotView> _views = new();
@@ -77,7 +77,7 @@ namespace Core.InventorySystem.UI
         {
             var a = new InputAction("HotbarUse", InputActionType.Button);
             a.AddBinding("<Keyboard>/f");
-            a.AddBinding("<Gamepad>/buttonWest");
+
             return a;
         }
 
@@ -117,11 +117,12 @@ namespace Core.InventorySystem.UI
         {
             if (_inventory != null) _inventory.OnChanged -= Rebuild;
             if (_canvasGo != null) Destroy(_canvasGo);
+            useAction.Dispose();
         }
 
         private void Update()
         {
-            bool blocked = GameFreeze.IsCursorUnlocked || (trapPlacer != null && (trapPlacer.IsWheelOpen || trapPlacer.IsPlacing));
+            bool blocked = Core.UiNavigation.BlocksGameplayInput || GameFreeze.IsCursorUnlocked || (trapPlacer != null && (trapPlacer.IsWheelOpen || trapPlacer.IsPlacing));
             if (_canvasGo != null) _canvasGo.SetActive(!GameFreeze.IsCursorUnlocked);
             if (blocked || _entries.Count == 0) return;
 
@@ -210,7 +211,7 @@ namespace Core.InventorySystem.UI
                 {
                     ItemStack s = _inventory.GetSlot(i);
                     if (s == null || s.IsEmpty) continue;
-                    if (s.Definition.IsConsumable || s.Definition.Category == ItemCategory.Trap)
+                    if (s.Definition.IsConsumable || TrapPlacer.QuickTrapIndex(s.Definition) >= 0)
                         _entries.Add(new Entry(Kind.Item, default, i));
                 }
             }
@@ -368,7 +369,7 @@ namespace Core.InventorySystem.UI
             ItemStack s = _inventory.GetSlot(e.InvSlot);
             if (s == null || s.IsEmpty) { _title.text = ""; _hint.text = ""; return; }
             _title.text = s.Definition.DisplayName;
-            _hint.text = s.Definition.IsConsumable ? "[F] Consommer" : "[F] Poser (clic molette pour valider)";
+            _hint.text = s.Definition.IsConsumable ? "[F] Consommer" : "[F] Poser · Molette / A : valider · B : annuler";
         }
 
         private Sprite ModeIcon(CombatMode mode) => mode switch

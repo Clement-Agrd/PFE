@@ -18,7 +18,10 @@ MonoBehaviour:
   <MaxStackSize>k__BackingField: 20
   category: 6
   armorSlot: 0
-  <WorldPrefab>k__BackingField: {fileID: 919132149155446097, guid: 8eeefd7acd14dc04b9d77facfac10870, type: 3}
+  <WorldPrefab>k__BackingField: {fileID: 5970060886134612294, guid: 2d1bf96186ab51e4ba9b53f37f157590, type: 3}
   interactionVerb: Poser
   healAmount: 0
   statEffects: []
+  regenPercentPerSecond: 0
+  regenDuration: 0
+  description:
