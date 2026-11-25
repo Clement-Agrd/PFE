@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using UnityEngine.InputSystem;
 using UnityEngine;
 
@@ -48,7 +48,7 @@ namespace Core.Village
             reference.action.Disable();
         }
 
-        private void OnExit(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasModalFocus)ExitPressed?.Invoke(); }
+        private void OnExit(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasUiFocus)ExitPressed?.Invoke(); }
         private void OnClick(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasModalFocus)ClickPressed?.Invoke(); }
         private void OnInteract(InputAction.CallbackContext _) { if(!Core.UiNavigation.HasModalFocus)InteractPressed?.Invoke(); }
     }

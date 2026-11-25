@@ -28,16 +28,27 @@ namespace Core
         private RectTransform _frame;
         private UnityEngine.UI.Image[] _edges;
         private bool _mainMenu;
-        private sealed class FocusMemory { public GameObject Target; public string Name; }
+        private sealed class FocusMemory { public GameObject Target; public string Name; public bool Requested; }
 
         public static bool CancelConsumedThisFrame => _cancelFrame == Time.frameCount;
         public static bool HasUiFocus => TopScope() != null;
-        public static bool HasModalFocus => TopScope() is { Modal: true };
+        public static bool HasModalFocus => TopScope() is { Modal: true, Automatic: false };
         public static bool BlocksGameplayInput => HasUiFocus || _usedFrame == Time.frameCount;
         public static Transform CurrentScopeRoot => TopScope()?.transform;
         public static void ConsumeCancel() { _cancelFrame = _usedFrame = Time.frameCount; }
         public static bool IsTopScopeOwner(Component owner) => owner == null || TopScope()?.Owner == owner;
         public static void Refresh() { if (_instance != null) _instance._refreshAt = 0; }
+
+        public static void RememberSelection(GameObject target)
+        {
+            if (_instance == null || target == null) return;
+            var scope = target.GetComponentInParent<UiNavigationScope>();
+            if (scope == null) return;
+            _instance._memory[scope] = new FocusMemory { Target = target, Name = target.name, Requested = true };
+            if (TopScope() == scope && _instance._events != null)
+                _instance._events.SetSelectedGameObject(target);
+            Refresh();
+        }
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Install()
@@ -86,7 +97,7 @@ namespace Core
             foreach (var scope in UiNavigationScope.Scopes)
             {
                 if (scope == null || !scope.Available) continue;
-                if (top == null || (scope.Modal && !top.Modal) || (scope.Modal == top.Modal && scope.Order > top.Order)) top = scope;
+                if (top == null || (top.Automatic && !scope.Automatic) || (scope.Automatic == top.Automatic && ((scope.Modal && !top.Modal) || (scope.Modal == top.Modal && scope.Order > top.Order)))) top = scope;
             }
             return top;
         }
@@ -103,7 +114,6 @@ namespace Core
             }
             if (_scope == null) { _frame?.gameObject.SetActive(false); return; }
             if (Time.unscaledTime >= _refreshAt || !ValidSelected()) RefreshControls();
-            if (_controls.Count == 0) return;
             var selected = _events.currentSelectedGameObject;
             if (_cancel.WasPressedThisFrame() && Time.frameCount != _scope.OpenedFrame)
             {
@@ -113,6 +123,7 @@ namespace Core
                 if (!data.used) _scope.Cancel?.Invoke();
                 Refresh(); return;
             }
+            if (_controls.Count == 0) return;
             if (selected != null && selected.TryGetComponent<TMPro.TMP_InputField>(out var field) && field.isFocused) return;
             Vector2 axis = _move.ReadValue<Vector2>();
             if (axis.sqrMagnitude < .36f) _lastMove = Vector2.zero;
@@ -159,8 +170,10 @@ namespace Core
                 if (canvas != null && canvas.renderMode != RenderMode.WorldSpace && (best == null || canvas.sortingOrder > best.sortingOrder)) best = canvas;
             }
             if (best == null) return null;
-            return UiNavigationScope.Register(best.transform, BackFromLegacyCanvas, null,
-                () => GameFreeze.IsCursorUnlocked || _mainMenu);
+            var scope = UiNavigationScope.Register(best.transform, BackFromLegacyCanvas, null,
+                () => GameFreeze.IsCursorUnlocked || _mainMenu, false);
+            scope.Automatic = true;
+            return scope;
         }
 
         private void BackFromLegacyCanvas()
@@ -221,12 +234,13 @@ namespace Core
                 _controls.Add(control);
             }
             _controls.Sort((a, b) => CompareHierarchy(a.transform, b.transform));
-            if (!ValidSelected() && _controls.Count > 0)
+            if ((!ValidSelected() || (_memory.TryGetValue(_scope, out var request) && request.Requested)) && _controls.Count > 0)
             {
                 Selectable choice = null;
                 if (_memory.TryGetValue(_scope, out var memory))
                     foreach (var control in _controls)
                         if (control.gameObject == memory.Target || control.name == memory.Name) { choice = control; break; }
+                if (choice != null && memory != null) memory.Requested = false;
                 Select(choice != null ? choice : _controls[0]);
             }
         }
@@ -249,6 +263,7 @@ namespace Core
             var target = _events.currentSelectedGameObject;
             if (!target.transform.IsChildOf(_scope.transform)) return;
             if (!_memory.TryGetValue(_scope, out var memory)) _memory[_scope] = memory = new FocusMemory();
+            if (memory.Requested) return;
             memory.Target = target; memory.Name = target.name;
         }
 

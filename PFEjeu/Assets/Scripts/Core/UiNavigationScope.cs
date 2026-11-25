@@ -14,6 +14,7 @@ namespace Core
         internal Func<bool> IsOpen;
         internal Component Owner;
         internal bool Modal;
+        internal bool Automatic;
         internal int Order, OpenedFrame;
         internal bool Available => isActiveAndEnabled && (IsOpen == null || IsOpen());
 
@@ -22,7 +23,7 @@ namespace Core
         {
             if (root == null) return null;
             if (!root.TryGetComponent<UiNavigationScope>(out var scope)) scope = root.gameObject.AddComponent<UiNavigationScope>();
-            scope.Cancel = cancel; scope.Owner = owner; scope.IsOpen = isOpen; scope.Modal = modal;
+            scope.Cancel = cancel; scope.Owner = owner; scope.IsOpen = isOpen; scope.Modal = modal; scope.Automatic = false;
             scope.Order = ++_order; scope.OpenedFrame = Time.frameCount;
             UiNavigation.Refresh();
             return scope;

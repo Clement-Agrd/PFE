@@ -37,7 +37,7 @@ namespace Core.InteractionSystem
                 OnFocusChanged?.Invoke(_current);
             }
 
-            if (_current != null && Input.GetKeyDown(interactKey))
+            if (_current != null && !Core.UiNavigation.BlocksGameplayInput && (Input.GetKeyDown(interactKey) || (UnityEngine.InputSystem.Gamepad.current?.buttonWest.wasPressedThisFrame ?? false)))
                 _current.Interact(gameObject);
         }
 

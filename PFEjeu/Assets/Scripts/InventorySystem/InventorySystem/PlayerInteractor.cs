@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using TMPro;
 
 namespace Core.InventorySystem
@@ -38,7 +38,7 @@ namespace Core.InventorySystem
                         interactText.text = pickup.GetPromptText(interactKey);
                     }
 
-                    if (Input.GetKeyDown(interactKey))
+                    if (!Core.UiNavigation.BlocksGameplayInput && (Input.GetKeyDown(interactKey) || (UnityEngine.InputSystem.Gamepad.current?.buttonWest.wasPressedThisFrame ?? false)))
                     {
                         int remaining = inventoryHolder.Inventory.Add(pickup.Definition, pickup.Quantity);
 

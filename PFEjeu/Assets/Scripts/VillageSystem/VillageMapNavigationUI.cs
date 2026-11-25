@@ -7,6 +7,7 @@ namespace Core.Village
         [SerializeField] private VillageViewController view;
         [SerializeField] private Core.TowerDefense.DefenseBuildSlot[] slots;
         [SerializeField] private Core.Village.UI.BuildingPanelUI buildingPanel;
+        private Core.TowerDefense.DefenseConstructionUI _construction;
         private GameObject _canvas;
         private RectTransform _root;
         private Core.PauseMenu.PauseButton[] _markers;
@@ -37,6 +38,8 @@ namespace Core.Village
                 Anchor((RectTransform)button.transform,new Vector2(.5f,.5f),new Vector2(.5f,.5f),Vector2.zero,new Vector2(56,56));
                 _buildingMarkers.Add(building,button);
             }
+            _construction=FindAnyObjectByType<Core.TowerDefense.DefenseConstructionUI>();
+            if(_construction!=null)_construction.OnBuildingConstructed+=RememberConstructed;
             _canvas.SetActive(false);
         }
         private void Select(Core.TowerDefense.DefenseBuildSlot slot)
@@ -51,7 +54,7 @@ namespace Core.Village
             for(int i=0;i<_markers.Length;i++)
             {
                 var marker=_markers[i];var slot=slots[i];
-                bool visible=view.IsDefenseMap&&slot!=null&&slot.isActiveAndEnabled&&!slot.IsOccupied;
+                bool visible=view.IsDefenseMap&&slot!=null&&slot.isActiveAndEnabled;
                 if(visible)
                 {
                     var point=view.MapCamera.WorldToScreenPoint(slot.transform.position+Vector3.up);
@@ -80,7 +83,13 @@ namespace Core.Village
                 entry.Value.gameObject.SetActive(visible);
             }
         }
+        private void RememberConstructed(Building building)
+        {
+            for(int i=0;i<slots.Length;i++)
+                if(slots[i]!=null&&slots[i].Occupant==building.gameObject)
+                {Core.UiNavigation.RememberSelection(_markers[i].gameObject);break;}
+        }
         private void OnDisable(){if(_canvas!=null)_canvas.SetActive(false);}
-        private void OnDestroy(){if(_canvas!=null)Destroy(_canvas);}
+        private void OnDestroy(){if(_construction!=null)_construction.OnBuildingConstructed-=RememberConstructed;if(_canvas!=null)Destroy(_canvas);}
     }
 }
