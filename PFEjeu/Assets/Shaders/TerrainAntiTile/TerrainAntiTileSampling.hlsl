@@ -224,4 +224,21 @@ half3 AT_SampleNormal(TEXTURE2D_PARAM(tex, samp), float2 uv, half normalScale, h
     return n;
 }
 
+// Normale triplanar en espace monde (melange "whiteout", Ben Golus) : conserve le relief des normal maps sur les parois.
+half3 AT_TriNormalWS(TEXTURE2D_PARAM(tex, samp), float3 posWS, float3 dposDx, float3 dposDy, half3 nWS, float tilesPerMeter, half normalScale)
+{
+    float3 blend = pow(max(abs(nWS), 1e-3), 3.0);
+    blend /= (blend.x + blend.y + blend.z);
+
+    half3 tx = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(tex, samp, posWS.zy * tilesPerMeter, dposDx.zy * tilesPerMeter, dposDy.zy * tilesPerMeter), normalScale);
+    half3 ty = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(tex, samp, posWS.xz * tilesPerMeter, dposDx.xz * tilesPerMeter, dposDy.xz * tilesPerMeter), normalScale);
+    half3 tz = UnpackNormalScale(SAMPLE_TEXTURE2D_GRAD(tex, samp, posWS.xy * tilesPerMeter, dposDx.xy * tilesPerMeter, dposDy.xy * tilesPerMeter), normalScale);
+
+    tx = half3(tx.xy + nWS.zy, abs(tx.z) * nWS.x);
+    ty = half3(ty.xy + nWS.xz, abs(ty.z) * nWS.y);
+    tz = half3(tz.xy + nWS.xy, abs(tz.z) * nWS.z);
+
+    return normalize(tx.zyx * (half)blend.x + ty.xzy * (half)blend.y + tz.xyz * (half)blend.z);
+}
+
 #endif

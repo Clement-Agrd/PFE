@@ -87,20 +87,20 @@ Material:
     m_Ints: []
     m_Floats:
     - _AT_FadeEnd: 120
-    - _AT_FadeStart: 300
-    - _AT_FarBlend: 0.7
-    - _AT_FarEnd: 220
+    - _AT_FadeStart: 292
+    - _AT_FarBlend: 0.699
+    - _AT_FarEnd: 807
     - _AT_FarScale: 0.173
-    - _AT_FarStart: 40
+    - _AT_FarStart: 59
     - _AT_HexContrast: 0.7
     - _AT_MacroAmount: 0.6
     - _AT_MacroScaleA: 60
     - _AT_MacroScaleB: 250
     - _AT_MacroValue: 0.35
-    - _AT_TerrainSize: 1000
+    - _AT_TerrainSize: 300
     - _AT_TriAmount: 1
-    - _AT_TriEnd: 0.65
-    - _AT_TriStart: 0.92
+    - _AT_TriEnd: 0.648
+    - _AT_TriStart: 0.405
     - _EnableHeightBlend: 0
     - _EnableInstancedPerPixelNormal: 1
     - _HeightTransition: 0

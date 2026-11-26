@@ -1,0 +1,284 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 79c9589d6e462e74c9ad9917618f0cb1, type: 3}
+  m_Name: EasyTerrainProfile_VerticalSlice
+  m_EditorClassIdentifier: Assembly-CSharp::EasyTerrain.EasyTerrainProfile
+  seed: 21
+  layers:
+  - label: Grass_Layer
+    layer: {fileID: 8574412962073106934, guid: acd1f91ae4732f140ab38f18ebfaa16c, type: 2}
+    weight: 1
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 28}
+    slopeFalloff: 10
+    noiseScale: 45
+    noiseAmount: 0.5
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Grass_Layer 2
+    layer: {fileID: 8574412962073106934, guid: 096b9cfdfd7e0aa4f960b1771c730f34, type: 2}
+    weight: 0.8
+    heightRange: {x: 0, y: 60}
+    heightFalloff: 8
+    slopeRange: {x: 0, y: 30}
+    slopeFalloff: 8
+    noiseScale: 26
+    noiseAmount: 0.95
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Forest_Layer
+    layer: {fileID: 8574412962073106934, guid: 82ab3de8e3e2e484396985dc77b540c2, type: 2}
+    weight: 0.8
+    heightRange: {x: 0, y: 40}
+    heightFalloff: 8
+    slopeRange: {x: 12, y: 45}
+    slopeFalloff: 8
+    noiseScale: 50
+    noiseAmount: 0.85
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Neige
+    layer: {fileID: 8574412962073106934, guid: 29d44c7ecae33904c991e105e92e0188, type: 2}
+    weight: 1.5
+    heightRange: {x: 62, y: 1000}
+    heightFalloff: 5
+    slopeRange: {x: 0, y: 70}
+    slopeFalloff: 15
+    noiseScale: 28
+    noiseAmount: 0.3
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Roche mi-pente
+    layer: {fileID: 8574412962073106934, guid: 3e2140b0d9c198a4abec012b2645a72c, type: 2}
+    weight: 0.8
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 18, y: 48}
+    slopeFalloff: 8
+    noiseScale: 24
+    noiseAmount: 0.8
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Roche marbre
+    layer: {fileID: 8574412962073106934, guid: 4d07e33e81c79da4f9c6c47e6446fc3f, type: 2}
+    weight: 1.3
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 28, y: 90}
+    slopeFalloff: 10
+    noiseScale: 30
+    noiseAmount: 0.5
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Roche beige
+    layer: {fileID: 8574412962073106934, guid: 7705e994efdd9754ea1763fbf720a8bb, type: 2}
+    weight: 1
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 32, y: 90}
+    slopeFalloff: 10
+    noiseScale: 20
+    noiseAmount: 0.95
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  - label: Roche parois
+    layer: {fileID: 8574412962073106934, guid: aabc634adbad1f84fbd5d722215d61db, type: 2}
+    weight: 1.3
+    heightRange: {x: 0, y: 1000}
+    heightFalloff: 8
+    slopeRange: {x: 45, y: 90}
+    slopeFalloff: 8
+    noiseScale: 14
+    noiseAmount: 0.9
+    breakRepetition: 0
+    variantLayer: {fileID: 0}
+    variantTileScale: 0.37
+    breakupNoiseScale: 14
+    breakupAmount: 0.5
+    breakupSharpness: 0.5
+  trees:
+  - label: Sapin
+    prefab: {fileID: 5646935337320598626, guid: 2fd9623e4a95ef746a8e2c4e844d1713, type: 3}
+    treesPerHectare: 300
+    minSpacing: 2.6
+    heightRange: {x: 11, y: 62}
+    maxSlope: 36
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0.5
+    scaleRange: {x: 1.6, y: 4.2}
+    colorVariation: 0.2
+    clumping: 0.65
+    clumpScale: 40
+  - label: Tronc 1
+    prefab: {fileID: 919132149155446097, guid: 60c269700c8548542968e5c6c6c5d4ac, type: 3}
+    treesPerHectare: 22
+    minSpacing: 4
+    heightRange: {x: 11, y: 60}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0.5
+    scaleRange: {x: 1.4, y: 2.4}
+    colorVariation: 0.2
+    clumping: 0.5
+    clumpScale: 30
+  - label: Tronc 2
+    prefab: {fileID: 919132149155446097, guid: 3a6ff301f5d97c54cbc54f269db53c60, type: 3}
+    treesPerHectare: 20
+    minSpacing: 4
+    heightRange: {x: 11, y: 60}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0.5
+    scaleRange: {x: 1.4, y: 2.4}
+    colorVariation: 0.2
+    clumping: 0.5
+    clumpScale: 30
+  - label: Souche
+    prefab: {fileID: 919132149155446097, guid: a45ebf9e58bcd034dabb25055822eff3, type: 3}
+    treesPerHectare: 22
+    minSpacing: 4
+    heightRange: {x: 11, y: 60}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 0}
+    minLayerWeight: 0.5
+    scaleRange: {x: 1.3, y: 2.2}
+    colorVariation: 0.2
+    clumping: 0.5
+    clumpScale: 30
+  details:
+  - label: Herbe A
+    useMesh: 1
+    prefab: {fileID: 5441906627692432443, guid: b854d11ecb2f21648b6cc4d08e52ccbd, type: 3}
+    texture: {fileID: 0}
+    density: 6
+    widthRange: {x: 1, y: 2.4}
+    heightRange: {x: 0.6, y: 1.6}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 38
+    onlyOnLayer: {fileID: 8574412962073106934, guid: acd1f91ae4732f140ab38f18ebfaa16c, type: 2}
+    clumping: 0.55
+    clumpScale: 14
+  - label: Herbe B
+    useMesh: 1
+    prefab: {fileID: 5441906627692432443, guid: b854d11ecb2f21648b6cc4d08e52ccbd, type: 3}
+    texture: {fileID: 0}
+    density: 5
+    widthRange: {x: 1, y: 2.2}
+    heightRange: {x: 0.6, y: 1.5}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 38
+    onlyOnLayer: {fileID: 8574412962073106934, guid: 096b9cfdfd7e0aa4f960b1771c730f34, type: 2}
+    clumping: 0.55
+    clumpScale: 16
+  - label: Fleur bleue
+    useMesh: 1
+    prefab: {fileID: 4839856578168318102, guid: 48216c3036dc6a645a8b1c6eff5c7f2c, type: 3}
+    texture: {fileID: 0}
+    density: 1
+    widthRange: {x: 1, y: 1.8}
+    heightRange: {x: 1, y: 1.8}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 8574412962073106934, guid: acd1f91ae4732f140ab38f18ebfaa16c, type: 2}
+    clumping: 0.85
+    clumpScale: 9
+  - label: Fleur rouge
+    useMesh: 1
+    prefab: {fileID: 3895918277302063646, guid: eb706418afc19bb4096aa4601a3aa703, type: 3}
+    texture: {fileID: 0}
+    density: 1
+    widthRange: {x: 1, y: 1.8}
+    heightRange: {x: 1, y: 1.8}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 8574412962073106934, guid: 096b9cfdfd7e0aa4f960b1771c730f34, type: 2}
+    clumping: 0.85
+    clumpScale: 9
+  - label: Fleur blanche
+    useMesh: 1
+    prefab: {fileID: 1786580743984787912, guid: 4ab8b8cf495794247985686db42b4e63, type: 3}
+    texture: {fileID: 0}
+    density: 1
+    widthRange: {x: 1, y: 1.8}
+    heightRange: {x: 1, y: 1.8}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 8574412962073106934, guid: acd1f91ae4732f140ab38f18ebfaa16c, type: 2}
+    clumping: 0.85
+    clumpScale: 11
+  - label: Fleur rose
+    useMesh: 1
+    prefab: {fileID: 8706139252643182039, guid: db719c0f34546ea44ab6c91b82442ea3, type: 3}
+    texture: {fileID: 0}
+    density: 1
+    widthRange: {x: 1, y: 1.8}
+    heightRange: {x: 1, y: 1.8}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 8574412962073106934, guid: 096b9cfdfd7e0aa4f960b1771c730f34, type: 2}
+    clumping: 0.85
+    clumpScale: 11
+  - label: Fleur jaune
+    useMesh: 1
+    prefab: {fileID: 8355460740658280958, guid: 45ea6c3f44d055641849e7822d9527d6, type: 3}
+    texture: {fileID: 0}
+    density: 1
+    widthRange: {x: 1, y: 1.8}
+    heightRange: {x: 1, y: 1.8}
+    healthyColor: {r: 0.45, g: 0.62, b: 0.25, a: 1}
+    dryColor: {r: 0.62, g: 0.58, b: 0.3, a: 1}
+    altitudeRange: {x: 0, y: 1000}
+    maxSlope: 30
+    onlyOnLayer: {fileID: 8574412962073106934, guid: acd1f91ae4732f140ab38f18ebfaa16c, type: 2}
+    clumping: 0.85
+    clumpScale: 12

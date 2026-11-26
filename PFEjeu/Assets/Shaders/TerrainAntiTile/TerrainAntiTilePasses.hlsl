@@ -158,14 +158,35 @@ half3 AT_TerrainNormalWS(float2 terrainUV, half3 vertexNormalWS)
 #endif
 }
 
-void NormalMapMix(float4 uvSplat01, float4 uvSplat23, float dist, half4 triS, inout half4 splatControl, inout half3 mixedNormal)
+// Normale d'une couche : projection du terrain, remplacee par une normale triplanar (monde -> repere du terrain)
+// sur les parois raides pour garder le relief sans etirement.
+half3 AT_LayerNormal(TEXTURE2D_PARAM(tex, samp), float2 uv, half normalScale, half strength, float dist, half triS,
+                     float3 posWS, float3 dposDx, float3 dposDy, half3 nWS, half3x3 tbn, float tilesPerMeter)
+{
+    half3 n = AT_SampleNormal(TEXTURE2D_ARGS(tex, samp), uv, normalScale, strength, dist);
+    if (triS > 0.002h)
+    {
+        half3 nWorld = AT_TriNormalWS(TEXTURE2D_ARGS(tex, samp), posWS, dposDx, dposDy, nWS, tilesPerMeter, normalScale);
+        n = lerp(n, normalize(mul(tbn, nWorld)), triS);
+    }
+    return n;
+}
+
+void NormalMapMix(float4 uvSplat01, float4 uvSplat23, float dist, half4 triS, float3 posWS, float3 dposDx, float3 dposDy, half3 nWS,
+                  inout half4 splatControl, inout half3 mixedNormal)
 {
     #if defined(_NORMALMAP)
+        // Repere tangent du terrain (identique a InitializeInputData : tangente = cross(axe Z objet, normale)).
+        half3 tangentWS = normalize(cross(GetObjectToWorldMatrix()._13_23_33, nWS));
+        half3 bitangentWS = cross(nWS, tangentWS);
+        half3x3 tbn = half3x3(-tangentWS, bitangentWS, nWS);
+        float invSize = 1.0 / max(_AT_TerrainSize, 1.0);
+
         half3 nrm = half(0.0);
-        nrm += splatControl.r * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal0, sampler_Normal0), uvSplat01.xy, _NormalScale0, AT_LAYER_STRENGTH(0), dist), half3(0.0h, 0.0h, 1.0h), triS.x);
-        nrm += splatControl.g * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal1, sampler_Normal0), uvSplat01.zw, _NormalScale1, AT_LAYER_STRENGTH(1), dist), half3(0.0h, 0.0h, 1.0h), triS.y);
-        nrm += splatControl.b * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal2, sampler_Normal0), uvSplat23.xy, _NormalScale2, AT_LAYER_STRENGTH(2), dist), half3(0.0h, 0.0h, 1.0h), triS.z);
-        nrm += splatControl.a * lerp(AT_SampleNormal(TEXTURE2D_ARGS(_Normal3, sampler_Normal0), uvSplat23.zw, _NormalScale3, AT_LAYER_STRENGTH(3), dist), half3(0.0h, 0.0h, 1.0h), triS.w);
+        nrm += splatControl.r * AT_LayerNormal(TEXTURE2D_ARGS(_Normal0, sampler_Normal0), uvSplat01.xy, _NormalScale0, AT_LAYER_STRENGTH(0), dist, triS.x, posWS, dposDx, dposDy, nWS, tbn, (float)_Splat0_ST.x * invSize);
+        nrm += splatControl.g * AT_LayerNormal(TEXTURE2D_ARGS(_Normal1, sampler_Normal0), uvSplat01.zw, _NormalScale1, AT_LAYER_STRENGTH(1), dist, triS.y, posWS, dposDx, dposDy, nWS, tbn, (float)_Splat1_ST.x * invSize);
+        nrm += splatControl.b * AT_LayerNormal(TEXTURE2D_ARGS(_Normal2, sampler_Normal0), uvSplat23.xy, _NormalScale2, AT_LAYER_STRENGTH(2), dist, triS.z, posWS, dposDx, dposDy, nWS, tbn, (float)_Splat2_ST.x * invSize);
+        nrm += splatControl.a * AT_LayerNormal(TEXTURE2D_ARGS(_Normal3, sampler_Normal0), uvSplat23.zw, _NormalScale3, AT_LAYER_STRENGTH(3), dist, triS.w, posWS, dposDx, dposDy, nWS, tbn, (float)_Splat3_ST.x * invSize);
 
         // avoid risk of NaN when normalizing.
         #if !HALF_IS_FLOAT
@@ -264,7 +285,7 @@ void SplatmapMix(float4 uvMainAndLM, float4 uvSplat01, float4 uvSplat23, float3 
         mixedDiffuse.rgb *= lerp(half3(1.0h, 1.0h, 1.0h), tint, macroWeight);
     }
 
-    NormalMapMix(uvSplat01, uvSplat23, dist, triS, splatControl, mixedNormal);
+    NormalMapMix(uvSplat01, uvSplat23, dist, triS, positionWS, dposDx, dposDy, normalWS, splatControl, mixedNormal);
 }
 
 #endif
