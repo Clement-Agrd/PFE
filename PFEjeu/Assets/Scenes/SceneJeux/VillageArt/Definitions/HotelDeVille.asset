@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ebd9ae67b8424108b8e750e3868d303b, type: 3}
+  m_Name: HotelDeVille
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.BuildingDefinition
+  displayName: "H\xF4tel de ville"
+  icon: {fileID: 0}
+  levels:
+  - level: 0
+    upgradeCost: []
+    visualPrefab: {fileID: 4394033556128576730, guid: d2b1d87d0b0286b4ea08f25ce8a3e4ae, type: 3}
+    productions: []
+  - level: 0
+    upgradeCost: []
+    visualPrefab: {fileID: 3825548289151667607, guid: cdedd4e0b4ec0f045984ecb7c48b1200, type: 3}
+    productions: []
+  - level: 0
+    upgradeCost: []
+    visualPrefab: {fileID: 7219573733303468375, guid: 8d49bb67cbbdf7049936208582a8ba83, type: 3}
+    productions: []
+  - level: 0
+    upgradeCost: []
+    visualPrefab: {fileID: 7219573733303468375, guid: 8d49bb67cbbdf7049936208582a8ba83, type: 3}
+    productions: []

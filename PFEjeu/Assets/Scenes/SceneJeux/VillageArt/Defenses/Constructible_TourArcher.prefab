@@ -1,0 +1,229 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &265992923617830691
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2849850119350151071}
+  - component: {fileID: 2212949807570546154}
+  - component: {fileID: 5823405163763574078}
+  - component: {fileID: 4042027728699977113}
+  - component: {fileID: 7698569135601935334}
+  - component: {fileID: 8602419148397992435}
+  - component: {fileID: 1275380693010192376}
+  - component: {fileID: 5777943111474131730}
+  - component: {fileID: 3067439824124842681}
+  m_Layer: 0
+  m_Name: Constructible_TourArcher
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2849850119350151071
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 1497134270175274836}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2212949807570546154
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0b2ff5ad68d81b34daecdf7a1495ddd5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Tower
+  towerData: {fileID: 11400000, guid: 948aa8e94d140e74eac95178c3e348a5, type: 2}
+  heroData: {fileID: 0}
+  currentLevel: 0
+  modelParent: {fileID: 1497134270175274836}
+  firePoint: {fileID: 0}
+  poolManager: {fileID: 0}
+  iaTower: {fileID: 4042027728699977113}
+  towerShoot: {fileID: 0}
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 8
+--- !u!114 &5823405163763574078
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b30f0a7f66f42558d0d76d81b074357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.StatsSystem.EntityStats
+  baseStats:
+  - type: 0
+    baseValue: 100
+  - type: 1
+    baseValue: 100
+  - type: 2
+    baseValue: 50
+  - type: 3
+    baseValue: 10
+  - type: 4
+    baseValue: 0
+  - type: 5
+    baseValue: 0
+  - type: 6
+    baseValue: 5.5
+  - type: 7
+    baseValue: 1
+--- !u!114 &4042027728699977113
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 70e955991314fe047a7dd65a4bf34848, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IATower
+  tower: {fileID: 0}
+--- !u!114 &7698569135601935334
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b915bbc29225a1d40843fae88d916c4f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerShoot
+  tower: {fileID: 0}
+  stats: {fileID: 0}
+  poolManager: {fileID: 0}
+  zoneImpact: 3
+  arrowCount: 10
+  predictMovement: 1
+  estimatedFlightTime: 1
+--- !u!114 &8602419148397992435
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2268ebdedec94b3caa248ffdef2c28e5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Core.Village.Building
+  definition: {fileID: 11400000, guid: 336d5dd15473745488bf9a57c8b4044c, type: 2}
+  currentLevel: 1
+  visualRoot: {fileID: 0}
+  _currentVisual: {fileID: 0}
+--- !u!114 &1275380693010192376
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c75cccccde5a21649adfef597b84811e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TowerHeroStation
+  prompt: Interagir
+  family: 1
+  specializations:
+  - heroClass: 3
+    profile: {fileID: 11400000, guid: fd6c99c29cd0c674ab0f49a0c852fc31, type: 2}
+  - heroClass: 4
+    profile: {fileID: 11400000, guid: afcfc73c384399f4bb6f7ebf9fff8f71, type: 2}
+  - heroClass: 5
+    profile: {fileID: 11400000, guid: 9b4a15afed9e162449c6baaaab3a3c45, type: 2}
+--- !u!65 &5777943111474131730
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 3.2, y: 5.6, z: 3.2}
+  m_Center: {x: 0, y: 2.8, z: 0}
+--- !u!114 &3067439824124842681
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 265992923617830691}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00a41f291d6bc434c8b4f6902c4d75ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DamageFx.DamageFxTag
+  role: 1
+  chest: {fileID: 0}
+--- !u!1 &3843931748649011733
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1497134270175274836}
+  m_Layer: 0
+  m_Name: Model
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1497134270175274836
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3843931748649011733}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2849850119350151071}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

@@ -1,0 +1,94 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c062dfa8b7175ff41ae8e8048a012460, type: 3}
+  m_Name: ArcherArbalete
+  m_EditorClassIdentifier: Assembly-CSharp::SOTower
+  towerName: "Tour \xE0 arbal\xE8te"
+  detectionRange: 17
+  armorPenetration: 0.5
+  impactRadius: 0
+  impactPrefab: {fileID: 0}
+  effectDescription: "Plus de PV max \xB7 Ignore 50 % de l\u2019armure"
+  towerType: 0
+  etat: {fileID: 0}
+  targetCondition1: 5
+  targetCondition2: 0
+  targetDistance: 0
+  targetLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  projectileType: 0
+  projectileMovement: 0
+  shootMode: 0
+  projectilePrefab: {fileID: 9222910484828156875, guid: 141ed802e3f8cd04785452b1fa81f49f, type: 3}
+  damageType: {fileID: 11400000, guid: da21a97c557d235499dd8d6fa1b24c07, type: 2}
+  minLevel: 1
+  maxLevel: 3
+  towerStats:
+  - level: 1
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 38
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 0.68
+  - level: 2
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 48
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 0.748
+  - level: 3
+    stats:
+    - type: 0
+      baseValue: 0
+    - type: 1
+      baseValue: 0
+    - type: 2
+      baseValue: 57
+    - type: 3
+      baseValue: 0
+    - type: 4
+      baseValue: 0
+    - type: 5
+      baseValue: 0
+    - type: 6
+      baseValue: 0
+    - type: 7
+      baseValue: 0.816
+  models:
+  - {fileID: 2242862784127385091, guid: e5a31f26ba7314c4e8c5f96601a4ffb7, type: 3}
+  - {fileID: 7240225026812865700, guid: 7fe64d445820baa42b49e95de3ddae28, type: 3}
+  - {fileID: 7393627350089206562, guid: 1fb076f5e120bd349a61adbd28991754, type: 3}
