@@ -1,0 +1,18 @@
+{
+  "name": "VertexCloth.Editor",
+  "rootNamespace": "VertexCloth.EditorTools",
+  "references": [
+    "VertexCloth.Runtime"
+  ],
+  "includePlatforms": [
+    "Editor"
+  ],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": false
+}

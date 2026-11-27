@@ -1,0 +1,18 @@
+{
+  "name": "com.maxencelemaitre.vertexcloth",
+  "displayName": "Vertex Cloth",
+  "version": "0.2.0",
+  "unity": "6000.0",
+  "description": "Physique de vêtements, capes, cheveux et drapeaux simulée directement sur les vertices du mesh (Burst), avec vent, colliders Humanoid automatiques, presets et auto-setup. Aucun rig dédié au tissu nécessaire.",
+  "keywords": [
+    "cloth",
+    "wind",
+    "physics",
+    "editor-tool",
+    "character"
+  ],
+  "dependencies": {
+    "com.unity.burst": "1.8.0",
+    "com.unity.mathematics": "1.3.1"
+  }
+}

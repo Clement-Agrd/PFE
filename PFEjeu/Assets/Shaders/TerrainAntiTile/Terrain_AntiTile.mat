@@ -86,8 +86,8 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
-    - _AT_FadeEnd: 120
-    - _AT_FadeStart: 292
+    - _AT_FadeEnd: 241
+    - _AT_FadeStart: 500
     - _AT_FarBlend: 0.699
     - _AT_FarEnd: 807
     - _AT_FarScale: 0.173
@@ -97,7 +97,7 @@ Material:
     - _AT_MacroScaleA: 60
     - _AT_MacroScaleB: 250
     - _AT_MacroValue: 0.35
-    - _AT_TerrainSize: 300
+    - _AT_TerrainSize: 320
     - _AT_TriAmount: 1
     - _AT_TriEnd: 0.648
     - _AT_TriStart: 0.405
