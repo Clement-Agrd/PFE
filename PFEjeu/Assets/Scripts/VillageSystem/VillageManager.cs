@@ -18,12 +18,20 @@ namespace Core.Village
         [Tooltip("Les items considérés comme des ressources transférables à l'entrée du village.")]
         [SerializeField] private List<ItemDefinition> transferableResources = new();
 
+        [Tooltip("Si activé, les bâtiments de défense (Tours, Caserne) peuvent dépasser le niveau de l'Hôtel de Ville. Désactivé par défaut : comportement d'origine.")]
+        [SerializeField] private bool ignoreTownHallGateForDefenses;
+
         public int TownHallLevel => townHall != null ? townHall.CurrentLevel : 0;
 
         /// <summary>L'inventaire du stockage HDV (null si non assigné). Lecture seule côté UI.</summary>
         public Inventory HdvInventory => hdvStorage != null ? hdvStorage.Inventory : null;
 
         public bool IsTownHall(Building building) => building != null && building == townHall;
+
+        /// <summary>Ce bâtiment de défense échappe-t-il au plafond de niveau de l'HDV (option de scène) ?</summary>
+        public bool IsTownHallGateIgnoredFor(Building building)
+            => ignoreTownHallGateForDefenses && building != null
+               && (building.GetComponent<Tower>() != null || building.GetComponent<Core.BarracksSystem.Barracks>() != null);
 
         public event Action<Building, int> OnBuildingUpgraded; // (bâtiment, nouveau niveau)
         public event Action<Building, string> OnUpgradeFailed; // (bâtiment, raison)
@@ -40,7 +48,7 @@ namespace Core.Village
 
             // L'Hôtel de Ville s'améliore librement (c'est lui qui fixe le plafond).
             // Les autres bâtiments exigent que l'HDV ait DÉJÀ atteint ce niveau.
-            if (building != townHall && targetLevel > TownHallLevel)
+            if (building != townHall && targetLevel > TownHallLevel && !IsTownHallGateIgnoredFor(building))
             {
                 reason = $"Nécessite l'Hôtel de Ville niveau {targetLevel}.";
                 return false;

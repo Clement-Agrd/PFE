@@ -97,7 +97,7 @@ Material:
     - _AT_MacroScaleA: 60
     - _AT_MacroScaleB: 250
     - _AT_MacroValue: 0.35
-    - _AT_TerrainSize: 320
+    - _AT_TerrainSize: 300
     - _AT_TriAmount: 1
     - _AT_TriEnd: 0.648
     - _AT_TriStart: 0.405

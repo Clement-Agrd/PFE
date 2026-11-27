@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ChamanBase
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: Tour de magie
-  detectionRange: 12
+  detectionRange: 15
   armorPenetration: 0
   impactRadius: 0
   impactPrefab: {fileID: 0}

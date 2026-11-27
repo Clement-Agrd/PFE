@@ -17,5 +17,8 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SceneJeux.unity
     guid: 4467df59192023742b7075662ad03d48
+  - enabled: 1
+    path: Assets/Scenes/SceneVerticalSlice.unity
+    guid: 6aa1a55f1df33934a98f8bd775ad0fbe
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}

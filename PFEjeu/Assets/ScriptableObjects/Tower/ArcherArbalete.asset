@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ArcherArbalete
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: "Tour \xE0 arbal\xE8te"
-  detectionRange: 17
+  detectionRange: 21
   armorPenetration: 0.5
   impactRadius: 0
   impactPrefab: {fileID: 0}

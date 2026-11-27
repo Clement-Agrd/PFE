@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ChamanFeu
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: Tour de feu
-  detectionRange: 12
+  detectionRange: 15
   armorPenetration: 0
   impactRadius: 3.5
   impactPrefab: {fileID: 166125374502252207, guid: 5714447846dd4064ea0d2fad2bbcd1e7, type: 3}

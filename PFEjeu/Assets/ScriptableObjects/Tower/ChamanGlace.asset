@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: ChamanGlace
   m_EditorClassIdentifier: Assembly-CSharp::SOTower
   towerName: Tour de glace
-  detectionRange: 12
+  detectionRange: 15
   armorPenetration: 0
   impactRadius: 3.5
   impactPrefab: {fileID: 4265458012487795892, guid: e369488d208a8174ca54da641f8a2b76, type: 3}
